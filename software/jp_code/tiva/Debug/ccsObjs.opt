@@ -1,0 +1,1 @@
+"./STELLARIS_AD9850.obj" "./complex.obj" "./mkfilter.obj" "./tm4c123gh6pm_startup_ccs.obj" "./utils/uartstdio.obj" "C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/ccs/Debug/driverlib.lib" "../tm4c123gh6pm.cmd" -l"libc.a" 
