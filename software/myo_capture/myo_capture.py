@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 # ubuntu setup:
 # sudo apt-get install python-serial python-pyqtgraph
 
-# -*- coding: utf-8 -*-
 import sys
 import serial
 #import matplotlib.pyplot as plt
@@ -68,7 +69,7 @@ class Main():
             pass
 
         data = float(ser.readline()) # get data
-        #data = data * 0.0008
+        data = data * 0.0008
         print(data) # print data
         file.write(str(data)+"\n") # save data
         self.armazenamento.append(str(data) + ",") 
