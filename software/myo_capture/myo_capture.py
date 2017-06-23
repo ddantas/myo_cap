@@ -1,27 +1,35 @@
+# ubuntu setup:
+# sudo apt-get install python-serial python-pyqtgraph
+
 # -*- coding: utf-8 -*-
 import sys
 import serial
+#import matplotlib.pyplot as plt
 import time
-import threading
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import numpy as np
 
 from PyQt4 import QtGui, QtCore
 
-ser = serial.Serial('COM3', 115200, timeout=3)  # abre porta serial COM3 com o baud rate de 115200
+
+ser = serial.Serial('/dev/ttyACM0', 115200, timeout=3)  # abre porta serial com o baud rate de 115200
+file = open('myo_cap.txt','a') # open file
 
 class Main():
+
     def __init__(self):
-       self.exibeSerial()
+        ser.close() 
+        self.comunicaSerial()
 
-    #exibe os dados da porta serial
-    def exibeSerial(self):
+    def comunicaSerial(self):
         ser.open()
+        self.armazenamento = []
+        ser.flushInput()
 
-        self.armazenamento = []  # armazenar os valores recebidos
-
-        ##--------------------------------------------------
+        ## Interface Start ##        
+        self.app = QtGui.QApplication(sys.argv)
+        self.window = QtGui.QMainWindow()
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
 
@@ -45,21 +53,27 @@ class Main():
 
         self.ptr1 = 0
 
-        ##--------------------------------------------------
+        ## Interface End ##
+
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(0)        
+        self.timer.start(0)
+        self.app.exec_()
 
     def update(self):
-
         self.ptr1 += 1
+        #self.data1[:-1] = self.data1[1:]  # shift data in the array one sample left
+
         while (ser.inWaiting() == 0):
             pass
-        data = float(ser.readline())
-        ##atenção multiplicaç~]ao duplicada com o firmware tirar
+
+        data = float(ser.readline()) # get data
         #data = data * 0.0008
-        print(data)
-        self.armazenamento.append(str(data) + ",")
+        print(data) # print data
+        file.write(str(data)+"\n") # save data
+        self.armazenamento.append(str(data) + ",") 
+
+        # plot data
         if self.ptr1%self.tamanho_vetor ==0:
             self.p1.clear()
             self.curve1 = self.p1.plot(self.data1, pen='k')
@@ -68,5 +82,5 @@ class Main():
         if self.ptr1%10 == 0:
             self.curve1.setData(self.data1, pen=pg.mkPen('k', width=3))
 
-programa = Main()
+Main()
 
