@@ -43,7 +43,7 @@ class Main():
         self.stringaxisy.setLabel('Tensão', 'V')
         self.p1 = self.win.addPlot(axisItems={'left': self.stringaxisy, 'bottom': self.stringaxisx})
         #Se tirar esse setXRange e esse setYRange, fica automatica a escala
-        self.p1.setXRange(0,1000)
+        self.p1.setXRange(0,1000)d
         self.p1.setYRange(0,3)
 
         # global data1, curve1
@@ -79,7 +79,7 @@ class Main():
             self.p1.clear()
             self.curve1 = self.p1.plot(self.data1, pen='k')
             self.data1[:] = None
-        self.data1[self.ptr1%self.tamanho_vetor] = data
+        self.data1[self.ptr1%self.tamanho_vetor] = datadatadata
         if self.ptr1%10 == 0:
             self.curve1.setData(self.data1, pen=pg.mkPen('k', width=3))
 
