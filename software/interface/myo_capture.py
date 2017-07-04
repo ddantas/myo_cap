@@ -5,7 +5,6 @@
 
 import sys
 import serial
-#import matplotlib.pyplot as plt
 import time
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
@@ -14,8 +13,9 @@ import numpy as np
 from PyQt4 import QtGui, QtCore
 
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=3)  # abre porta serial com o baud rate de 115200
-file = open('myo_cap.txt','a') # open file
+ser = serial.Serial('/dev/ttyACM0', 115200, timeout=3)
+
+#file = open('myo_cap.txt','a') # open file
 
 class Main():
 
@@ -28,7 +28,8 @@ class Main():
         self.armazenamento = []
         ser.flushInput()
 
-        ## Interface Start ##        
+        ## interface start ##        
+
         self.app = QtGui.QApplication(sys.argv)
         self.window = QtGui.QMainWindow()
         pg.setConfigOption('background', 'w')
@@ -41,20 +42,21 @@ class Main():
         self.stringaxisy = pg.AxisItem(orientation='left')
         self.stringaxisx.setLabel('Número de Pontos')
         self.stringaxisy.setLabel('Tensão', 'V')
-        self.p1 = self.win.addPlot(axisItems={'left': self.stringaxisy, 'bottom': self.stringaxisx})
-        #Se tirar esse setXRange e esse setYRange, fica automatica a escala
-        self.p1.setXRange(0,1000)d
-        self.p1.setYRange(0,3)
 
-        # global data1, curve1
+        self.p1 = self.win.addPlot(axisItems={'left': self.stringaxisy, 'bottom': self.stringaxisx})
+        self.p1.setXRange(0, 1000)
+        self.p1.setYRange(0, 3)
+
+        ## global data1, curve1 ##
+
         self.tamanho_vetor = 1000
         self.data1 = np.empty(self.tamanho_vetor)
-        self.data1[:] = None #Prenchendo o vetor com NULL
+        self.data1[:] = None
         self.curve1 = self.p1.plot(self.data1)
 
         self.ptr1 = 0
 
-        ## Interface End ##
+        ## interface end ##
 
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update)
@@ -63,25 +65,24 @@ class Main():
 
     def update(self):
         self.ptr1 += 1
-        #self.data1[:-1] = self.data1[1:]  # shift data in the array one sample left
 
         while (ser.inWaiting() == 0):
             pass
 
-        data = float(ser.readline()) # get data
-        data = data * 0.0008
-        print(data) # print data
-        file.write(str(data)+"\n") # save data
-        self.armazenamento.append(str(data) + ",") 
+        package = ser.readline() # get data
+        [data, trash1, trash2, trash3] = map(int, package.split(" ", 4))
+        data = data  * 0.0008
+        
+        #file.write(str(package) + "\n") # save data
 
-        # plot data
-        if self.ptr1%self.tamanho_vetor ==0:
+        ## plot data ##
+
+        if self.ptr1%self.tamanho_vetor == 0:
             self.p1.clear()
-            self.curve1 = self.p1.plot(self.data1, pen='k')
+            self.curve1 = self.p1.plot(self.data1, pen ='k')
             self.data1[:] = None
-        self.data1[self.ptr1%self.tamanho_vetor] = datadatadata
+        self.data1[self.ptr1%self.tamanho_vetor] = data
         if self.ptr1%10 == 0:
-            self.curve1.setData(self.data1, pen=pg.mkPen('k', width=3))
+            self.curve1.setData(self.data1, pen=pg.mkPen('k', width = 3))
 
 Main()
-
