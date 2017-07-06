@@ -13,7 +13,7 @@ import numpy as np
 from PyQt4 import QtGui, QtCore
 
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=3)
+ser = serial.Serial('/dev/ttyACM0', 115200, timeout = 1)
 
 #file = open('myo_cap.txt','a') # open file
 
@@ -44,12 +44,14 @@ class Main():
         self.stringaxisy.setLabel('Tensão', 'V')
 
         self.p1 = self.win.addPlot(axisItems={'left': self.stringaxisy, 'bottom': self.stringaxisx})
-        self.p1.setXRange(0, 1000)
+        #self.p1.setXRange(0, 1000)
+	self.p1.setXRange(0, 500)
         self.p1.setYRange(0, 3)
 
         ## global data1, curve1 ##
 
-        self.tamanho_vetor = 1000
+        #self.tamanho_vetor = 1000
+	self.tamanho_vetor = 500
         self.data1 = np.empty(self.tamanho_vetor)
         self.data1[:] = None
         self.curve1 = self.p1.plot(self.data1)
