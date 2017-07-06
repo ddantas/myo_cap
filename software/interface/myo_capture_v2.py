@@ -1,52 +1,42 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import serial
 import sys
 import numpy as np
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-from PyQt5 import QtCore, QtWidgets
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtGui
 
 # serial
 ser = serial.Serial('/dev/ttyACM0', 115200, timeout=3)
 
-class MatplotlibWidget(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super(MatplotlibWidget, self).__init__(parent)
-
-        self.figure = Figure()
-        self.canvas = FigureCanvasQTAgg(self.figure)
-
-        self.axis = self.figure.add_subplot(111)
-
-        self.layoutVertical = QtWidgets.QVBoxLayout(self)#QVBoxLayout
-        self.layoutVertical.addWidget(self.canvas)
-
-class Main(QtWidgets.QWidget):
+class Main():
     
     def __init__(self):
-        super().__init__()
-        self.showDialog()
+        # set len ch
+        self.len_ch = 4
+
+        # show interface
+        self.showInterface()
+           
+    def showInterface(self):      
         
-    def showDialog(self):
-        text, ok = QtWidgets.QInputDialog.getText(self, 'Luke\'s Hand:', 'Número de canais:')
-        
-        if ok:
-            self.len_ch = int(text)
-            self.setInterface()
-    
-    def setInterface(self):      
-        self.layoutVertical = QtWidgets.QVBoxLayout(self)
-        self.matplotlibWidget = []
-        
+        ## window config        
+        self.app = QtGui.QApplication(sys.argv)
+        self.window = QtGui.QMainWindow()
+
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')
+
+        self.win = pg.GraphicsWindow()
+        self.win.setWindowTitle('Luke\'s Hand')
+
+        self.graph = []
+
         # set n graphs in window
         for i in range(self.len_ch):
-            self.matplotlibWidget.append(MatplotlibWidget(self))
-            self.layoutVertical.addWidget(self.matplotlibWidget[i])
-
-        # window config
-        self.showMaximized()
-        self.setWindowTitle('Graphs')
+            self.layoutVertical = self.win.addLayout(row=i, col=0)
+            self.graph.append(self.layoutVertical.addPlot(title="Channel "+str(i)))
 
         # set var
         self.len_sig = 1000
@@ -61,12 +51,9 @@ class Main(QtWidgets.QWidget):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.showSerial)
         self.timer.start(0)
-
-        # .txt
-        # self.showSerial()
         
         # show window
-        self.show()
+        self.app.exec_()
 
     def showSerial(self):
 
@@ -85,9 +72,8 @@ class Main(QtWidgets.QWidget):
         if self.num_sig >= self.len_sig:
             self.num_sig = 0
             for i in range(self.len_ch):
-                self.matplotlibWidget[i].axis.clear()
-                self.matplotlibWidget[i].axis.plot(self.data[i])
-                self.matplotlibWidget[i].canvas.draw()        
+                self.graph[i].clear()
+                self.graph[i].plot(self.data[i])       
 
         # .txt
         # self.file = open('myo_capture.txt','r') # open file
@@ -104,13 +90,10 @@ class Main(QtWidgets.QWidget):
         #     if self.num_sig >= self.len_sig:
         #         self.num_sig = 0
         #         for i in range(self.len_ch):
-        #             self.matplotlibWidget[i].axis.clear()
-        #             self.matplotlibWidget[i].axis.plot(self.data[i])
-        #             self.matplotlibWidget[i].canvas.draw()
+        #             self.graph[i].clear()
+        #             self.graph[i].plot(self.data[i])
 
 
 if __name__ == '__main__':
     
-    app = QtWidgets.QApplication(sys.argv)
     main = Main()
-    sys.exit(app.exec_())
