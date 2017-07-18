@@ -20,6 +20,7 @@ void setup()
 
   // configuring serial communication
   Serial.begin(baudrate);
+  Serial.timeout(1000);
 }
 
 void loop()
