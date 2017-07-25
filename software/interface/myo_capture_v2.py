@@ -8,8 +8,15 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 from PyQt4.QtGui import *
 
+# baudrate
+baudrate = 115200
+
 # serial configuration
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+ser = serial.Serial('/dev/ttyACM0', baudrate, timeout=1)
+
+# amplitude
+amplitude_start = 0
+amplitude_end = 500
 
 class Main():
     
@@ -24,12 +31,12 @@ class Main():
         self.window = QtGui.QMainWindow()
 
         # window title
-        self.window.setWindowTitle('Input')
+        self.window.setWindowTitle('Entrada')
         self.window.resize(200, 160)
 
         # input channel
         self.label1 = QLabel(self.window)
-        self.label1.setText("Channel:")
+        self.label1.setText("Canais:")
         self.label1.move(20,10)
 
         self.input_channel = QLineEdit(self.window)
@@ -38,7 +45,7 @@ class Main():
 
         #input frequency
         self.label1 = QLabel(self.window)
-        self.label1.setText("Frequency:")
+        self.label1.setText("Frequencia:")
         self.label1.move(20,60)
 
         self.input_freq = QLineEdit(self.window)
@@ -47,7 +54,7 @@ class Main():
 
         # button
         self.button = QPushButton(self.window)
-        self.button.setText("Send") 
+        self.button.setText("Enviar") 
         self.button.move(20, 120)
         self.button.clicked.connect(self.showInterface)
         
@@ -68,7 +75,7 @@ class Main():
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
         self.win = pg.GraphicsWindow()
-        self.win.setWindowTitle('Sinal mioeletrico')
+        self.win.setWindowTitle('Sinal Mioeletrico')
 
         # set var 
         self.data = np.empty(shape = (self.len_ch, self.len_sig))
@@ -84,7 +91,7 @@ class Main():
                           
         for i in range(self.len_ch):
             self.graph[i].setXRange(0, self.len_sig)
-            self.graph[i].setYRange(0, 500) #Range Amplitude
+            self.graph[i].setYRange(amplitude_start, amplitude_end) #Range Amplitude
             self.graph[i].setLabel('left', 'Tensão (V)')
             self.graph[i].setLabel('bottom', 'Nº de amostras')
             self.curve.append(self.graph[i].plot(self.data[i]))
