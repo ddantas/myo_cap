@@ -62,11 +62,11 @@ Aciona somente o PIN_2 do PORTF
 - <b>Parâmetros:</b> “ui32Base” é a UART port ,  “ui32UARTClk” é o clock disponível para o modulo UART, “ui32Baud” é o baud rate, “ui32Config” indica o formato dos dados.
 
 ### UARTCharPut(uint32_t ui32Base, unsigned char ucData) ###
-- <b>Definição: </b> Função que imprime na serial onde o parâmetro ucData é a informação tipo char a enviada.
+- <b>Definição: </b> Função que imprime na serial o parâmetro ucData.
 - <b>Parâmetros: </b> “ui32Base” é a UART port, “ucData” é o caractere a ser transmitido.
 
-### UARTPrintf(unsigned char ucData) ###
-- <b>Definição: </b> Função que imprime na serial onde o parâmetro ucData é a informação tipo char a enviada.
+### UARTPrintf(unsigned char *ucData) ###
+- <b>Definição: </b> Função que imprime na serial o parâmetro ucData.
 - <b>Parâmetros: </b> “ucData” é o caractere a ser transmitido.
 
 ### UARTCharGet(uint32_t ui32Base) ###
