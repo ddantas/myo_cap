@@ -65,6 +65,10 @@ Aciona somente o PIN_2 do PORTF
 - <b>Definição: </b> Função que imprime na serial onde o parâmetro ucData é a informação tipo char a enviada.
 - <b>Parâmetros: </b> “ui32Base” é a UART port, “ucData” é o caractere a ser transmitido.
 
+### UARTPrintf(unsigned char ucData) ###
+- <b>Definição: </b> Função que imprime na serial onde o parâmetro ucData é a informação tipo char a enviada.
+- <b>Parâmetros: </b> “ucData” é o caractere a ser transmitido.
+
 ### UARTCharGet(uint32_t ui32Base) ###
 - <b>Definição:</b> Função que retorna o caractere lido na serial como int32_t.
 - <b>Parâmetros:</b> “ui32Base” é a UART port.
