@@ -18,6 +18,14 @@ baudrate = 115200
 # serial configuration
 ser = serial.Serial('/dev/ttyACM0', baudrate, timeout=1)
 
+class DateAxis(pg.AxisItem):
+    def tickStrings(self, values, scale, spacing):
+        strns = []
+        for x in values:
+            strns.append(x%4)
+        return strns
+
+
 class Main(QtGui.QMainWindow):
 
     def __init__(self):
@@ -72,35 +80,36 @@ class Main(QtGui.QMainWindow):
         self.len_ch = int(self.data[0])
         self.len_sig = int(self.data[1])
         self.amplitude_start = int(self.data[2])
-        self.amplitude_end = int(self.data[3])
+        self.amplitude_end = int(self.data[3]) * int(self.data[0])
 
+        self.axis = DateAxis(orientation='left')
+        self.axis.setScale(scale=2)
         pg.setConfigOption('background', 'w')
-        pg.setConfigOption('foreground', 'k')
-        self.win = pg.GraphicsWindow()
-        self.win.setWindowTitle('EMG')
+        pg.setConfigOption('foreground', 'k')                
+        self.pw = pg.PlotWidget(axisItems={'left': self.axis})
+
+        self.pw.setMouseEnabled(x=False, y=False)
+        self.pw.setLabel('left', '', units='V')
+        self.pw.setLabel('bottom', 'Sample Rate', units='S')
+        self.pw.setWindowTitle('EMG')
 
         # set var 
         self.data = np.empty(shape = (self.len_ch, self.len_sig))
         self.data[:][:] = None
         self.num_ch, self.num_sig = 0, 0
-        self.graph = []
         self.curve = []
 
         # set n graphs in window	
-        for i in range(self.len_ch):
-            self.layoutVertical = self.win.addLayout(row=i, col=0)		
-            self.graph.append(self.layoutVertical.addPlot())  
-                          
-        for i in range(self.len_ch):
-            self.graph[i].setXRange(0, self.len_sig)
-            self.graph[i].setYRange(self.amplitude_start, self.amplitude_end) #Range Amplitude
-            self.graph[i].showGrid(x=False, y=True)
-            # self.graph[i].showAxis('left', False)
-            self.graph[i].showAxis('bottom', False)
-            self.curve.append(self.graph[i].plot(self.data[i]))
 
-        # self.graph[self.len_ch-1].setLabel('left', '(V)')
-        self.graph[self.len_ch-1].setLabel('bottom', 'Sample Rate')
+        self.pw.setYRange(self.amplitude_start, self.amplitude_end) #Range Amplitude
+        self.pw.showGrid(x=True, y=True, alpha=0.25)
+        self.pw.setMenuEnabled(False, 'same')
+        
+        for i in range(self.len_ch):
+            self.curve.append(self.pw.plot(self.data[i]))
+
+
+        self.pw.showMaximized()
 
         ser.close()
         ser.open()
@@ -117,11 +126,11 @@ class Main(QtGui.QMainWindow):
         while (ser.inWaiting() == 0):
             pass
 
-        # # split string and add data
+        # split string and add data 
         self.num_ch = 0 
-
+        
         for word in ser.readline().rstrip().split(" "):
-            self.data[self.num_ch][self.num_sig] = self.strToInt(word)
+            self.data[self.num_ch][self.num_sig] = self.strToInt(word) * 0.0008
             self.num_ch += 1
 
         self.num_sig += 1
@@ -129,37 +138,21 @@ class Main(QtGui.QMainWindow):
         # plot n graphs
         if self.num_sig % self.len_sig == 0:
             self.num_sig = 0
-	    
+            self.pw.clear()
+
             for i in range(self.len_ch):
-                self.graph[i].clear()
-                self.curve[i] = self.graph[i].plot(self.data[i], pen = 'k')
+                self.curve[i] = self.pw.plot(self.data[i] + (i*4))
                 self.data[i] = None       
             
         if self.num_sig % 10 == 0:
             for i in range(self.len_ch):
-                self.curve[i].setData(self.data[i] * 0.0008,  pen=pg.mkPen('k', width = 2))
-        
-	    # read .txt
-        # self.file = open('output.txt','r') # open file
-
-        # for line in self.file:
-        #     self.num_ch = 0
-        #     #add data 
-        #     for word in line.rstrip().split(" "):
-        #         self.data[self.num_ch][self.num_sig] = self.strToInt(word)
-        #         self.num_ch += 1
-        #     self.num_sig += 1
-        #     #plot n graphs
-        #     if self.num_sig >= self.len_sig:
-        #        self.num_sig = 0
-        #        for i in range(self.len_ch):
-        #            self.graph[i].clear()
-        #            self.graph[i].plot(self.data[i] * 0.0008, pen=pg.mkPen('k', width = 2))
-        #            self.data[i] = None
+                self.curve[i].setData((self.data[i] + (i*4)),  pen=pg.mkPen('k', width = 2))
 
     def strToInt(self, word):
-        return int(((ord(word[0]) - 128) <<6) + (ord(word[1]) - 128))
-
+        if(len(word) > 1):
+            return int(((ord(word[0]) - 128) <<6 ) + (ord(word[1]) - 128))
+        else:
+            return 0
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     programa = Main()
