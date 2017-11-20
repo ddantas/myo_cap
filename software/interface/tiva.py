@@ -12,6 +12,10 @@ from PyQt4.QtGui import *
 from win_capture_settings import Ui_CaptureSettingsWindow
 from win_display_settings import Ui_DisplaySettingsWindow
 
+# config 
+capture_file = "data/capture.config"
+display_file = "data/display.config"
+
 # baudrate
 baudrate = 115200
 
@@ -35,64 +39,88 @@ class Main(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.showGraph()
 
+    # capture settings
     def showCaptureSettings(self):
-        self.loadSettings()
+        data = self.loadSettings(capture_file, 2)
         self.ui_caps = Ui_CaptureSettingsWindow()
         self.ui_caps.setupUi(self)
-        self.initActionsSettings()
-        self.stopTimer()
-        window.show()
-
-    def showDisplaySettings(self):
-        self.loadSettings()
-        self.ui_disps = Ui_DisplaySettingsWindow()
-        self.ui_disps.setupUi(self)
-        self.stopTimer()
-        window.show()
-
-    def initActionsSettings(self):
-        self.ui_caps.button_save.clicked.connect(self.saveSettings)
+        # set data
+        self.ui_caps.input_ch.setText(data[0].strip())
+        self.ui_caps.input_sampleR.setText(data[1].strip())
+        # init actions
+        self.ui_caps.button_save.clicked.connect(self.saveCaptureSettings)
         self.ui_caps.button_cancel.clicked.connect(window.close)
+        self.stopTimer()
+        window.show()
 
-    def saveSettings(self):
-        output = open("settings_myo.txt","w")
-        output.writelines([self.ui_caps.input_ch.text()+'\n', self.ui_caps.input_sampleR.text()+'\n', self.ui_caps.input_ampS.text()+'\n', self.ui_caps.input_ampE.text()])
+    def saveCaptureSettings(self):
+        output = open(capture_file,"w")
+        output.writelines([self.ui_caps.input_ch.text()+"\n", self.ui_caps.input_sampleR.text()])
         output.close()
         window.close()
         self.showGraph()
 
-    def loadSettings(self):
-        output = open("settings_myo.txt", "r")
-        self.data = output.readlines()
-        if(len(self.data) < 4):
-            self.data = ['0','0','0','0']
-            self.showSettings()
+    # display settings
+    def showDisplaySettings(self):
+        data = self.loadSettings(display_file, 2)
+        self.ui_display = Ui_DisplaySettingsWindow()
+        self.ui_display.setupUi(self)
+        # set data
+        self.ui_display.input_vtick.setText(data[0].strip())
+        self.ui_display.input_htick.setText(data[1].strip())
+        # init actions
+        self.ui_display.button_save.clicked.connect(self.saveDisplaySettings)
+        self.ui_display.button_cancel.clicked.connect(window.close)
+        self.stopTimer()
+        window.show()
 
+    def saveDisplaySettings(self):
+        output = open(display_file,"w")
+        output.writelines([self.ui_display.input_vtick.text()+"\n", self.ui_display.input_htick.text()])
+        output.close()
+        window.close()
+        self.showGraph()        
+
+    def loadSettings(self, type, num_params):
+        try:
+            output = open(type, "r")
+            data = output.readlines()
+            if(len(data) < num_params):
+                data = [0 for i in range(num_params)]
+                return data
+            else:
+                return data
+        except IOError:
+            data = [0 for i in range(num_params)]
+            return data
+
+    # graph settings
     def showGraph(self):   
 
-        self.loadSettings()
+        # load data
+        data_cap = self.loadSettings(capture_file, 2)
+        data_display = self.loadSettings(display_file, 2)
 
-        # load and set settings
-        self.len_ch = int(self.data[0])
-        self.len_sig = int(self.data[1])
-        self.amplitude_start = int(self.data[2])
-        self.amplitude_end = int(self.data[3]) * int(self.data[0])
+        # set capture settings
+        self.len_ch = int(data_cap[0])
+        self.len_sig = int(data_cap[1])
+        self.amplitude_start = 0
+        self.amplitude_end = 4 * int(data_cap[0])
         
-        self.axis = DateAxis(orientation='left')
-        self.axis.setScale(scale=2)
-        
-        pg.setConfigOption('background', 'w')
-        pg.setConfigOption('foreground', 'k')                
-        
-        self.pw = pg.GraphicsWindow()
+        # set display settings
+        self.vtick =  int(data_display[0])
+        self.htick = int(data_display[1])
 
-        self.pw.setWindowTitle('EMG')
-        
-        #  
         self.data = np.empty(shape = (self.len_ch, self.len_sig))
         self.data[:][:] = None
         self.num_ch, self.num_sig = 0, 0
         self.curve = []
+
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')                
+        
+        self.pw = pg.GraphicsWindow()
+        self.pw.setWindowTitle('EMG')
 
         # config layout
         self.layout = self.pw.addLayout()
@@ -112,7 +140,7 @@ class Main(QtGui.QMainWindow):
         self.layout.addItem(proxy_stop, row=0, colspan = 1)
 
         label_configs = pg.LabelItem()
-        label_configs.setText("Swipe: " + str(self.len_sig) + " ~ 0.5s | Zero: 0 | Amplitude: 3.3V | HTick: 100 ~ 0.1s | VTick 1.0V | Channels: "+ str(self.len_ch))
+        label_configs.setText("Swipe: " + str(self.len_sig) + " ~ 0.5s | Zero: 0 | Amplitude: 3.3V | HTick: "+ str(self.htick) + " | VTick " + str(self.vtick) + "V | Channels: "+ str(self.len_ch))
         self.layout.addItem(label_configs, row=0, colspan=2)
 
         proxy_settings = QGraphicsProxyWidget()
@@ -127,17 +155,24 @@ class Main(QtGui.QMainWindow):
         proxy_settings2.setWidget(button_settings2)
         self.layout.addItem(proxy_settings2, row=0, colspan = 1)
 
-        self.graph = self.layout.addPlot(axisItems={'left': self.axis},col=0,row=3, colspan = 6)
+        # config axis y 
+        self.axis_y = DateAxis(orientation='left')
+        self.axis_y.setTickSpacing(4, self.vtick)
 
-        self.graph.setYRange(self.amplitude_start, self.amplitude_end) #Range Amplitude
-        self.graph.showGrid(x=True, y=True, alpha=0.1)
+        # graph
+        self.graph = self.layout.addPlot(axisItems={'left': self.axis_y},col=0,row=3, colspan = 6)
+        self.graph.setYRange(self.amplitude_start, self.amplitude_end)
+        self.graph.showGrid(x=True, y=True, alpha=0.25)
         self.graph.setMenuEnabled(False, 'same')
-        
+
+        # config axis x
+        self.axis_x = self.graph.getAxis('bottom')
+        self.axis_x.setTickSpacing(100, self.htick)
+
         for i in range(self.len_ch):
             self.curve.append(self.graph.plot(self.data[i]))
 
         self.pw.showMaximized()
-
         self.startTimer()
 
     def startTimer(self):
@@ -155,17 +190,19 @@ class Main(QtGui.QMainWindow):
         self.timer.stop()
 
     def plotSerial(self):
-        
+
         # serial
         while (ser.inWaiting() == 0):
             pass
 
-        # split string and add data 
-        self.num_ch = 0             self.data[self.num_ch][self.num_sig] = self.strToInt(word) * 0.0008
+        self.num_ch = 0
 
-        
+        # split string and add data         
         for word in ser.readline().rstrip().split(" "):
+            self.data[self.num_ch][self.num_sig] = self.strToInt(word) * 0.0008
             self.num_ch += 1
+            # debug
+            # print (self.strToInt(word))
 
         self.num_sig += 1
 
