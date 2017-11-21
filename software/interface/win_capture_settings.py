@@ -54,6 +54,7 @@ class Ui_CaptureSettingsWindow(object):
         self.input_ch.setReadOnly(False)
         self.input_ch.setObjectName(_fromUtf8("input_ch"))
         self.input_sampleR = QtGui.QLineEdit(self.centralwidget)
+        self.input_sampleR.setEnabled(False)
         self.input_sampleR.setGeometry(QtCore.QRect(200, 70, 151, 31))
         self.input_sampleR.setObjectName(_fromUtf8("input_sampleR"))
         self.label_13 = QtGui.QLabel(self.centralwidget)

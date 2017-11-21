@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>381</width>
-    <height>340</height>
+    <height>287</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -78,6 +78,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="input_sampleR">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>200</x>
@@ -105,22 +108,6 @@
      <string>Sample Rate:</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="input_ampS">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>230</y>
-      <width>71</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_12">
     <property name="geometry">
      <rect>
@@ -139,45 +126,11 @@
      <string>Bits per sample:</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_14">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>230</y>
-      <width>141</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Amplitude:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="input_ampE">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>230</y>
-      <width>71</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="inputMask">
-     <string>4; </string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="button_save">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>280</y>
+      <y>240</y>
       <width>151</width>
       <height>31</height>
      </rect>
@@ -190,7 +143,7 @@
     <property name="geometry">
      <rect>
       <x>200</x>
-      <y>280</y>
+      <y>240</y>
       <width>151</width>
       <height>31</height>
      </rect>
@@ -241,6 +194,9 @@
       <width>151</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="placeholderText">
+     <string/>
     </property>
    </widget>
   </widget>
