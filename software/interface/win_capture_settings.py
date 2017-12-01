@@ -6,7 +6,14 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from sys import platform
+
+if platform == "linux" or platform == "linux2":
+    from PyQt4 import QtCore, QtGui
+
+elif platform == "win32":
+    from qtpy import QtCore, QtGui
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -99,8 +106,11 @@ class Ui_CaptureSettingsWindow(object):
         self.label_11.setText(_translate("CaptureSettingsWindow", "Channels per board: ", None))
         self.label_17.setText(_translate("CaptureSettingsWindow", "Capture Settings", None))
         self.label_13.setText(_translate("CaptureSettingsWindow", "Sample Rate:", None))
+        self.input_sampleR.setPlaceholderText(_translate("DisplaySettingsWindow", "2000", None))
         self.label_12.setText(_translate("CaptureSettingsWindow", "Bits per sample:", None))
+        self.input_bits.setPlaceholderText(_translate("DisplaySettingsWindow", "2", None))
         self.button_save.setText(_translate("CaptureSettingsWindow", "Save", None))
         self.button_cancel.setText(_translate("CaptureSettingsWindow", "Cancel", None))
         self.label_15.setText(_translate("CaptureSettingsWindow", "Number of boards:", None))
+        self.input_numofboards.setPlaceholderText(_translate("DisplaySettingsWindow", "1", None))
 
