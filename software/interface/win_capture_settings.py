@@ -48,7 +48,7 @@ class Ui_CaptureSettingsWindow(object):
         self.label_11.setFont(font)
         self.label_11.setObjectName(_fromUtf8("label_11"))
         self.label_17 = QtGui.QLabel(self.centralwidget)
-        self.label_17.setGeometry(QtCore.QRect(120, 20, 131, 31))
+        self.label_17.setGeometry(QtCore.QRect(100, 20, 200, 31))
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setBold(True)
@@ -103,7 +103,7 @@ class Ui_CaptureSettingsWindow(object):
 
     def retranslateUi(self, CaptureSettingsWindow):
         CaptureSettingsWindow.setWindowTitle(_translate("CaptureSettingsWindow", "Settings", None))
-        self.label_11.setText(_translate("CaptureSettingsWindow", "Channels per board: ", None))
+        self.label_11.setText(_translate("CaptureSettingsWindow", "Ch per board: ", None))
         self.label_17.setText(_translate("CaptureSettingsWindow", "Capture Settings", None))
         self.label_13.setText(_translate("CaptureSettingsWindow", "Sample Rate:", None))
         self.input_sampleR.setPlaceholderText(_translate("DisplaySettingsWindow", "2000", None))
@@ -111,6 +111,6 @@ class Ui_CaptureSettingsWindow(object):
         self.input_bits.setPlaceholderText(_translate("DisplaySettingsWindow", "2", None))
         self.button_save.setText(_translate("CaptureSettingsWindow", "Save", None))
         self.button_cancel.setText(_translate("CaptureSettingsWindow", "Cancel", None))
-        self.label_15.setText(_translate("CaptureSettingsWindow", "Number of boards:", None))
+        self.label_15.setText(_translate("CaptureSettingsWindow", "N of boards:", None))
         self.input_numofboards.setPlaceholderText(_translate("DisplaySettingsWindow", "1", None))
 

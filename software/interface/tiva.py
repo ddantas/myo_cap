@@ -6,51 +6,69 @@ import sys
 import glob
 import numpy as np
 import pyqtgraph as pg
+import datetime
+import numbers
 
 from pyqtgraph.Qt import QtCore, QtGui
 from win_capture_settings import Ui_CaptureSettingsWindow
 from win_display_settings import Ui_DisplaySettingsWindow
 from sys import platform
 
+# select platform
 if platform == "linux" or platform == "linux2":
     from PyQt4.QtGui import *
     ports = glob.glob('/dev/tty[A-Za-z]*')
-
 elif platform == "win32":
     from qtpy.QtGui import *
     ports = ['COM%s' % (i + 1) for i in range(256)]
 
-for port in ports:
-    try:
-        ser = serial.Serial(port, baudrate=115200, timeout=1)
-    except (OSError, serial.SerialException):
-        pass
+# search port
+# for port in ports:
+#     try:
+#         ser = serial.Serial(port, baudrate=115200, timeout=1)
+#     except (OSError, serial.SerialException):
+#         pass
 
-# config 
-capture_file = "data/capture.config"
-display_file = "data/display.config"
-debug_file = "data/debug.txt"
+# log file
+log_file = "data/"+datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+".log"
 
+# config files
+capture_file = "config/capture.config"
+display_file = "config/display.config"
+
+# config tiva
+t_start = 0
+t_end = 3.3
+ad = 12
+const_board = (t_end - t_start) / (2 ** ad) 
+
+# class to set axis label
 class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
+        data_display = load().settings(display_file, 6)
+        amplitude_start = float(data_display[4])
+        amplitude_end = float(data_display[5])
+        amplitude = amplitude_end - amplitude_start
         for x in values:
-            strns.append(x%4)
+            strns.append((x % amplitude) + (amplitude_start))
         return strns
 
+# class to init main window
 class Window(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
 
+# class main
 class Main(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.showGraph()
 
-    # capture settings
+    # show capture settings
     def showCaptureSettings(self):
-        data = self.loadSettings(capture_file, 1)
+        data = load().settings(capture_file, 1)
         self.ui_caps = Ui_CaptureSettingsWindow()
         self.ui_caps.setupUi(self)
         # set data
@@ -61,6 +79,7 @@ class Main(QtGui.QMainWindow):
         self.stopTimer()
         window.show()
 
+    # store capture settings
     def saveCaptureSettings(self):
         output = open(capture_file,"w")
         # output.writelines([self.ui_caps.input_sampleR.text()+"\n",self.ui_caps.input_ch.text()+"\n",self.ui_caps.input_numofboards.text()+"\n",self.ui_caps.input_bits.text()])
@@ -69,49 +88,85 @@ class Main(QtGui.QMainWindow):
         window.close()
         self.showGraph()
 
-    # display settings
+    # show display settings
     def showDisplaySettings(self):
-        data = self.loadSettings(display_file, 3)
+        data = load().settings(display_file, 3)
         self.ui_display = Ui_DisplaySettingsWindow()
         self.ui_display.setupUi(self)
         # set data
-        self.ui_display.input_swipe.setText(data[0].strip())
-        self.ui_display.input_vtick.setText(data[1].strip())
-        self.ui_display.input_htick.setText(data[2].strip())
+        try:
+            self.ui_display.input_swipe.setText(data[0].strip())
+            self.ui_display.input_zero.setText(data[1].strip())
+            self.ui_display.input_vtick.setText(data[2].strip())
+            self.ui_display.input_htick.setText(data[3].strip())
+            self.ui_display.input_ampS.setText(data[4].strip())
+            self.ui_display.input_ampE.setText(data[5].strip())
+        except:
+            pass
+
         # init actions
         self.ui_display.button_save.clicked.connect(self.saveDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
 
+    # store display settings
     def saveDisplaySettings(self):
+        try:
+            self.swipe = int(self.ui_display.input_swipe.text())
+            check = 1 / self.swipe
+        except:
+            self.swipe = 1000
+            print("ERROR swipe!")
+        try:
+            self.zero = float(self.ui_display.input_zero.text())
+        except:
+            self.zero = 0.0
+            print("ERROR zero!")
+        try:
+            self.vtick = float(self.ui_display.input_vtick.text())
+            check = 1 / self.vtick
+        except:
+            self.vtick = 1.0
+            print("ERROR vtick!")
+        try:
+            self.htick = float(self.ui_display.input_htick.text())
+            check = 1 / self.htick
+        except:
+            self.htick = 100.0
+            print("ERROR htick!")                
+        try:
+            self.ampS = float(self.ui_display.input_ampS.text())
+        except:
+            self.ampS = -2.0
+            print("ERROR ampS!")
+        try:
+            self.ampE = float(self.ui_display.input_ampE.text())
+        except:
+            self.ampE = 2.0
+            print("ERROR ampE!")
         output = open(display_file,"w")
-        output.writelines([self.ui_display.input_swipe.text()+"\n",self.ui_display.input_vtick.text()+"\n", self.ui_display.input_htick.text()])
+        output.writelines([str(self.swipe)+"\n",str(self.zero)+"\n",str(self.vtick)+"\n", str(self.htick)+"\n",str(self.ampS)+"\n",str(self.ampE)])
         output.close()
         window.close()
         self.showGraph()        
 
-    def loadSettings(self, type, num_params):
-        try:
-            output = open(type, "r")
-            data = output.readlines()
-            if(len(data) < num_params):
-                data = ['0' for i in range(num_params)]
-                return data
-            else:
-                return data
-        except IOError:
-            data = ['0' for i in range(num_params)]
-            return data
-
+    # send config to tiva
     def sendSerial(self):
         ser.close()
-        data = self.loadSettings(capture_file, 1)
+        data = load().settings(capture_file, 1)
         ser.write("PC1"+data[0]+"B1"+data[1]+"S9"+data[2])
     
-    def saveData(self):
-        output = open(debug_file,"w")
-        output.writelines(["Channel "+ str(i) +": \n" + str(self.data[i])+"\n" for i in range(self.num_ch)])
+    # save data log emg
+    def saveLog(self):
+        output = open(log_file,"a")
+        # print (range(self.len_ch))
+        for j in range(self.swipe):
+            for i in range(self.len_ch):
+                if (i < self.len_ch - 1):
+                    output.write(str(self.data[i][j])+", ")
+                else:
+                    output.write(str(self.data[i][j])+"\n")
         output.close()
         window.close()
     
@@ -119,21 +174,24 @@ class Main(QtGui.QMainWindow):
     def showGraph(self):   
 
         # load data
-        data_cap = self.loadSettings(capture_file, 1)
-        data_display = self.loadSettings(display_file, 3)
+        data_cap = load().settings(capture_file, 1)
+        data_display = load().settings(display_file, 6)
 
         # set capture settings
         self.len_ch = int(data_cap[0])
 
         # set display settings
         self.swipe = int(data_display[0])
-
         # swipe ( w = t * r ), sendo r = sample rate e t = tempo
-        
-        self.vtick = int(data_display[1])
-        self.htick = int(data_display[2])
-        self.amplitude_start = 0
-        self.amplitude_end = 4 * int(data_cap[0])
+        self.zero = float(data_display[1])
+        self.vtick = float(data_display[2])
+        self.htick = float(data_display[3])
+        self.amplitude_start = float(data_display[4])
+        self.amplitude_end = float(data_display[5])
+        self.amplitude = self.amplitude_end - self.amplitude_start
+        self.amplitude_max = self.amplitude * self.len_ch
+
+        self.timer = QtCore.QTimer()
 
         self.data = np.empty(shape = (self.len_ch, self.swipe))
         self.data[:][:] = None
@@ -153,7 +211,7 @@ class Main(QtGui.QMainWindow):
         proxy_play = QGraphicsProxyWidget()
         button_play = QPushButton('Start Capture')
         button_play.resize(50,50)
-        button_play.clicked.connect(self.showGraph)
+        button_play.clicked.connect(self.startTimer)
         proxy_play.setWidget(button_play)
         self.layout.addItem(proxy_play,row=0, colspan = 1)
 
@@ -164,7 +222,7 @@ class Main(QtGui.QMainWindow):
         self.layout.addItem(proxy_stop, row=0, colspan = 1)
 
         label_configs = pg.LabelItem()
-        label_configs.setText("Swipe: " + str(self.swipe) + " | Zero: 0 | Amplitude: 4V | HTick: " + str(self.htick) + " | VTick " + str(self.vtick) + "V | Channels: " + str(self.len_ch))
+        label_configs.setText("Swipe: " + str(self.swipe) + " | Zero: "+ str(self.zero) + " | Amplitude: "+ str(self.amplitude) +"V | HTick: " + str(self.htick) + " | VTick " + str(self.vtick) + "V | Channels: " + str(self.len_ch))
         self.layout.addItem(label_configs, row=0, colspan=2)
 
         proxy_settings = QGraphicsProxyWidget()
@@ -185,8 +243,8 @@ class Main(QtGui.QMainWindow):
 
         # graph
         self.graph = self.layout.addPlot(axisItems={'left': self.axis_y},col=0,row=3, colspan = 6)
-        self.graph.setYRange(self.amplitude_start, self.amplitude_end)
-        self.graph.showGrid(x=True, y=True, alpha=0.25)
+        self.graph.setYRange(0, self.amplitude_max)
+        self.graph.showGrid(x=True, y=True, alpha=0.5)
         self.graph.setMenuEnabled(False, 'same')
 
         # config axis x
@@ -197,62 +255,90 @@ class Main(QtGui.QMainWindow):
             self.curve.append(self.graph.plot(self.data[i]))
        
         self.pw.showMaximized()
-        self.startTimer()
+        # self.startTimer()
 
+    # start capture
     def startTimer(self):
 
-        ser.close()
-        ser.open()
-        ser.flushInput()
+        # ser.close()
+        # ser.open()
+        # ser.flushInput()
 
-        self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.plotSerial)
         self.timer.start(0)
 
+    # stop capture
     def stopTimer(self):
-        ser.close()
+        # ser.close()
         self.timer.stop()
 
+    # plot data emg 
     def plotSerial(self):
 
         # serial
-        while (ser.inWaiting() == 0):
-            pass
-
-        self.num_ch = 0
-        # split string and add data         
-        for word in ser.readline().rstrip().split(" "):
-            try:
-                self.data[self.num_ch][self.num_sig] = self.strToInt(word) * 0.0008
-                self.num_ch += 1
-                # debug
-                # print (self.strToInt(word))
-            except IndexError:
-                pass
-
-        self.num_sig += 1
-
-        # clean graph and data
-        if self.num_sig % self.swipe == 0:
-            self.num_sig = 0
-            self.graph.clear()
-            #debug
-            # self.saveData()
-
-            for i in range(self.len_ch):
-                self.curve[i] = self.graph.plot(self.data[i] + (i*4))
-                self.data[i] = None       
         
-        # set data in graph
-        if self.num_sig % int(self.swipe/50) == 0:
-            for i in range(self.len_ch):
-                self.curve[i].setData((self.data[i] + (i*4)),  pen=pg.mkPen('r', width = 2))
+        # while (ser.inWaiting() == 0):
+        #     pass
 
+        # self.num_ch = 0
+        # # split string and add data         
+        # for word in ser.readline().rstrip().split(" "):
+        #     try:
+        #         self.data[self.num_ch][self.num_sig] = self.strToInt(word) * 0.0008
+        #         self.num_ch += 1
+        #         # debug
+        #         # print (self.strToInt(word))
+        #     except IndexError:
+        #         pass
+
+        # read .txt		
+        self.file = open('data/input.txt','r') # open file		
+            
+        for line in self.file:		
+            self.num_ch = self.len_ch - 1		
+            #add data 		
+            for word in line.rstrip().split(" "):		
+                self.data[self.num_ch][self.num_sig] = (int(word) * const_board) + self.zero
+                self.num_ch -= 1		
+
+            self.num_sig += 1
+
+            # clean graph
+            if self.num_sig % self.swipe == 0:
+                self.num_sig = 0
+                self.graph.clear()
+                self.saveLog()
+
+                for i in range(self.len_ch):
+                    self.curve[i] = self.graph.plot(self.data[i] + ( i * (self.amplitude)))
+            
+            # set data in graph
+            if self.num_sig % int(self.swipe/50) == 0:
+                for i in range(self.len_ch):
+                    self.curve[i].setData((self.data[i] + (i * (self.amplitude))),  pen=pg.mkPen('r', width = 2))
+
+    # decode serial code
     def strToInt(self, word):
         try:
-            return int(((ord(word[0]) - 128) <<     6 ) + (ord(word[1]) - 128))
+            return int(((ord(word[0]) - 128) << 6 ) + (ord(word[1]) - 128))
         except IndexError:
             return 0
+
+class load():
+     # load settings
+    def settings(self, type, num_params):
+        try:
+            output = open(type, "r")
+            data = output.readlines()
+            if(len(data) < num_params):
+                data = ['0' for i in range(num_params)]
+                return data
+            else:
+                return data
+        except IOError:
+            data = ['0' for i in range(num_params)]
+            return data
+
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
