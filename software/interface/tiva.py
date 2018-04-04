@@ -23,11 +23,11 @@ elif platform == "win32":
     ports = ['COM%s' % (i + 1) for i in range(256)]
 
 # search port
-# for port in ports:
-#     try:
-#         ser = serial.Serial(port, baudrate=115200, timeout=1)
-#     except (OSError, serial.SerialException):
-#         pass
+for port in ports:
+    try:
+        ser = serial.Serial(port, baudrate=115200, timeout=1)
+    except (OSError, serial.SerialException):
+        pass
 
 # log file
 log_file = "data/"+datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+".log"
@@ -257,65 +257,67 @@ class Main(QtGui.QMainWindow):
         self.pw.showMaximized()
         # self.startTimer()
 
-    # start capture
     def startTimer(self):
-
-        # ser.close()
-        # ser.open()
-        # ser.flushInput()
-
-        self.timer.timeout.connect(self.plotSerial)
+        ser.close()
+        ser.open()
+        ser.write("start\n")
+        ser.flushInput()
+        self.num_sig = 0
+        self.timer.timeout.connect(self.mainLoop)
         self.timer.start(0)
 
-    # stop capture
     def stopTimer(self):
-        # ser.close()
+        ser.write("stop\n")
         self.timer.stop()
 
-    # plot data emg 
-    def plotSerial(self):
+    def mainLoop(self):
+        self.capture()
+        self.num_sig += 1
+        if (self.num_sig % self.swipe == 0):
+            self.curvePlot()
+            self.num_sig = 0
+        if self.num_sig % int(self.swipe/25) == 0:
+            self.plot()
 
-        # serial
-        
-        # while (ser.inWaiting() == 0):
-        #     pass
-
-        # self.num_ch = 0
-        # # split string and add data         
-        # for word in ser.readline().rstrip().split(" "):
-        #     try:
-        #         self.data[self.num_ch][self.num_sig] = self.strToInt(word) * 0.0008
-        #         self.num_ch += 1
-        #         # debug
-        #         # print (self.strToInt(word))
-        #     except IndexError:
-        #         pass
-
-        # read .txt		
-        self.file = open('data/input.txt','r') # open file		
-            
-        for line in self.file:		
-            self.num_ch = self.len_ch - 1		
-            #add data 		
-            for word in line.rstrip().split(" "):		
+    def capture(self):
+        # init serial
+        while (ser.inWaiting() == 0):
+            pass
+        self.num_ch = self.len_ch - 1
+        # split string and add data         
+        for word in ser.readline().rstrip().split(" "):
+            try:
                 self.data[self.num_ch][self.num_sig] = (int(word) * const_board) + self.zero
-                self.num_ch -= 1		
+                self.num_ch -= 1
+                # debug
+                # print (word)
+            except:
+                pass
 
-            self.num_sig += 1
+        # end
 
-            # clean graph
-            if self.num_sig % self.swipe == 0:
-                self.num_sig = 0
-                self.graph.clear()
-                self.saveLog()
+        # init read .txt
+        # self.file = open('data/input.txt','r') # open file		
 
-                for i in range(self.len_ch):
-                    self.curve[i] = self.graph.plot(self.data[i] + ( i * (self.amplitude)))
-            
-            # set data in graph
-            if self.num_sig % int(self.swipe/50) == 0:
-                for i in range(self.len_ch):
-                    self.curve[i].setData((self.data[i] + (i * (self.amplitude))),  pen=pg.mkPen('r', width = 2))
+        # for line in self.file:		
+        #     self.num_ch = self.len_ch - 1		
+        #     #add data 		
+        #     for word in line.rstrip().split(" "):		
+        #         self.data[self.num_ch][self.num_sig] = (int(word) * const_board) + self.zero
+        #         self.num_ch -= 1		
+
+        # end
+
+    def curvePlot(self):
+        # clean graph
+        self.graph.clear()
+        # self.saveLog()
+        for i in range(self.len_ch):
+            self.curve[i] = self.graph.plot(self.data[i] + ( i * (self.amplitude)))
+    
+    def plot(self):
+        for i in range(self.len_ch):
+            self.curve[i].setData((self.data[i] + (i * (self.amplitude))),  pen=pg.mkPen('r', width = 2))
 
     # decode serial code
     def strToInt(self, word):
@@ -338,7 +340,6 @@ class load():
         except IOError:
             data = ['0' for i in range(num_params)]
             return data
-
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
