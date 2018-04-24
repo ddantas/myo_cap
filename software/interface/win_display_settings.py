@@ -9,7 +9,7 @@
 from sys import platform
 
 if platform == "linux" or platform == "linux2":
-    from PyQt4 import QtCore, QtGui
+    from PyQt5 import QtCore, QtGui
 
 elif platform == "win32":
     from qtpy import QtCore, QtGui

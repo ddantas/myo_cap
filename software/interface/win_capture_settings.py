@@ -9,7 +9,7 @@
 from sys import platform
 
 if platform == "linux" or platform == "linux2":
-    from PyQt4 import QtCore, QtGui
+    from PyQt5 import QtCore, QtGui
 
 elif platform == "win32":
     from qtpy import QtCore, QtGui
@@ -58,10 +58,10 @@ class Ui_CaptureSettingsWindow(object):
         self.label_17.setObjectName(_fromUtf8("label_17"))
         self.input_ch = QtGui.QLineEdit(self.centralwidget)
         self.input_ch.setGeometry(QtCore.QRect(200, 110, 151, 31))
-        self.input_ch.setReadOnly(False)
+        self.input_ch.setEnabled(False)
         self.input_ch.setObjectName(_fromUtf8("input_ch"))
         self.input_sampleR = QtGui.QLineEdit(self.centralwidget)
-        self.input_sampleR.setEnabled(False)
+        self.input_sampleR.setEnabled(True)
         self.input_sampleR.setGeometry(QtCore.QRect(200, 70, 151, 31))
         self.input_sampleR.setObjectName(_fromUtf8("input_sampleR"))
         self.label_13 = QtGui.QLabel(self.centralwidget)
@@ -105,12 +105,9 @@ class Ui_CaptureSettingsWindow(object):
         CaptureSettingsWindow.setWindowTitle(_translate("CaptureSettingsWindow", "Settings", None))
         self.label_11.setText(_translate("CaptureSettingsWindow", "Ch per board: ", None))
         self.label_17.setText(_translate("CaptureSettingsWindow", "Capture Settings", None))
-        self.label_13.setText(_translate("CaptureSettingsWindow", "Sample Rate:", None))
-        self.input_sampleR.setPlaceholderText(_translate("DisplaySettingsWindow", "2000", None))
+        self.label_13.setText(_translate("CaptureSettingsWindow", "Sample rate:", None))
         self.label_12.setText(_translate("CaptureSettingsWindow", "Bits per sample:", None))
-        self.input_bits.setPlaceholderText(_translate("DisplaySettingsWindow", "2", None))
+        self.label_15.setText(_translate("CaptureSettingsWindow", "Num of boards:", None))
         self.button_save.setText(_translate("CaptureSettingsWindow", "Save", None))
         self.button_cancel.setText(_translate("CaptureSettingsWindow", "Cancel", None))
-        self.label_15.setText(_translate("CaptureSettingsWindow", "N of boards:", None))
-        self.input_numofboards.setPlaceholderText(_translate("DisplaySettingsWindow", "1", None))
 
