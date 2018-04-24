@@ -286,7 +286,7 @@ class Main(QtGui.QMainWindow):
     # plot data emg 
     def mainLoop(self):
         try:
-            self.captureLog()
+            self.captureSerial()
             self.plot()
         except:
             pass
