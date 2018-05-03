@@ -15,6 +15,8 @@ from win_display_settings import Ui_DisplaySettingsWindow
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import *
 from serial.tools import list_ports
+from Tkinter import Tk
+from tkFileDialog import askopenfilename
 
 # config files
 capture_file = "config/capture.config"
@@ -146,6 +148,11 @@ class Main(QtGui.QMainWindow):
     def showMessage(self, title, body):
         QMessageBox.about(self, title, body)
  
+    #
+    def inputFile(self):
+        Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
+        self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
+
     # save data log emg
     def saveLog(self):
 
@@ -154,9 +161,9 @@ class Main(QtGui.QMainWindow):
         for j in range(self.swipe):
             for i in range(self.len_ch):
                 if (i < self.len_ch - 1):
-                    output.write(str(self.data[i][j]) + ", ")
+                    output.write(str(self.data[i][j] - (self.zero - self.amplitude_start)) + ", ")
                 else:
-                    output.write(str(self.data[i][j]) + "\n")
+                    output.write(str(self.data[i][j] - (self.zero - self.amplitude_start)) + "\n")
         output.close()
         window.close()
     
@@ -199,6 +206,15 @@ class Main(QtGui.QMainWindow):
         proxy_list.setWidget(self.combobox_serial)
         self.layout.addItem(proxy_list, row=0, colspan=1)
 
+        # config combobox ports
+        self.combobox_type = QComboBox()
+        self.combobox_type.setEditable(False)
+        self.combobox_type.addItem("Serial")      
+        self.combobox_type.addItem("File")            
+        proxy_list = QGraphicsProxyWidget()
+        proxy_list.setWidget(self.combobox_type)
+        self.layout.addItem(proxy_list, row=0, colspan=1)
+
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
         button_play = QPushButton('Start Capture')
@@ -212,6 +228,13 @@ class Main(QtGui.QMainWindow):
         button_stop.clicked.connect(self.stopTimer)
         proxy_stop.setWidget(button_stop)
         self.layout.addItem(proxy_stop, row=0, colspan=1)
+
+        # config file button
+        proxy_file = QGraphicsProxyWidget()
+        button_file = QPushButton("Select File")
+        button_file.clicked.connect(self.inputFile)
+        proxy_file.setWidget(button_file)
+        self.layout.addItem(proxy_file, row=0, colspan=1)
 
         # config label
         label_configs = pg.LabelItem()
@@ -239,7 +262,7 @@ class Main(QtGui.QMainWindow):
         self.axis_y.setTickSpacing(4000, self.vtick)
 
         # graph
-        self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=7)
+        self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=9)
         self.graph.setYRange(0, self.amplitude_max)
         self.graph.showGrid(x=True, y=True, alpha=0.5)
         self.graph.setMenuEnabled(False, 'same')
@@ -264,30 +287,37 @@ class Main(QtGui.QMainWindow):
     def startTimer(self):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.mainLoop)
-        try:
-            if ser.is_open == False:
-                ser.port = self.combobox_serial.currentText()
-                ser.open()
 
-            # log file
-            self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
+        if(self.combobox_type.currentText() == "Serial"):
+            try:
+                if ser.is_open == False:
+                    ser.port = self.combobox_serial.currentText()
+                    ser.open()
 
-            ser.write("start\n")
-            self.timer.start(0)
-        except (OSError, serial.SerialException):
-            self.showMessage("ERROR", "Serial")
+                # log file
+                self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
+                ser.write("start\n")
+            except (OSError, serial.SerialException):
+                self.showMessage("ERROR", "Serial")
+
+        self.timer.start(0)
+
 
     # stop capture
     def stopTimer(self):
-        ser.write("stop\n")
+        if(self.combobox_type.currentText() == "Serial"):
+            ser.write("stop\n")
+            self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
         self.timer.stop()
-        self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
 
     # plot data emg 
     def mainLoop(self):
         try:
-            self.captureSerial()
-            self.plot()
+            if(self.combobox_type.currentText() == "Serial"):
+                self.captureSerial()
+                self.plot()
+            else:
+                self.captureLog()
         except:
             pass
 
@@ -300,7 +330,6 @@ class Main(QtGui.QMainWindow):
         # split string and add data
         packet = ser.readline()
         num_ch = 0
-        print(packet)
         for word in packet[:-1].split():
             self.data[num_ch][self.num_sig] = (int(word) * const_board) + self.zero - self.amplitude_start
             num_ch = (num_ch + 1) % self.len_ch
@@ -309,24 +338,24 @@ class Main(QtGui.QMainWindow):
 
     # capture log data
     def captureLog(self):
-        
-        self.file = open('data/input.txt','r') # open file		
-        for line in self.file:	
-            #add data 	
-            num_ch = 0
-            print(line)
-            for word in line[:-1].split(" "):	
-                print(word)
-                self.data[num_ch][self.num_sig] = (int(word) * const_board) + self.zero - self.amplitude_start
-                num_ch = (num_ch + 1) % self.len_ch
-            self.num_sig += 1
+        with open(self.file,'r') as f:
+            for line in f:
+                #add data 	
+                num_ch = 0
+                for word in line.rstrip().split(","):	
+                    self.data[num_ch][self.num_sig] = float(word) + self.zero - self.amplitude_start
+                    num_ch = (num_ch + 1) % self.len_ch
+                self.num_sig += 1
+
+                self.plot()
 
     # plot data on graph
     def plot(self):
         # update test graph and store data
         if self.num_sig % self.swipe == 0:
             self.num_sig = 0
-            self.saveLog()
+            if(self.combobox_type.currentText() == "Serial"):
+                self.saveLog()
 
         # plot data in graph
         if self.num_sig % int(self.swipe / 10) == 0:
