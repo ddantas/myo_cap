@@ -150,6 +150,7 @@ class Main(QtGui.QMainWindow):
  
     #
     def inputFile(self):
+        self.timer.stop()
         Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
         self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
 
@@ -187,6 +188,10 @@ class Main(QtGui.QMainWindow):
         self.amplitude_end = float(data_display[5])
         self.amplitude = self.amplitude_end - self.amplitude_start
         self.amplitude_max = self.amplitude * self.len_ch
+
+        self.start = 0
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.mainLoop)
 
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')                
@@ -285,9 +290,6 @@ class Main(QtGui.QMainWindow):
 
     # start capture
     def startTimer(self):
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.mainLoop)
-
         if(self.combobox_type.currentText() == "Serial"):
             try:
                 if ser.is_open == False:
@@ -297,18 +299,18 @@ class Main(QtGui.QMainWindow):
                 # log file
                 self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 ser.write("start\n")
+                self.start = 1
             except (OSError, serial.SerialException):
                 self.showMessage("ERROR", "Serial")
-
         self.timer.start(0)
-
 
     # stop capture
     def stopTimer(self):
-        if(self.combobox_type.currentText() == "Serial"):
+        self.timer.stop()
+        if(self.combobox_type.currentText() == "Serial" and self.start):
             ser.write("stop\n")
             self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
-        self.timer.stop()
+            self.start = 0
 
     # plot data emg 
     def mainLoop(self):
@@ -338,6 +340,7 @@ class Main(QtGui.QMainWindow):
 
     # capture log data
     def captureLog(self):
+
         with open(self.file,'r') as f:
             for line in f:
                 #add data 	
@@ -359,6 +362,7 @@ class Main(QtGui.QMainWindow):
 
         # plot data in graph
         if self.num_sig % int(self.swipe / 10) == 0:
+            print "."
             for i in range(self.len_ch):
                 self.curve[i].setData(self.data[i] + (self.amplitude * i), pen=pg.mkPen('r', width=2))
 
