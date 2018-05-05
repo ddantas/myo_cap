@@ -49,7 +49,7 @@ class DateAxis(pg.AxisItem):
 class Main(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        self.showGraph()
+        self.showMainWindow()
 
     # show capture settings
     def showCaptureSettings(self):
@@ -63,13 +63,13 @@ class Main(QtGui.QMainWindow):
         self.ui_caps.input_numofboards.setText(cap_data[2].strip())
         self.ui_caps.input_bits.setText(cap_data[3].strip())
         # init actions
-        self.ui_caps.button_save.clicked.connect(self.saveCaptureSettings)
+        self.ui_caps.button_store.clicked.connect(self.storeCaptureSettings)
         self.ui_caps.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
 
     # store capture settings
-    def saveCaptureSettings(self):
+    def storeCaptureSettings(self):
         try:
             sampleR = int(self.ui_caps.input_sampleR.text())
         except:
@@ -80,7 +80,7 @@ class Main(QtGui.QMainWindow):
                              self.ui_caps.input_numofboards.text() + "\n", self.ui_caps.input_bits.text()])
         cap_file.close()
         window.close()
-        self.showGraph()
+        self.showMainWindow()
 
     # show display settings
     def showDisplaySettings(self):
@@ -96,13 +96,13 @@ class Main(QtGui.QMainWindow):
         self.ui_display.input_ampS.setText(disp_data[4].strip())
         self.ui_display.input_ampE.setText(disp_data[5].strip())
         # init actions
-        self.ui_display.button_save.clicked.connect(self.saveDisplaySettings)
+        self.ui_display.button_store.clicked.connect(self.storeDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
 
     # store display settings
-    def saveDisplaySettings(self):
+    def storeDisplaySettings(self):
         try:
             self.swipe = int(self.ui_display.input_swipe.text())
             check = 1 / self.swipe
@@ -142,23 +142,35 @@ class Main(QtGui.QMainWindow):
                            "\n", str(self.htick) +"\n", str(self.ampS) + "\n", str(self.ampE)])
         disp_file.close()
         window.close()
-        self.showGraph()
+        self.showMainWindow()
 
-    #
+    # show message
     def showMessage(self, title, body):
         QMessageBox.about(self, title, body)
  
-    #
+    # show input file
     def inputFile(self):
         self.timer.stop()
         Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
         self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-
-    # save data log emg
-    def saveLog(self):
+    
+    # store header log emg
+    def writeHeader(self):
 
         output = open(self.log_file, "a")
+        output.write("#---------- INFO ----------#\n"+
+                    "#\n# Sample Rate: 2000\n"+
+                    "# Channel per Board: "+str(self.len_ch)+"\n"+
+                    "# Number of Boards: 1\n"+
+                    "# Bit per sample: "+str(ad)+"\n#\n"+
+                    "#---------- DATA ----------#\n")
 
+        output.close()
+        window.close()
+
+    # store data log emg
+    def writeData(self):
+        output = open(self.log_file, "a")
         for j in range(self.swipe):
             for i in range(self.len_ch):
                 if (i < self.len_ch - 1):
@@ -168,8 +180,8 @@ class Main(QtGui.QMainWindow):
         output.close()
         window.close()
     
-    # graph settings
-    def showGraph(self):   
+    # show main window
+    def showMainWindow(self):   
 
         # load data
         data_cap = load().settings(capture_file)
@@ -180,7 +192,6 @@ class Main(QtGui.QMainWindow):
 
         # set display settings
         self.swipe = int(data_display[0])
-        # swipe ( w = t * r ), sendo r = sample 'rate e t = tempo
         self.zero = float(data_display[1])
         self.vtick = float(data_display[2])
         self.htick = float(data_display[3])
@@ -283,9 +294,7 @@ class Main(QtGui.QMainWindow):
         self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
         for i in range(self.len_ch):
             self.curve.append(self.graph.plot(self.data[i]))
-
         self.pw.showMaximized()
-
         self.num_sig = 0
 
     # start capture
@@ -298,6 +307,7 @@ class Main(QtGui.QMainWindow):
 
                 # log file
                 self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
+                self.writeHeader()
                 ser.write("start\n")
                 self.start = 1
             except (OSError, serial.SerialException):
@@ -340,17 +350,17 @@ class Main(QtGui.QMainWindow):
 
     # capture log data
     def captureLog(self):
-
         with open(self.file,'r') as f:
             for line in f:
-                #add data 	
-                num_ch = 0
-                for word in line.rstrip().split(","):	
-                    self.data[num_ch][self.num_sig] = float(word) + self.zero - self.amplitude_start
-                    num_ch = (num_ch + 1) % self.len_ch
-                self.num_sig += 1
+                if(line[0] != "#"):
+                    #add data 	
+                    num_ch = 0
+                    for word in line.rstrip().split(","):	
+                        self.data[num_ch][self.num_sig] = float(word) + self.zero - self.amplitude_start
+                        num_ch = (num_ch + 1) % self.len_ch
+                    self.num_sig += 1
 
-                self.plot()
+                    self.plot()
 
     # plot data on graph
     def plot(self):
@@ -358,7 +368,7 @@ class Main(QtGui.QMainWindow):
         if self.num_sig % self.swipe == 0:
             self.num_sig = 0
             if(self.combobox_type.currentText() == "Serial"):
-                self.saveLog()
+                self.writeData()
 
         # plot data in graph
         if self.num_sig % int(self.swipe / 10) == 0:
