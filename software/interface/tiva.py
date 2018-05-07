@@ -63,7 +63,7 @@ class Main(QtGui.QMainWindow):
         self.ui_caps.input_numofboards.setText(cap_data[2].strip())
         self.ui_caps.input_bits.setText(cap_data[3].strip())
         # init actions
-        self.ui_caps.button_store.clicked.connect(self.storeCaptureSettings)
+        self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
         self.ui_caps.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
@@ -96,7 +96,7 @@ class Main(QtGui.QMainWindow):
         self.ui_display.input_ampS.setText(disp_data[4].strip())
         self.ui_display.input_ampE.setText(disp_data[5].strip())
         # init actions
-        self.ui_display.button_store.clicked.connect(self.storeDisplaySettings)
+        self.ui_display.button_save.clicked.connect(self.storeDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
@@ -214,6 +214,16 @@ class Main(QtGui.QMainWindow):
         self.layout = self.pw.addLayout()
 
         # config combobox ports
+        self.combobox_type = QComboBox()
+        self.combobox_type.setEditable(False)
+        self.combobox_type.addItem("Serial")      
+        self.combobox_type.addItem("File")            
+        self.combobox_type.currentIndexChanged.connect(self.onChange)
+        proxy_list = QGraphicsProxyWidget()
+        proxy_list.setWidget(self.combobox_type)
+        self.layout.addItem(proxy_list, row=0, colspan=1)
+
+        # config combobox ports
         self.combobox_serial = QComboBox()
         self.combobox_serial.setEditable(False)
         for port in list_ports.comports():
@@ -222,14 +232,13 @@ class Main(QtGui.QMainWindow):
         proxy_list.setWidget(self.combobox_serial)
         self.layout.addItem(proxy_list, row=0, colspan=1)
 
-        # config combobox ports
-        self.combobox_type = QComboBox()
-        self.combobox_type.setEditable(False)
-        self.combobox_type.addItem("Serial")      
-        self.combobox_type.addItem("File")            
-        proxy_list = QGraphicsProxyWidget()
-        proxy_list.setWidget(self.combobox_type)
-        self.layout.addItem(proxy_list, row=0, colspan=1)
+        # config file button
+        proxy_file = QGraphicsProxyWidget()
+        self.button_file = QPushButton("Select File")
+        self.button_file.clicked.connect(self.inputFile)
+        proxy_file.setWidget(self.button_file)
+        self.button_file.setEnabled(False)
+        self.layout.addItem(proxy_file, row=0, colspan=1)
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
@@ -244,13 +253,6 @@ class Main(QtGui.QMainWindow):
         button_stop.clicked.connect(self.stopTimer)
         proxy_stop.setWidget(button_stop)
         self.layout.addItem(proxy_stop, row=0, colspan=1)
-
-        # config file button
-        proxy_file = QGraphicsProxyWidget()
-        button_file = QPushButton("Select File")
-        button_file.clicked.connect(self.inputFile)
-        proxy_file.setWidget(button_file)
-        self.layout.addItem(proxy_file, row=0, colspan=1)
 
         # config label
         label_configs = pg.LabelItem()
@@ -296,6 +298,15 @@ class Main(QtGui.QMainWindow):
             self.curve.append(self.graph.plot(self.data[i]))
         self.pw.showMaximized()
         self.num_sig = 0
+
+    # on change combo box type
+    def onChange(self, newIndex):
+        if newIndex == 0:
+            self.button_file.setEnabled(False)
+            self.combobox_serial.setEnabled(True)
+        elif newIndex == 1:
+            self.button_file.setEnabled(True)
+            self.combobox_serial.setEnabled(False)
 
     # start capture
     def startTimer(self):
