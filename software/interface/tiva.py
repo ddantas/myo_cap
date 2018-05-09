@@ -36,7 +36,7 @@ ser.timeout = 1
 class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
-        disp_data = load().settings(display_file)
+        disp_data = SettingsFile().loadSettings(display_file)
         amplitude_start = float(disp_data[4])
         amplitude_end = float(disp_data[5])
         amplitude = amplitude_end - amplitude_start
@@ -55,7 +55,7 @@ class Main(QtGui.QMainWindow):
         self.ui_caps = Ui_CaptureSettingsWindow()
         self.ui_caps.setupUi(self)
         # load capture data
-        cap_data = load().settings(capture_file)
+        cap_data = SettingsFile().loadSettings(capture_file)
         # set capture data
         self.ui_caps.input_sampleR.setText(cap_data[0].strip())
         self.ui_caps.input_ch.setText(cap_data[1].strip())
@@ -67,24 +67,10 @@ class Main(QtGui.QMainWindow):
         self.stopTimer()
         window.show()
 
-    # store capture settings
-    def storeCaptureSettings(self):
-        try:
-            self.sampleR = int(self.ui_caps.input_sampleR.text())
-        except:
-            print("ERROR sample rate!")
-
-        cap_file = open(capture_file, "w")
-        cap_file.writelines([str(self.sampleR) + "\n", self.ui_caps.input_ch.text() + "\n",
-                             self.ui_caps.input_numofboards.text() + "\n", self.ui_caps.input_bits.text()])
-        cap_file.close()
-        window.close()
-        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
-
     # show display settings
     def showDisplaySettings(self):
-        #load display data
-        disp_data = load().settings(display_file)
+        # load display data
+        disp_data = SettingsFile().loadSettings(display_file)
         self.ui_display = Ui_DisplaySettingsWindow()
         self.ui_display.setupUi(self)
         # set data
@@ -99,6 +85,10 @@ class Main(QtGui.QMainWindow):
         self.ui_display.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
+
+    def clearGraph(self):
+        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
+        self.num_sig = 0
 
     # store display settings
     def storeDisplaySettings(self):
@@ -124,7 +114,7 @@ class Main(QtGui.QMainWindow):
             check = 1 / self.htick
         except:
             self.htick = 100.0
-            print("ERROR htick!")                
+            print("ERROR htick!")
         try:
             self.ampS = float(self.ui_display.input_ampS.text())
         except:
@@ -136,12 +126,26 @@ class Main(QtGui.QMainWindow):
             self.ampE = 2.0
             print("ERROR ampE!")
 
-        disp_file = open(display_file,"w")
+        disp_file = open(display_file, "w")
         disp_file.writelines([str(self.swipe) + "\n", str(self.zero) + "\n", str(self.vtick) +
-                           "\n", str(self.htick) +"\n", str(self.ampS) + "\n", str(self.ampE)])
+                              "\n", str(self.htick) + "\n", str(self.ampS) + "\n", str(self.ampE)])
+        self.clearGraph()
         disp_file.close()
         window.close()
-        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
+
+    # store capture settings
+    def storeCaptureSettings(self):
+        try:
+            self.sampleR = int(self.ui_caps.input_sampleR.text())
+        except:
+            print("ERROR sample rate!")
+
+        cap_file = open(capture_file, "w")
+        cap_file.writelines([str(self.sampleR) + "\n", self.ui_caps.input_ch.text() + "\n",
+                             self.ui_caps.input_numofboards.text() + "\n", self.ui_caps.input_bits.text()])
+        self.clearGraph()
+        cap_file.close()
+        window.close()
 
     # show message
     def showMessage(self, title, body):
@@ -155,7 +159,6 @@ class Main(QtGui.QMainWindow):
     
     # store header log emg
     def writeHeader(self):
-
         output = open(self.log_file, "a")
         output.write("#---------- INFO ----------#\n"+
                     "#\n# Sample Rate: 2000\n"+
@@ -163,7 +166,6 @@ class Main(QtGui.QMainWindow):
                     "# Number of Boards: 1\n"+
                     "# Bit per sample: "+str(ad)+"\n#\n"+
                     "#---------- DATA ----------#\n")
-
         output.close()
         window.close()
 
@@ -183,8 +185,8 @@ class Main(QtGui.QMainWindow):
     def showMainWindow(self):   
 
         # load data
-        data_cap = load().settings(capture_file)
-        data_display = load().settings(display_file)
+        data_cap = SettingsFile().loadSettings(capture_file)
+        data_display = SettingsFile().loadSettings(display_file)
 
         # set capture settings
         self.sampleR = int(data_cap[0])
@@ -200,7 +202,7 @@ class Main(QtGui.QMainWindow):
         self.amplitude = self.amplitude_end - self.amplitude_start
         self.amplitude_max = self.amplitude * self.len_ch
 
-        self.start = 0
+        self.start = False
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.mainLoop)
 
@@ -242,9 +244,10 @@ class Main(QtGui.QMainWindow):
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
-        self.button_play = QPushButton('Start Capture')
-        self.button_play.clicked.connect(self.startTimer)
-        proxy_play.setWidget(self.button_play)
+        self.button_start = QPushButton('Start Capture')
+        self.button_start.clicked.connect(self.startTimer)
+        self.button_start.setEnabled(True)
+        proxy_play.setWidget(self.button_start)
         self.layout.addItem(proxy_play, row=0, colspan=1)
 
         # config stop capture button
@@ -321,28 +324,33 @@ class Main(QtGui.QMainWindow):
                 self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.writeHeader()
                 ser.write("start\n")
-                self.start = 1
+                self.start = True
+                self.button_start.setEnabled(False)
+                self.button_stop.setEnabled(True)
             except (OSError, serial.SerialException):
                 self.showMessage("ERROR", "Serial")
         else:
-            self.f = open(self.file, 'r')
+            try:
+                self.f = open(self.file, 'r')
+                self.button_start.setEnabled(False)
+                self.button_stop.setEnabled(True)
+            except:
+                self.showMessage("ERROR", "File")
 
-        self.button_play.setEnabled(False)
-        self.button_stop.setEnabled(True)
         self.timer.start(0)
 
     # stop capture
     def stopTimer(self):
         self.timer.stop()
         try:
-            if(self.combobox_type.currentText() == "Serial" and self.start):
+            if(self.combobox_type.currentText() == "Serial" and self.start == True):
                 ser.write("stop\n")
                 ser.close()
                 self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
-                self.start = 0
+                self.start = False
             else:
                 self.f.close()
-            self.button_play.setEnabled(True)
+            self.button_start.setEnabled(True)
             self.button_stop.setEnabled(False)
         except:
             pass
@@ -402,8 +410,8 @@ class Main(QtGui.QMainWindow):
                 self.curve[i].setData(self.data[i] + (self.amplitude * i), pen=pg.mkPen('r', width=2))
 
 # class to load settings
-class load():
-    def settings(self, type):
+class SettingsFile():
+    def loadSettings(self, type):
         try:
             output = open(type, "r")
             data = output.readlines()
