@@ -3,11 +3,10 @@
 
 import serial
 import sys
-import glob
+import time
+import datetime
 import numpy as np
 import pyqtgraph as pg
-import datetime
-import numbers
 
 from pyqtgraph.Qt import QtCore, QtGui
 from win_capture_settings import Ui_CaptureSettingsWindow
@@ -71,16 +70,16 @@ class Main(QtGui.QMainWindow):
     # store capture settings
     def storeCaptureSettings(self):
         try:
-            sampleR = int(self.ui_caps.input_sampleR.text())
+            self.sampleR = int(self.ui_caps.input_sampleR.text())
         except:
             print("ERROR sample rate!")
 
         cap_file = open(capture_file, "w")
-        cap_file.writelines([str(sampleR) + "\n", self.ui_caps.input_ch.text() + "\n",
+        cap_file.writelines([str(self.sampleR) + "\n", self.ui_caps.input_ch.text() + "\n",
                              self.ui_caps.input_numofboards.text() + "\n", self.ui_caps.input_bits.text()])
         cap_file.close()
         window.close()
-        self.showMainWindow()
+        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
 
     # show display settings
     def showDisplaySettings(self):
@@ -142,7 +141,7 @@ class Main(QtGui.QMainWindow):
                            "\n", str(self.htick) +"\n", str(self.ampS) + "\n", str(self.ampE)])
         disp_file.close()
         window.close()
-        self.showMainWindow()
+        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
 
     # show message
     def showMessage(self, title, body):
@@ -188,6 +187,7 @@ class Main(QtGui.QMainWindow):
         data_display = load().settings(display_file)
 
         # set capture settings
+        self.sampleR = int(data_cap[0])
         self.len_ch = int(data_cap[1])
 
         # set display settings
@@ -242,16 +242,17 @@ class Main(QtGui.QMainWindow):
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
-        button_play = QPushButton('Start Capture')
-        button_play.clicked.connect(self.startTimer)
-        proxy_play.setWidget(button_play)
+        self.button_play = QPushButton('Start Capture')
+        self.button_play.clicked.connect(self.startTimer)
+        proxy_play.setWidget(self.button_play)
         self.layout.addItem(proxy_play, row=0, colspan=1)
 
         # config stop capture button
         proxy_stop = QGraphicsProxyWidget()
-        button_stop = QPushButton('Stop Capture')
-        button_stop.clicked.connect(self.stopTimer)
-        proxy_stop.setWidget(button_stop)
+        self.button_stop = QPushButton('Stop Capture')
+        self.button_stop.clicked.connect(self.stopTimer)
+        self.button_stop.setEnabled(False)
+        proxy_stop.setWidget(self.button_stop)
         self.layout.addItem(proxy_stop, row=0, colspan=1)
 
         # config label
@@ -323,24 +324,37 @@ class Main(QtGui.QMainWindow):
                 self.start = 1
             except (OSError, serial.SerialException):
                 self.showMessage("ERROR", "Serial")
+        else:
+            self.f = open(self.file, 'r')
+
+        self.button_play.setEnabled(False)
+        self.button_stop.setEnabled(True)
         self.timer.start(0)
 
     # stop capture
     def stopTimer(self):
         self.timer.stop()
-        if(self.combobox_type.currentText() == "Serial" and self.start):
-            ser.write("stop\n")
-            self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
-            self.start = 0
+        try:
+            if(self.combobox_type.currentText() == "Serial" and self.start):
+                ser.write("stop\n")
+                ser.close()
+                self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
+                self.start = 0
+            else:
+                self.f.close()
+            self.button_play.setEnabled(True)
+            self.button_stop.setEnabled(False)
+        except:
+            pass
 
     # plot data emg 
     def mainLoop(self):
         try:
             if(self.combobox_type.currentText() == "Serial"):
                 self.captureSerial()
-                self.plot()
             else:
                 self.captureLog()
+            self.plot()
         except:
             pass
 
@@ -361,17 +375,18 @@ class Main(QtGui.QMainWindow):
 
     # capture log data
     def captureLog(self):
-        with open(self.file,'r') as f:
-            for line in f:
-                if(line[0] != "#"):
-                    #add data 	
-                    num_ch = 0
-                    for word in line.rstrip().split(","):	
-                        self.data[num_ch][self.num_sig] = float(word) + self.zero - self.amplitude_start
-                        num_ch = (num_ch + 1) % self.len_ch
-                    self.num_sig += 1
+        time.sleep(1.0/self.sampleR)
+        line = self.f.readline()
+        if line == '':
+            self.f.seek(0)
 
-                    self.plot()
+        if(line[0] != "#"):
+            #add data
+            num_ch = 0
+            for word in line.rstrip().split(","):
+                self.data[num_ch][self.num_sig] = float(word) + self.zero - self.amplitude_start
+                num_ch = (num_ch + 1) % self.len_ch
+            self.num_sig += 1
 
     # plot data on graph
     def plot(self):
@@ -383,7 +398,6 @@ class Main(QtGui.QMainWindow):
 
         # plot data in graph
         if self.num_sig % int(self.swipe / 10) == 0:
-            print "."
             for i in range(self.len_ch):
                 self.curve[i].setData(self.data[i] + (self.amplitude * i), pen=pg.mkPen('r', width=2))
 
@@ -403,5 +417,4 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     window = Main()
     sys.exit(app.exec_())
-    ser.write("stop\n")
-    ser.close()
+    self.stopTimer()
