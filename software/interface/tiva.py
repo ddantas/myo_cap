@@ -9,13 +9,16 @@ import numpy as np
 import pyqtgraph as pg
 
 from pyqtgraph.Qt import QtCore, QtGui
-from win_capture_settings import Ui_CaptureSettingsWindow
-from win_display_settings import Ui_DisplaySettingsWindow
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtGui import *
 from serial.tools import list_ports
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
+
+from win_capture_settings import Ui_CaptureSettingsWindow
+from win_display_settings import Ui_DisplaySettingsWindow
+from date_axis_custom import DateAxis
+from load_settings import LoadSettings
 
 # config files
 capture_file = "config/capture.config"
@@ -32,18 +35,6 @@ ser = serial.Serial()
 ser.baudrate = 115200
 ser.timeout = 1
 
-# class to set axis label
-class DateAxis(pg.AxisItem):
-    def tickStrings(self, values, scale, spacing):
-        strns = []
-        disp_data = SettingsFile().loadSettings(display_file)
-        amplitude_start = float(disp_data[4])
-        amplitude_end = float(disp_data[5])
-        amplitude = amplitude_end - amplitude_start
-        for x in values:
-            strns.append((x % amplitude) + (amplitude_start))
-        return strns
-
 # class main
 class Main(QtGui.QMainWindow):
     def __init__(self):
@@ -55,14 +46,14 @@ class Main(QtGui.QMainWindow):
         self.ui_caps = Ui_CaptureSettingsWindow()
         self.ui_caps.setupUi(self)
         # load capture data
-        cap_data = SettingsFile().loadSettings(capture_file)
+        cap_data = LoadSettings().capture()
         # set capture data
         self.ui_caps.input_sampleR.setText(cap_data[0].strip())
         self.ui_caps.input_ch.setText(cap_data[1].strip())
         self.ui_caps.input_numofboards.setText(cap_data[2].strip())
         self.ui_caps.input_bits.setText(cap_data[3].strip())
         # init actions
-        self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
+        self.ui_display.button_save.clicked.connect(self.storeCaptureSettings)
         self.ui_caps.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
@@ -70,7 +61,7 @@ class Main(QtGui.QMainWindow):
     # show display settings
     def showDisplaySettings(self):
         # load display data
-        disp_data = SettingsFile().loadSettings(display_file)
+        disp_data = LoadSettings().display()
         self.ui_display = Ui_DisplaySettingsWindow()
         self.ui_display.setupUi(self)
         # set data
@@ -85,10 +76,6 @@ class Main(QtGui.QMainWindow):
         self.ui_display.button_cancel.clicked.connect(window.close)
         self.stopTimer()
         window.show()
-
-    def clearGraph(self):
-        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
-        self.num_sig = 0
 
     # store display settings
     def storeDisplaySettings(self):
@@ -180,13 +167,26 @@ class Main(QtGui.QMainWindow):
                     output.write(str(self.data[i][j] - (self.zero - self.amplitude_start)) + "\n")
         output.close()
         window.close()
-    
+
+    def clearGraph(self):
+        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
+        self.num_sig = 0
+
+    # on change combo box type
+    def onChange(self, newIndex):
+        if newIndex == 0:
+            self.button_file.setEnabled(False)
+            self.combobox_serial.setEnabled(True)
+        elif newIndex == 1:
+            self.button_file.setEnabled(True)
+            self.combobox_serial.setEnabled(False)
+
     # show main window
     def showMainWindow(self):   
 
         # load data
-        data_cap = SettingsFile().loadSettings(capture_file)
-        data_display = SettingsFile().loadSettings(display_file)
+        data_cap = LoadSettings().capture()
+        data_display = LoadSettings().display()
 
         # set capture settings
         self.sampleR = int(data_cap[0])
@@ -303,15 +303,6 @@ class Main(QtGui.QMainWindow):
         self.pw.showMaximized()
         self.num_sig = 0
 
-    # on change combo box type
-    def onChange(self, newIndex):
-        if newIndex == 0:
-            self.button_file.setEnabled(False)
-            self.combobox_serial.setEnabled(True)
-        elif newIndex == 1:
-            self.button_file.setEnabled(True)
-            self.combobox_serial.setEnabled(False)
-
     # start capture
     def startTimer(self):
         if(self.combobox_type.currentText() == "Serial"):
@@ -408,61 +399,6 @@ class Main(QtGui.QMainWindow):
         if self.num_sig % int(self.swipe / 10) == 0:
             for i in range(self.len_ch):
                 self.curve[i].setData(self.data[i] + (self.amplitude * i), pen=pg.mkPen('r', width=2))
-
-# class to load settings
-class SettingsFile():
-    def loadSettings(self, type):
-        try:
-            output = open(type, "r")
-            data = output.readlines()
-            return data
-        except IOError:
-            if(type == capture_file): data = [2000, 4, 1, 12]
-            else: data = [1000, 0.0, 1.0, 100.0, -2.0, 2.0]
-            return data
-
-class ApiTiva():
-    def setBps(self, serial, value):
-        serial.write("B "+ str(value)+"\n")
-        # waiting serial data
-        while serial.inWaiting() == 0:
-            pass
-        packet = serial.readline()
-
-    def setSampleRate(self, serial, value):
-        serial.write("S "+ str(value)+"\n")
-        # waiting serial data
-        while serial.inWaiting() == 0:
-            pass
-        packet = serial.readline()
-
-    def setNChannels(self, serial, value):
-        serial.write("C "+ str(value)+"\n")
-        # waiting serial data
-        while serial.inWaiting() == 0:
-            pass
-        packet = serial.readline()
-
-    def setNBoards(self, serial, value):
-        serial.write("N "+ str(value)+"\n")
-        # waiting serial data
-        while serial.inWaiting() == 0:
-            pass
-        packet = serial.readline()
-
-    def start(self, serial):
-        serial.write("start\n")
-        # waiting serial data
-        while serial.inWaiting() == 0:
-            pass
-        packet = serial.readline()
-
-    def stop(self, serial):
-        serial.write("stop\n")
-        # waiting serial data
-        while serial.inWaiting() == 0:
-            pass
-        packet = serial.readline()
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
