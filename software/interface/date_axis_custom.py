@@ -1,4 +1,4 @@
-from load_settings import LoadSettings
+from settings import Settings
 
 import pyqtgraph as pg
 
@@ -6,9 +6,9 @@ import pyqtgraph as pg
 class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
-        disp_data = LoadSettings().display()
-        amplitude_start = float(disp_data[4])
-        amplitude_end = float(disp_data[5])
+        settings = Settings(None).load()
+        amplitude_start = float(settings['vMin'])
+        amplitude_end = float(settings['vMax'])
         amplitude = amplitude_end - amplitude_start
         for x in values:
             strns.append((x % amplitude) + (amplitude_start))
