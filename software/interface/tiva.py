@@ -6,13 +6,11 @@ import sys
 import time
 import datetime
 import numpy as np
-
-from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget)
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget)
 from serial.tools import list_ports
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
-
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
@@ -49,7 +47,7 @@ class Main(QtGui.QMainWindow):
         # init actions
         self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
         self.ui_caps.button_cancel.clicked.connect(window.close)
-        # self.stopTimer()
+        self.stopTimer()
         window.show()
 
     # show display settings
@@ -69,7 +67,7 @@ class Main(QtGui.QMainWindow):
         # init actions
         self.ui_display.button_save.clicked.connect(self.storeDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
-        # self.stopTimer()
+        self.stopTimer()
         window.show()
 
     # store display settings
@@ -129,8 +127,8 @@ class Main(QtGui.QMainWindow):
                                 "# vMin: " + str(self.settings_data['vMin']) + "\n", 
                                 "# vMax: " + str(self.settings_data['vMax'])
                             ])
-        # self.clearGraph()
-        # window.close()
+        self.clearGraph()
+        window.close()
 
     # store capture settings
     def storeCaptureSettings(self):
@@ -160,7 +158,7 @@ class Main(QtGui.QMainWindow):
                                 "# vMin: " + str(self.settings_data['vMin']) + "\n", 
                                 "# vMax: " + str(self.settings_data['vMax'])
                             ])
-        # self.clearGraph()
+        self.clearGraph()
         window.close()
 
     # show message
