@@ -6,22 +6,20 @@ import sys
 import time
 import datetime
 import numpy as np
-import pyqtgraph as pg
 
-from pyqtgraph.Qt import QtCore, QtGui
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget)
 from PyQt5.QtGui import *
 from serial.tools import list_ports
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
 
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtGui
+
 from date_axis_custom import DateAxis
 from settings import Settings
 from win_capture_settings import Ui_CaptureSettingsWindow
 from win_display_settings import Ui_DisplaySettingsWindow
-# config files
-capture_file = "config/capture.config"
-display_file = "config/display.config"
 
 # config tiva
 t_start = 0
