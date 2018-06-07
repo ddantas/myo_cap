@@ -23,6 +23,7 @@ class Settings(QtGui.QMainWindow):
             if(type == capture_file): data = [2000, 4, 1, 12]
             else: data = [1000, 0.0, 1.0, 100.0, -2.0, 2.0]
             return data
+        self.settings_file.close()
 
       # show capture settings
     

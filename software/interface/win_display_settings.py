@@ -119,7 +119,7 @@ class Ui_DisplaySettingsWindow(object):
         self.label_16.setFont(font)
         self.label_16.setObjectName(_fromUtf8("label_16"))
         self.input_ch = QtGui.QLineEdit(self.centralwidget)
-        self.input_ch.setEnabled(False)
+        self.input_ch.setEnabled(True)
         self.input_ch.setGeometry(QtCore.QRect(200, 230, 151, 31))
         self.input_ch.setObjectName(_fromUtf8("input_ch"))
         DisplaySettingsWindow.setCentralWidget(self.centralwidget)
@@ -140,6 +140,6 @@ class Ui_DisplaySettingsWindow(object):
         self.button_save.setText(_translate("DisplaySettingsWindow", "Save", None))
         self.button_cancel.setText(_translate("DisplaySettingsWindow", "Cancel", None))
         self.label_15.setText(_translate("DisplaySettingsWindow", "Vertical Tick:", None))
-        self.label_16.setText(_translate("DisplaySettingsWindow", "Channels", None))
+        self.label_16.setText(_translate("DisplaySettingsWindow", "Show Channels", None))
         self.input_ch.setPlaceholderText(_translate("DisplaySettingsWindow", "4", None))
 

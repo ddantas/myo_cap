@@ -62,6 +62,7 @@ class Main(QtGui.QMainWindow):
         self.ui_display.input_zero.setText(str(self.settings_data['zero']))
         self.ui_display.input_vtick.setText(str(self.settings_data['vertTick']))
         self.ui_display.input_htick.setText(str(self.settings_data['horizTick']))
+        self.ui_display.input_ch.setText(str(self.settings_data['showChannels']))
         self.ui_display.input_ampS.setText(str(self.settings_data['vMin']))
         self.ui_display.input_ampE.setText(str(self.settings_data['vMax']))
         # init actions
@@ -72,6 +73,7 @@ class Main(QtGui.QMainWindow):
 
     # store display settings
     def storeDisplaySettings(self):
+        self.settings_file = open("config/settings", "w")
         try:
             self.settings_data['swipeSamples'] = int(self.ui_display.input_swipe.text())
             check = 1 / self.swipe
@@ -95,6 +97,12 @@ class Main(QtGui.QMainWindow):
         except:
             self.settings_data['horizTick'] = 100.0
             print("ERROR htick!")
+        try:
+            self.settings_data['showChannels'] = float(self.ui_display.input_ch.text())
+            check = 1 / self.htick
+        except:
+            self.settings_data['showChannels'] = 4
+            print("ERROR showChannels!")
         try:
             self.settings_data['vMin'] = float(self.ui_display.input_ampS.text())
         except:
@@ -125,13 +133,16 @@ class Main(QtGui.QMainWindow):
                                 "# vertTick: " + str(self.settings_data['vertTick']) + "\n", 
                                 "# horizTick: " + str(self.settings_data['horizTick']) + "\n", 
                                 "# vMin: " + str(self.settings_data['vMin']) + "\n", 
-                                "# vMax: " + str(self.settings_data['vMax'])
+                                "# vMax: " + str(self.settings_data['vMax']) + "\n"
+                                "# showChannels: " + str(self.settings_data['showChannels'])
                             ])
         self.clearGraph()
+        self.settings_file.close()
         window.close()
 
     # store capture settings
     def storeCaptureSettings(self):
+        self.settings_file = open("config/settings", "w")
         try:
             self.settings_data['sampleRate'] = int(self.ui_caps.input_sampleR.text())
         except:
@@ -156,9 +167,11 @@ class Main(QtGui.QMainWindow):
                                 "# vertTick: " + str(self.settings_data['vertTick']) + "\n", 
                                 "# horizTick: " + str(self.settings_data['horizTick']) + "\n", 
                                 "# vMin: " + str(self.settings_data['vMin']) + "\n", 
-                                "# vMax: " + str(self.settings_data['vMax'])
+                                "# vMax: " + str(self.settings_data['vMax']) + "\n"
+                                "# showChannels: " + str(self.settings_data['showChannels'])
                             ])
         self.clearGraph()
+        self.settings_file.close()
         window.close()
 
     # show message
