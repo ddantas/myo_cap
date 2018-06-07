@@ -6,7 +6,7 @@ import pyqtgraph as pg
 class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
-        settings = Settings(None).load()
+        settings = Settings().load()
         amplitude_start = float(settings['vMin'])
         amplitude_end = float(settings['vMax'])
         amplitude = amplitude_end - amplitude_start
