@@ -144,8 +144,7 @@ class Main(QtGui.QMainWindow):
         self.curve = []
         self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
 
-        # self.data = []
-        # self.data.append([])
+        self.data_log = []
 
         for i in range(self.len_ch):
             self.curve.append(self.graph.plot(self.data[i]))
@@ -186,6 +185,7 @@ class Main(QtGui.QMainWindow):
                 self.ser.close()
                 self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
                 self.start = False
+                self.storeLogData()
             else:
                 self.f.close()
             self.button_start.setEnabled(True)
@@ -210,9 +210,9 @@ class Main(QtGui.QMainWindow):
 
         # split string and add data
         packet = self.ser.readline()
+        self.data_log.append(packet)
         num_ch = 0
         for word in packet[:-1].split():
-            # self.data[num_ch].append(int(word))
             self.data[num_ch][self.num_sig] = float(word) 
             num_ch = (num_ch + 1) % self.len_ch
         self.num_sig += 1
@@ -235,8 +235,6 @@ class Main(QtGui.QMainWindow):
         # update test graph and store data
         if self.num_sig % self.swipe == 0:
             self.num_sig = 0
-            if(self.combobox_type.currentText() == "Serial"):
-                self.storeLogData()
 
         # plot data in graph
         if self.num_sig % int(self.swipe / 10) == 0:
@@ -349,6 +347,7 @@ class Main(QtGui.QMainWindow):
         QMessageBox.about(self, title, body)
  
     def showInputFile(self):
+        self.stopTimer()
         self.timer.stop()
         Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
         self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
@@ -373,12 +372,8 @@ class Main(QtGui.QMainWindow):
 
     def storeLogData(self):
         output = open(self.log_file, "a")
-        for j in range(self.swipe):
-            for i in range(self.len_ch):
-                if (i < self.len_ch - 1):
-                    output.write(str(self.data[i][j])+"; ")
-                else:
-                    output.write(str(self.data[i][j])+"\n")
+        for line in self.data_log:
+            output.write(str(line).replace(" ", "; "))
         output.close()
 
     def onChange(self, newIndex):
