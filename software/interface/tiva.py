@@ -6,6 +6,7 @@ import sys
 import time
 import datetime
 import numpy as np
+import thread
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget)
 from serial.tools import list_ports
@@ -87,29 +88,6 @@ class Main(QtGui.QMainWindow):
         self.button_file.setEnabled(False)
         self.layout.addItem(proxy_file, row=0, colspan=1)
 
-        # config start capture button
-        proxy_play = QGraphicsProxyWidget()
-        self.button_start = QPushButton('Start Capture')
-        self.button_start.clicked.connect(self.startTimer)
-        self.button_start.setEnabled(True)
-        proxy_play.setWidget(self.button_start)
-        self.layout.addItem(proxy_play, row=0, colspan=1)
-
-        # config stop capture button
-        proxy_stop = QGraphicsProxyWidget()
-        self.button_stop = QPushButton('Stop Capture')
-        self.button_stop.clicked.connect(self.stopTimer)
-        self.button_stop.setEnabled(False)
-        proxy_stop.setWidget(self.button_stop)
-        self.layout.addItem(proxy_stop, row=0, colspan=1)
-
-        # config label
-        label_configs = pg.LabelItem()
-        label_configs.setText("Swipe: " + str(self.swipe) + " | Zero: " + str(self.zero) + " | Amplitude: " +
-                              str(self.amplitude) + "V | HTick: " + str(self.htick) + " | VTick " + str(self.vtick) +
-                              "V | Channels: " + str(self.len_ch))
-        self.layout.addItem(label_configs, row=0, colspan=2)
-
         #config display settings button
         proxy_settings = QGraphicsProxyWidget()
         button_settings = QPushButton('Display Settings')
@@ -124,12 +102,44 @@ class Main(QtGui.QMainWindow):
         proxy_settings2.setWidget(button_settings2)
         self.layout.addItem(proxy_settings2, row=0, colspan=1)
 
+        # config label
+        label_configs = pg.LabelItem()
+        label_configs.setText("Swipe: " + str(self.swipe) + " | Zero: " + str(self.zero) + " | Amplitude: " +
+                              str(self.amplitude) + "V | HTick: " + str(self.htick) + " | VTick " + str(self.vtick) +
+                              "V | Channels: " + str(self.len_ch))
+        self.layout.addItem(label_configs, row=0, colspan=4)
+
+        # config start capture button
+        proxy_play = QGraphicsProxyWidget()
+        self.button_start = QPushButton('Start Capture')
+        self.button_start.clicked.connect(self.startCapture)
+        self.button_start.setEnabled(True)
+        proxy_play.setWidget(self.button_start)
+        self.layout.addItem(proxy_play, row=0, colspan=1)
+
+        # config stop capture button
+        proxy_stop = QGraphicsProxyWidget()
+        self.button_show = QPushButton('Show Capture')
+        self.button_show.clicked.connect(self.showCapture)
+        self.button_show.setEnabled(False)
+        proxy_stop.setWidget(self.button_show)
+        self.layout.addItem(proxy_stop, row=0, colspan=1)
+
+        # config stop capture button
+        proxy_stop = QGraphicsProxyWidget()
+        self.button_stop = QPushButton('Stop Capture')
+        self.button_stop.clicked.connect(self.stopCapture)
+        self.button_stop.setEnabled(False)
+        proxy_stop.setWidget(self.button_stop)
+        self.layout.addItem(proxy_stop, row=0, colspan=1)
+
+
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
         self.axis_y.setTickSpacing(4000, self.vtick)
 
         # graph
-        self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=9)
+        self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
         self.graph.setYRange(0, self.amplitude_max)
         self.graph.showGrid(x=True, y=True, alpha=0.5)
         self.graph.setMenuEnabled(False, 'same')
@@ -151,7 +161,7 @@ class Main(QtGui.QMainWindow):
         self.pw.showMaximized()
         self.num_sig = 0
 
-    def startTimer(self):
+    def startCapture(self):
         if(self.combobox_type.currentText() == "Serial"):
             try:
                 if self.ser.is_open == False:
@@ -165,27 +175,31 @@ class Main(QtGui.QMainWindow):
                 self.start = True
                 self.button_start.setEnabled(False)
                 self.button_stop.setEnabled(True)
+                self.button_show.setEnabled(True)
+                self.timer.start(0)
             except (OSError, serial.SerialException) as err:
                 self.showMessage("Error!", str(err))
         else:
             try:
-                self.f = open(self.file, 'r')
+                with open(self.file, 'r') as f:
+                    for line in f:
+                        if line[0] != "#" and line != "":
+                            self.data_log.append(line)
+
                 self.button_start.setEnabled(False)
-                self.button_stop.setEnabled(True)
+                self.button_show.setEnabled(True)
             except:
                 self.showMessage("ERROR", "File")
 
-        self.timer.start(0)
-
-    def stopTimer(self):
+    def stopCapture(self):
         self.timer.stop()
         try:
             if(self.combobox_type.currentText() == "Serial" and self.start == True):
                 self.ser.write("stop\n")
                 self.ser.close()
-                self.showMessage("Log", "Stored data.\nfile: "+ self.log_file)
-                self.start = False
                 self.storeLogData()
+                self.showMessage("Warning", "Data stored successfully in the file: "+ self.log_file)
+                self.start = False
             else:
                 self.f.close()
             self.button_start.setEnabled(True)
@@ -195,11 +209,7 @@ class Main(QtGui.QMainWindow):
 
     def mainLoop(self):
         try:
-            if(self.combobox_type.currentText() == "Serial"):
-                self.captureSerial()
-            else:
-                self.captureLog()
-            self.plot()
+            self.captureSerial()
         except:
             pass
 
@@ -208,38 +218,36 @@ class Main(QtGui.QMainWindow):
         while self.ser.inWaiting() == 0:
             pass
 
-        # split string and add data
-        packet = self.ser.readline()
-        self.data_log.append(packet)
-        num_ch = 0
-        for word in packet[:-1].split():
-            self.data[num_ch][self.num_sig] = float(word) 
-            num_ch = (num_ch + 1) % self.len_ch
-        self.num_sig += 1
-
-    def captureLog(self):
-        time.sleep(1.0/self.sampleR)
-        line = self.f.readline()
-        if line == '':
-            self.f.seek(0)
-
-        if(line[0] != "#"):
-            #add data
-            num_ch = 0
-            for word in line.rstrip().split("; "):
-                self.data[num_ch][self.num_sig] = float(word)
-                num_ch = (num_ch + 1) % self.len_ch
-            self.num_sig += 1
+        self.data_log.append(self.ser.readline())
+           
+    def showCapture(self):
+        self.control = 0
+        self.timer_plot = QtCore.QTimer()
+        self.timer_plot.timeout.connect(self.plot)
+        self.timer_plot.start(0)
+        self.button_show.setEnabled(False)
 
     def plot(self):
-        # update test graph and store data
-        if self.num_sig % self.swipe == 0:
-            self.num_sig = 0
-
-        # plot data in graph
-        if self.num_sig % int(self.swipe / 10) == 0:
-            for i in range(self.len_ch):
-                self.curve[i].setData((self.data[i] * CONST_BOARD) + self.zero - self.amplitude_start + (self.amplitude * i), pen=pg.mkPen('r', width=2))
+        try:
+            line = self.data_log[self.control]
+            self.control += 1
+            num_ch = 0
+            time.sleep(1.0/self.sampleR)
+            for word in line.rstrip().split():
+                self.data[num_ch][self.num_sig] = float(word) 
+                num_ch = (num_ch + 1) % self.len_ch
+            self.num_sig += 1
+            # update test graph and store data
+            if self.num_sig % self.swipe == 0:
+                self.num_sig = 0
+            # plot data in graph
+            if self.num_sig % int(self.swipe / 10) == 0:
+                for i in range(self.len_ch):
+                    self.curve[i].setData((self.data[i] * CONST_BOARD) - self.amplitude_start + (self.amplitude * i), pen=pg.mkPen('r', width=2))       
+        except:
+            self.showMessage("Warning","No more data to plot.")
+            self.button_show.setEnabled(True)
+            self.timer_plot.stop()
 
     def showCaptureSettings(self):
         self.ui_caps = Ui_CaptureSettingsWindow()
@@ -253,7 +261,7 @@ class Main(QtGui.QMainWindow):
         # init actions
         self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
         self.ui_caps.button_cancel.clicked.connect(window.close)
-        self.stopTimer()
+        self.stopCapture()
         window.show()
 
     def showDisplaySettings(self):
@@ -264,7 +272,6 @@ class Main(QtGui.QMainWindow):
 
         # set data
         self.ui_display.input_swipe.setText(str(self.settings_data['swipeSamples']).replace(".0", ""))
-        self.ui_display.input_zero.setText(str(self.settings_data['zero']))
         self.ui_display.input_vtick.setText(str(self.settings_data['vertTick']))
         self.ui_display.input_htick.setText(str(self.settings_data['horizTick']))
         self.ui_display.input_ch.setText(str(self.settings_data['showChannels']).replace(".0", ""))
@@ -273,7 +280,7 @@ class Main(QtGui.QMainWindow):
         # init actions
         self.ui_display.button_save.clicked.connect(self.storeDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
-        self.stopTimer()
+        self.stopCapture()
         window.show()
 
     def storeDisplaySettings(self):
@@ -283,11 +290,6 @@ class Main(QtGui.QMainWindow):
         except:
             self.settings_data['swipeSamples'] = 1000
             print("ERROR swipeSamples!")
-        try:
-            self.settings_data['zero'] = float(self.ui_display.input_zero.text())
-        except:
-            self.settings_data['zero'] = 0.0
-            print("ERROR zero!")
         try:
             self.settings_data['vertTick'] = float(self.ui_display.input_vtick.text())
             check = 1 / self.vtick
@@ -347,7 +349,7 @@ class Main(QtGui.QMainWindow):
         QMessageBox.about(self, title, body)
  
     def showInputFile(self):
-        self.stopTimer()
+        self.stopCapture()
         self.timer.stop()
         Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
         self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
@@ -373,7 +375,7 @@ class Main(QtGui.QMainWindow):
     def storeLogData(self):
         output = open(self.log_file, "a")
         for line in self.data_log:
-            output.write(str(line).replace(" ", "; "))
+            output.write(str(line))
         output.close()
 
     def onChange(self, newIndex):
@@ -393,4 +395,4 @@ if __name__ == '__main__':
     window = Main()
     window.showMainWindow()
     sys.exit(app.exec_())
-    window.stopTimer()
+    window.stopCapture()
