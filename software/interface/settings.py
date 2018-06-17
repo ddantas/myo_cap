@@ -29,7 +29,6 @@ class Settings():
                         "# channelsPerBoard: " + str(data['channelsPerBoard']) + "\n" + 
                         "# nBoards: " + str(data['nBoards']) + "\n" +
                         "# bitsPerSample: " + str(data['bitsPerSample']) + "\n" +
-                        "##\n## EMG display settings\n##\n" +
                         "# swipeSamples: "+ str(data['swipeSamples']) + "\n"+
                         "# zero: " + str(data['zero']) + "\n" +
                         "# vertTick: " + str(data['vertTick']) + "\n"+ 
