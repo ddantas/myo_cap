@@ -220,7 +220,7 @@ class Main(QtGui.QMainWindow):
             self.control += 1
             num_ch = 0
             time.sleep(1.0/self.sampleR)
-            for word in line.rstrip().split():
+            for word in line.replace(';', ' ').split(' '):
                 self.data[num_ch][self.num_sig] = float(word) 
                 num_ch = (num_ch + 1) % self.len_ch
             self.num_sig += 1
@@ -371,7 +371,7 @@ class Main(QtGui.QMainWindow):
     def storeLogData(self):
         output = open(self.log_file, "a")
         for line in self.data_log:
-            output.write(str(line))
+            output.write(str(line).replace(' ', ';'))
         output.close()
 
     def onChange(self, newIndex):
