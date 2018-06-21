@@ -30,7 +30,6 @@ class Settings():
                         "# nBoards: " + str(data['nBoards']) + "\n" +
                         "# bitsPerSample: " + str(data['bitsPerSample']) + "\n" +
                         "# swipeSamples: "+ str(data['swipeSamples']) + "\n"+
-                        "# zero: " + str(data['zero']) + "\n" +
                         "# vertTick: " + str(data['vertTick']) + "\n"+ 
                         "# horizTick: " + str(data['horizTick']) + "\n" +
                         "# vMin: " + str(data['vMin']) + "\n"+ 
@@ -38,6 +37,6 @@ class Settings():
                         "# showChannels: " + str(data['showChannels']))
             settings_file.close()
             return True
-        except:
-            print("ERROR!")
+        except IOError as err:
+            print("ERROR!", err)
             return False
