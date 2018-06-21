@@ -20,7 +20,6 @@ from settings import Settings
 from win_capture_settings import Ui_CaptureSettingsWindow
 from win_display_settings import Ui_DisplaySettingsWindow
 
-CONST_BOARD = (3.3 - 0) / (2 ** 12)
 
 class Main(QtGui.QMainWindow):
     def __init__(self):
@@ -29,7 +28,7 @@ class Main(QtGui.QMainWindow):
         self.ser.baudrate = 115200
         self.ser.timeout = 1
 
-    def showMainWindow(self):   
+    def showMainWindow(self):
 
         # load data
         settings_data = Settings().load()
@@ -39,7 +38,6 @@ class Main(QtGui.QMainWindow):
 
         # set display settings
         self.swipe = int(settings_data['swipeSamples'])
-        self.zero = float(0)
         self.vtick = float(settings_data['vertTick'])
         self.htick = float(settings_data['horizTick'])
         self.amplitude_start = float(settings_data['vMin'])
@@ -47,6 +45,7 @@ class Main(QtGui.QMainWindow):
         self.len_ch = int(settings_data['showChannels'])
         self.amplitude = self.amplitude_end - self.amplitude_start
         self.amplitude_max = self.amplitude * self.len_ch
+        self.zero = (self.amplitude_end - self.amplitude_start) / (2 ** 12)
 
         self.start = False
         self.timer = QtCore.QTimer()
@@ -60,7 +59,7 @@ class Main(QtGui.QMainWindow):
 
         # config layout
         self.layout = self.pw.addLayout()
-
+    
         # config combobox ports
         self.combobox_type = QComboBox()
         self.combobox_type.setEditable(False)
@@ -104,7 +103,7 @@ class Main(QtGui.QMainWindow):
 
         # config label
         label_configs = pg.LabelItem()
-        label_configs.setText("Swipe: " + str(self.swipe) + " | Zero: " + str(self.zero) + " | Amplitude: " +
+        label_configs.setText("Swipe: " + str(self.swipe) + " | Amplitude: " +
                               str(self.amplitude) + "V | HTick: " + str(self.htick) + " | VTick " + str(self.vtick) +
                               "V | Channels: " + str(self.len_ch))
         self.layout.addItem(label_configs, row=0, colspan=4)
@@ -132,7 +131,6 @@ class Main(QtGui.QMainWindow):
         self.button_stop.setEnabled(False)
         proxy_stop.setWidget(self.button_stop)
         self.layout.addItem(proxy_stop, row=0, colspan=1)
-
 
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
@@ -179,17 +177,6 @@ class Main(QtGui.QMainWindow):
                 self.timer.start(0)
             except (OSError, serial.SerialException) as err:
                 self.showMessage("Error!", str(err))
-        else:
-            try:
-                with open(self.file, 'r') as f:
-                    for line in f:
-                        if line[0] != "#" and line != "":
-                            self.data_log.append(line)
-
-                self.button_start.setEnabled(False)
-                self.button_show.setEnabled(True)
-            except:
-                self.showMessage("ERROR", "File")
 
     def stopCapture(self):
         self.timer.stop()
@@ -243,7 +230,7 @@ class Main(QtGui.QMainWindow):
             # plot data in graph
             if self.num_sig % int(self.swipe / 10) == 0:
                 for i in range(self.len_ch):
-                    self.curve[i].setData((self.data[i] * CONST_BOARD) - self.amplitude_start + (self.amplitude * i), pen=pg.mkPen('r', width=2))       
+                    self.curve[i].setData((self.data[self.len_ch - i - 1] * self.zero) - self.amplitude_start + (self.amplitude * i), pen=pg.mkPen('r', width=2))       
         except:
             self.showMessage("Warning","No more data to plot.")
             self.button_show.setEnabled(True)
@@ -275,8 +262,8 @@ class Main(QtGui.QMainWindow):
         self.ui_display.input_vtick.setText(str(self.settings_data['vertTick']))
         self.ui_display.input_htick.setText(str(self.settings_data['horizTick']))
         self.ui_display.input_ch.setText(str(self.settings_data['showChannels']).replace(".0", ""))
-        self.ui_display.input_ampS.setText(str(self.settings_data['vMin']))
-        self.ui_display.input_ampE.setText(str(self.settings_data['vMax']))
+        self.ui_display.input_voltMin.setText(str(self.settings_data['vMin']))
+        self.ui_display.input_voltMax.setText(str(self.settings_data['vMax']))
         # init actions
         self.ui_display.button_save.clicked.connect(self.storeDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
@@ -309,15 +296,15 @@ class Main(QtGui.QMainWindow):
             self.settings_data['showChannels'] = 4
             print("ERROR showChannels!")
         try:
-            self.settings_data['vMin'] = float(self.ui_display.input_ampS.text())
+            self.settings_data['vMin'] = float(self.ui_display.input_voltMin.text())
         except:
             self.settings_data['vMin'] = -2.0
-            print("ERROR ampS!")
+            print("ERROR vMin!")
         try:
-            self.settings_data['vMax'] = float(self.ui_display.input_ampE.text())
+            self.settings_data['vMax'] = float(self.ui_display.input_voltMax.text())
         except:
             self.settings_data['vMax'] = 2.0
-            print("ERROR ampE!")
+            print("ERROR vMax!")
 
         if(Settings().store(self.settings_data)):
             self.showMainWindow()
@@ -353,6 +340,15 @@ class Main(QtGui.QMainWindow):
         self.timer.stop()
         Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
         self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
+        try:
+            with open(self.file, 'r') as f:
+                for line in f:
+                    if line[0] != "#" and line != "":
+                        self.data_log.append(line)
+            self.button_start.setEnabled(False)
+            self.button_show.setEnabled(True)
+        except:
+            self.showMessage("ERROR", "File")
     
     def storeLogHeader(self):
         output = open(self.log_file, "a")
@@ -380,6 +376,8 @@ class Main(QtGui.QMainWindow):
 
     def onChange(self, newIndex):
         if newIndex == 0:
+            self.button_start.setEnabled(True)
+            self.button_show.setEnabled(False)
             self.button_file.setEnabled(False)
             self.combobox_serial.setEnabled(True)
         elif newIndex == 1:
