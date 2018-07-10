@@ -1,4 +1,4 @@
-# DESIGN ESPECIFICATIONS #
+# DESIGN ESPECIFICATIONS FOR PROTEUS #
 
 ## 1. Clearences (apply to all layers) ##
 
