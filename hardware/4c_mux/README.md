@@ -26,7 +26,7 @@
   
 ## 3. Defaults ##
 
-* <b>Default styles<\b>
+* <b>Default styles</b>
   - Neck style: T10
   - Relief style: relief
   
