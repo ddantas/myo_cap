@@ -7,9 +7,9 @@ class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
         settings = Settings().load()
-        amplitude_start = float(settings['vMin'])
-        amplitude_end = float(settings['vMax'])
-        amplitude = amplitude_end - amplitude_start
+        vMin = float(settings['vMin'])
+        vMax = float(settings['vMax'])
+        amplitude = vMax - vMin
         for x in values:
-            strns.append(round((x % amplitude) + (amplitude_start), 2))
+            strns.append(round((x % amplitude) + (vMin), 2))
         return strns
