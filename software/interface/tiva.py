@@ -31,7 +31,7 @@ class Main(QtGui.QMainWindow):
 
         # communication serial specifications
         self.ser = serial.Serial()
-        self.ser.baudrate = 115200
+        self.ser.baudrate = 921600
         self.ser.timeout = 1
 
         # board TIVA parameters
@@ -242,7 +242,7 @@ class Main(QtGui.QMainWindow):
                 if self.ser.is_open == False:
                     self.ser.port = self.combobox_serial.currentText()
                     self.ser.open()
-
+                self.apiTiva = ApiTiva(self.ser)
                 # log file
                 self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.storeLogHeader()
@@ -251,7 +251,7 @@ class Main(QtGui.QMainWindow):
                 self.button_stop.setEnabled(True)
                 self.button_show.setEnabled(True)
                 self.data_log = []
-                ApiTiva().start(self.ser)
+                self.apiTiva.start()
                 self.timer.start(0)
             except (OSError, serial.SerialException) as err:
                 self.showMessage("Error!", str(err))
@@ -260,7 +260,7 @@ class Main(QtGui.QMainWindow):
         self.timer.stop()
         try:
             if self.combobox_type.currentText() == "Serial" and self.start == True:
-                ApiTiva().stop(self.ser)
+                self.apiTiva.stop()
                 self.ser.close()
                 self.storeLogData()
                 self.showMessage("Warning", "Data stored successfully in the file: "+ self.log_file)
@@ -288,13 +288,13 @@ class Main(QtGui.QMainWindow):
             self.stopCapture()
 
     def captureSerial(self):
-        self.packet = ApiTiva().recvPkt(self.ser)
-        self.data_log.append(self.packet)
+        self.packet = self.apiTiva.recvPkt()
+        self.data_log.append(self.packet.replace(" ", ";"))
 
     def plotSerialData(self):
         try:
             num_ch = 0
-            for word in self.packet.split(';'):
+            for word in self.packet.split(' '):
                 self.data[num_ch][self.num_sig] = int(word) * self.const_ADC
                 num_ch = (num_ch + 1) % self.len_ch
             self.num_sig += 1
