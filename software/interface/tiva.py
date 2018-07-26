@@ -374,7 +374,6 @@ class Main(QtGui.QMainWindow):
         if (self.settings_data['vMax'] < self.settings_data['vMin']):
             self.showMessage("Error", "vMin > vMax!")
             flag_err = 0
-            
         if (flag_err):
             if Settings().store(self.settings_data):
                 self.showMainWindow()
