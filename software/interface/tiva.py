@@ -22,7 +22,7 @@ from win_capture_settings import Ui_CaptureSettingsWindow
 from win_display_settings import Ui_DisplaySettingsWindow
 
 
-class Main(QtGui.QMainWindow):
+class Main(QtGui.QMainWindow): 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
 
@@ -336,70 +336,74 @@ class Main(QtGui.QMainWindow):
             self.timer_plot.stop()
 
     def storeDisplaySettings(self):
+        flag_err = 1
         try:
             self.settings_data['swipeSamples'] = int(self.ui_display.input_swipe.text())
             check = 1 / self.swipe
         except:
-            print("ERROR swipeSamples!")
-
+            self.showMessage("Error", "swipeSamples!")
+            flag_err = 0
         try:
             self.settings_data['vertTick'] = float(self.ui_display.input_vtick.text())
             check = 1 / self.vtick
         except:
-            print("ERROR vtick!")
-
+            self.showMessage("Error", "vertTick!")
+            flag_err = 0
         try:
-            self.settings_data['horizTick'] = float(self.ui_display.input_htick.text())
+            self.settings_data['horizTick'] = int(self.ui_display.input_htick.text())
             check = 1 / self.htick
         except:
-            print("ERROR htick!")
-
+            self.showMessage("Error", "horizTick!")
+            flag_err = 0
         try:
             self.settings_data['showChannels'] = int(self.ui_display.input_ch.text())
             check = 1 / self.htick
         except:
-            print("ERROR showChannels!")
-
+            self.showMessage("Error", "showChannels!")
+            flag_err = 0
         try:
             self.settings_data['vMin'] = float(self.ui_display.input_voltMin.text())
         except:
-            print("ERROR vMin!")
-
+            self.showMessage("Error", "vMin!")
+            flag_err = 0
         try:
             self.settings_data['vMax'] = float(self.ui_display.input_voltMax.text())
         except:
-            print("ERROR vMax!")
-
-        if Settings().store(self.settings_data):
-            self.showMainWindow()
-            window.close()
+            self.showMessage("Error", "vMax!")
+            flag_err = 0
+        if (flag_err):
+            if Settings().store(self.settings_data):
+                self.showMainWindow()
+                window.close()
 
     def storeCaptureSettings(self):
+        flag_err = 1
         try:
             self.settings_data['sampleRate'] = int(self.ui_caps.input_sampleR.text())
         except:
-            print("ERROR sample rate!")
-
+            self.showMessage("Error", "Sample Rate!")
+            flag_err = 0
         try:
             self.settings_data['channelsPerBoard'] = int(self.ui_caps.input_ch.text())
         except:
-            print("ERROR channelsPerBoard!")
-
+            self.showMessage("Error", "channelsPerBoard!")
+            flag_err = 0
         try:
             self.settings_data['nBoards'] = int(self.ui_caps.input_numofboards.text())
         except:
-            print("ERROR nBoards!")
-
+            self.showMessage("Error", "nBoards!")
+            flag_err = 0
         try:
             self.settings_data['bitsPerSample'] = int(self.ui_caps.input_bits.text())
         except:
-            print("ERROR bitsPerSample!")
+            self.showMessage("Error", "bitsPerSample!")
+            flag_err = 0
+        if(flag_err):
+            self.settings_data['showChannels'] = str(int(self.settings_data['channelsPerBoard']) * int(self.settings_data['nBoards']))
 
-        self.settings_data['showChannels'] = str(int(self.settings_data['channelsPerBoard']) * int(self.settings_data['nBoards']))
-
-        if Settings().store(self.settings_data):
-            self.showMainWindow()
-            window.close()
+            if Settings().store(self.settings_data):
+                self.showMainWindow()
+                window.close()
     
     def storeLogHeader(self):
         output = open(self.log_file, "a")
