@@ -25,16 +25,16 @@ class Settings():
                         "##\n"+
                         "## EMG capture settings \n"+
                         "##\n"+
-                        "# sampleRate: "+ str(data['sampleRate']) + "\n" + 
-                        "# channelsPerBoard: " + str(data['channelsPerBoard']) + "\n" + 
-                        "# nBoards: " + str(data['nBoards']) + "\n" +
+                        "# sampleRate: "+ str(int(data['sampleRate'])) + "\n" + 
+                        "# channelsPerBoard: " + str(int(data['channelsPerBoard'])) + "\n" + 
+                        "# nBoards: " + str(int(data['nBoards'])) + "\n" +
                         "# bitsPerSample: " + str(data['bitsPerSample']) + "\n" +
-                        "# swipeSamples: "+ str(data['swipeSamples']) + "\n"+
-                        "# vertTick: " + str(data['vertTick']) + "\n"+ 
-                        "# horizTick: " + str(data['horizTick']) + "\n" +
+                        "# swipeSamples: "+ str(int(data['swipeSamples'])) + "\n"+
+                        "# vertTick: " + str(int(data['vertTick'])) + "\n"+ 
+                        "# horizTick: " + str(int(data['horizTick'])) + "\n" +
                         "# vMin: " + str(data['vMin']) + "\n"+ 
                         "# vMax: " + str(data['vMax']) + "\n" +
-                        "# showChannels: " + str(data['showChannels']))
+                        "# showChannels: " + str(int(data['showChannels'])))
             settings_file.close()
             return True
         except IOError as err:
