@@ -43,18 +43,18 @@ class Main(QtGui.QMainWindow):
 
     def showMainWindow(self):
         # set capture settings
-        self.sampleR = int(self.settings_data['sampleRate'])
-        self.num_boards = int(self.settings_data['nBoards'])
-        self.num_ch_board = int(self.settings_data['channelsPerBoard'])
-        self.num_bits = int(self.settings_data['bitsPerSample'])
+        self.sampleR = self.settings_data['sampleRate']
+        self.num_boards = self.settings_data['nBoards']
+        self.num_ch_board = self.settings_data['channelsPerBoard']
+        self.num_bits = self.settings_data['bitsPerSample']
 
         # set display settings
-        self.swipe = int(self.settings_data['swipeSamples'])
+        self.swipe = self.settings_data['swipeSamples']
         self.vtick = self.settings_data['vertTick']
         self.htick = self.settings_data['horizTick']
         self.vMin = self.settings_data['vMin']
         self.vMax = self.settings_data['vMax']
-        self.len_ch = int(self.settings_data['showChannels'])
+        self.len_ch = self.settings_data['showChannels']
         self.amplitude = self.vMax - self.vMin
         self.amplitude_max = self.amplitude * self.len_ch
 
@@ -119,7 +119,7 @@ class Main(QtGui.QMainWindow):
                             " | vMax:  "+ str(self.vMax) + "V" +
                             " | Amplitude: " + str(self.amplitude) + "V" + 
                             " | HTick: " + str(self.htick) +
-                            " | VTick " + str(self.vtick) + "V" + 
+                            " | VTick " + str(self.vtick) + "x" + 
                             " | Channels: " + str(self.len_ch))
         self.layout.addItem(label_configs, row=0, colspan=4)
 

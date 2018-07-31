@@ -10,7 +10,10 @@ class Settings():
             for line in settings_out:
                 if (line[1] == " "):
                     line = line.replace(":", "").split(" ")
-                    data[str(line[1])] = float(line[2])
+                    if(str(line[1]) == "vMin" or line[1] == "vMax"):
+                        data[str(line[1])] = float(line[2])
+                    else:
+                        data[str(line[1])] = int(line[2])
             settings_file.close()
             return data
         except IOError:
@@ -25,16 +28,16 @@ class Settings():
                         "##\n"+
                         "## EMG capture settings \n"+
                         "##\n"+
-                        "# sampleRate: "+ str(int(data['sampleRate'])) + "\n" + 
-                        "# channelsPerBoard: " + str(int(data['channelsPerBoard'])) + "\n" + 
-                        "# nBoards: " + str(int(data['nBoards'])) + "\n" +
+                        "# sampleRate: "+ str(data['sampleRate']) + "\n" + 
+                        "# channelsPerBoard: " + str(data['channelsPerBoard']) + "\n" + 
+                        "# nBoards: " + str(data['nBoards']) + "\n" +
                         "# bitsPerSample: " + str(data['bitsPerSample']) + "\n" +
-                        "# swipeSamples: "+ str(int(data['swipeSamples'])) + "\n"+
-                        "# vertTick: " + str(int(data['vertTick'])) + "\n"+ 
-                        "# horizTick: " + str(int(data['horizTick'])) + "\n" +
+                        "# swipeSamples: "+ str(data['swipeSamples']) + "\n"+
+                        "# vertTick: " + str(data['vertTick']) + "\n"+ 
+                        "# horizTick: " + str(data['horizTick']) + "\n" +
                         "# vMin: " + str(data['vMin']) + "\n"+ 
                         "# vMax: " + str(data['vMax']) + "\n" +
-                        "# showChannels: " + str(int(data['showChannels'])))
+                        "# showChannels: " + str(data['showChannels']))
             settings_file.close()
             return True
         except IOError as err:
