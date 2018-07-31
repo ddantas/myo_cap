@@ -149,7 +149,7 @@ class Main(QtGui.QMainWindow):
 
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
-        self.axis_y.setTickSpacing(4000, self.vtick)
+        self.axis_y.setTickSpacing(4000, self.amplitude/2**int(self.vtick))
 
         # graph
         self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
@@ -195,10 +195,10 @@ class Main(QtGui.QMainWindow):
         self.ui_display.setupUi(self)
 
         # set data
-        self.ui_display.input_swipe.setText(str(self.swipe))
-        self.ui_display.input_vtick.setText(str(self.vtick))
-        self.ui_display.input_htick.setText(str(self.htick))
-        self.ui_display.input_ch.setText(str(self.len_ch))
+        self.ui_display.input_swipe.setText(str(int(self.swipe)))
+        self.ui_display.input_vtick.setText(str(int(self.vtick)))
+        self.ui_display.input_htick.setText(str(int(self.htick)))
+        self.ui_display.input_ch.setText(str(int(self.len_ch)))
         self.ui_display.input_voltMin.setText(str(self.vMin))
         self.ui_display.input_voltMax.setText(str(self.vMax))
         # init actions
@@ -344,7 +344,7 @@ class Main(QtGui.QMainWindow):
             self.showMessage("Error", "swipeSamples!")
             flag_err = 0
         try:
-            self.settings_data['vertTick'] = float(self.ui_display.input_vtick.text())
+            self.settings_data['vertTick'] = int(self.ui_display.input_vtick.text())
             check = 1 / self.vtick
         except:
             self.showMessage("Error", "vertTick!")

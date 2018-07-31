@@ -9,7 +9,8 @@ class DateAxis(pg.AxisItem):
         settings = Settings().load()
         vMin = float(settings['vMin'])
         vMax = float(settings['vMax'])
-        amplitude = vMax - vMin
+        amplitude = (vMax - vMin)
         for x in values:
-            strns.append(round((x % amplitude) + (vMin), 2))
+            print(round( (x % amplitude) + vMin, 2))
+            strns.append(round( (x % amplitude) + vMin, 2))
         return strns
