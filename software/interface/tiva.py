@@ -42,21 +42,10 @@ class Main(QtGui.QMainWindow):
         self.t = 0.0
 
     def showMainWindow(self):
-        # set capture settings
-        self.sampleR = self.settings_data['sampleRate']
-        self.num_boards = self.settings_data['nBoards']
-        self.num_ch_board = self.settings_data['channelsPerBoard']
-        self.num_bits = self.settings_data['bitsPerSample']
 
         # set display settings
-        self.swipe = self.settings_data['swipeSamples']
-        self.vtick = self.settings_data['vertTick']
-        self.htick = self.settings_data['horizTick']
-        self.vMin = self.settings_data['vMin']
-        self.vMax = self.settings_data['vMax']
-        self.len_ch = self.settings_data['showChannels']
-        self.amplitude = self.vMax - self.vMin
-        self.amplitude_max = self.amplitude * self.len_ch
+        self.amplitude = self.settings_data['vMax'] - self.settings_data['vMin']
+        self.amplitude_max = self.amplitude * self.settings_data['showChannels']
 
         self.start = False
         self.timer = QtCore.QTimer()
@@ -114,13 +103,13 @@ class Main(QtGui.QMainWindow):
 
         # config label
         label_configs = pg.LabelItem()
-        label_configs.setText("Swipe: " + str(self.swipe) +
-                            " | vMin: "+ str(self.vMin) + "V"+ 
-                            " | vMax:  "+ str(self.vMax) + "V" +
+        label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
+                            " | vMin: "+ str(self.settings_data['vMin']) + "V"+ 
+                            " | vMax:  "+ str(self.settings_data['vMax']) + "V" +
                             " | Amplitude: " + str(self.amplitude) + "V" + 
-                            " | HTick: " + str(self.htick) +
-                            " | VTick " + str(self.vtick) + "x" + 
-                            " | Channels: " + str(self.len_ch))
+                            " | HTick: " + str(self.settings_data['horizTick']) +
+                            " | VTick " + str(self.settings_data['vertTick']) + "x" + 
+                            " | Channels: " + str(self.settings_data['showChannels']))
         self.layout.addItem(label_configs, row=0, colspan=4)
 
         # config start capture button
@@ -149,7 +138,7 @@ class Main(QtGui.QMainWindow):
 
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
-        self.axis_y.setTickSpacing(4000, self.amplitude/2**int(self.vtick))
+        self.axis_y.setTickSpacing(4000, self.amplitude/2**int(self.settings_data['vertTick']))
 
         # graph
         self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
@@ -161,15 +150,15 @@ class Main(QtGui.QMainWindow):
 
         # config axis x
         self.axis_x = self.graph.getAxis('bottom')
-        self.axis_x.setTickSpacing(self.swipe, self.htick)
+        self.axis_x.setTickSpacing(self.settings_data['swipeSamples'], self.settings_data['horizTick'])
 
         # creating curves
         self.curve = []
         self.data_log = []
-        self.data = np.zeros(shape=(self.len_ch, self.swipe), dtype=float)
+        self.data = np.zeros(shape=(self.settings_data['showChannels'], self.settings_data['swipeSamples']), dtype=float)
         self.num_sig = 0
 
-        for i in range(self.len_ch):
+        for i in range(self.settings_data['showChannels']):
             self.curve.append(self.graph.plot(self.data[i]))
         self.pw.showMaximized()
 
@@ -178,10 +167,10 @@ class Main(QtGui.QMainWindow):
         self.ui_caps.setupUi(self)
 
         # set capture data
-        self.ui_caps.input_sampleR.setText(str(self.sampleR))
-        self.ui_caps.input_ch.setText(str(self.num_ch_board))
-        self.ui_caps.input_numofboards.setText(str(self.num_boards))
-        self.ui_caps.input_bits.setText(str(self.num_bits))
+        self.ui_caps.input_sampleR.setText(str(self.settings_data['sampleRate']))
+        self.ui_caps.input_ch.setText(str(self.settings_data['channelsPerBoard']))
+        self.ui_caps.input_numofboards.setText(str(self.settings_data['nBoards']))
+        self.ui_caps.input_bits.setText(str(self.settings_data['bitsPerSample']))
 
         # init actions
         self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
@@ -195,12 +184,12 @@ class Main(QtGui.QMainWindow):
         self.ui_display.setupUi(self)
 
         # set data
-        self.ui_display.input_swipe.setText(str(int(self.swipe)))
-        self.ui_display.input_vtick.setText(str(int(self.vtick)))
-        self.ui_display.input_htick.setText(str(int(self.htick)))
-        self.ui_display.input_ch.setText(str(int(self.len_ch)))
-        self.ui_display.input_voltMin.setText(str(self.vMin))
-        self.ui_display.input_voltMax.setText(str(self.vMax))
+        self.ui_display.input_swipe.setText(str(self.settings_data['swipeSamples']))
+        self.ui_display.input_vtick.setText(str(self.settings_data['vertTick']))
+        self.ui_display.input_htick.setText(str(self.settings_data['horizTick']))
+        self.ui_display.input_ch.setText(str(self.settings_data['showChannels']))
+        self.ui_display.input_voltMin.setText(str(self.settings_data['vMin']))
+        self.ui_display.input_voltMax.setText(str(self.settings_data['vMax']))
         # init actions
         self.ui_display.button_save.clicked.connect(self.storeDisplaySettings)
         self.ui_display.button_cancel.clicked.connect(window.close)
@@ -296,17 +285,17 @@ class Main(QtGui.QMainWindow):
             num_ch = 0
             for word in self.packet.split(' '):
                 self.data[num_ch][self.num_sig] = int(word) * self.const_ADC
-                num_ch = (num_ch + 1) % self.len_ch
+                num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
 
             # update test graph and store data
-            if self.num_sig % self.swipe == 0:
+            if self.num_sig % self.settings_data['swipeSamples'] == 0:
                 self.num_sig = 0
 
             # plot data in graph
-            if self.num_sig % int(self.swipe / 10) == 0:
-                for i in range(self.len_ch):
-                    self.curve[i].setData(self.data[self.len_ch - i - 1] - self.vMin + (self.amplitude * i), pen=pg.mkPen('r', width=1.3))
+            if self.num_sig % int(self.settings_data['swipeSamples'] / 10) == 0:
+                for i in range(self.settings_data['showChannels']):
+                    self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] + (self.amplitude * i), pen=pg.mkPen('r', width=1.3))
         except:
             self.showMessage("Error!","")
             self.button_show.setEnabled(True)
@@ -317,18 +306,18 @@ class Main(QtGui.QMainWindow):
             line = self.data_log[self.control]
             self.control += 1
             num_ch = 0
-            time.sleep(1.0/self.sampleR)
+            time.sleep(1.0/self.settings_data['sampleRate'])
             for word in line.replace(';', ' ').split(' '):
                 self.data[num_ch][self.num_sig] = int(word) * self.const_ADC
-                num_ch = (num_ch + 1) % self.len_ch
+                num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
             # update test graph and store data
-            if self.num_sig % self.swipe == 0:
+            if self.num_sig % self.settings_data['swipeSamples'] == 0:
                 self.num_sig = 0
             # plot data in graph
-            if self.num_sig % int(self.swipe / 10) == 0:
-                for i in range(self.len_ch):
-                    self.curve[i].setData(self.data[self.len_ch - i - 1] - self.vMin +
+            if self.num_sig % int(self.settings_data['swipeSamples'] / 10) == 0:
+                for i in range(self.settings_data['showChannels']):
+                    self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] +
                                           (self.amplitude * i), pen=pg.mkPen('r', width=1.3))
         except:
             self.showMessage("Warning","No more data to plot.")
@@ -339,25 +328,25 @@ class Main(QtGui.QMainWindow):
         flag_err = 1
         try:
             self.settings_data['swipeSamples'] = int(self.ui_display.input_swipe.text())
-            check = 1 / self.swipe
+            check = 1 / self.settings_data['swipeSamples']
         except:
             self.showMessage("Error", "swipeSamples!")
             flag_err = 0
         try:
             self.settings_data['vertTick'] = int(self.ui_display.input_vtick.text())
-            check = 1 / self.vtick
+            check = 1 / self.settings_data['vertTick']
         except:
             self.showMessage("Error", "vertTick!")
             flag_err = 0
         try:
             self.settings_data['horizTick'] = int(self.ui_display.input_htick.text())
-            check = 1 / self.htick
+            check = 1 / self.settings_data['horizTick']
         except:
             self.showMessage("Error", "horizTick!")
             flag_err = 0
         try:
             self.settings_data['showChannels'] = int(self.ui_display.input_ch.text())
-            check = 1 / self.htick
+            check = 1 / self.settings_data['horizTick']
         except:
             self.showMessage("Error", "showChannels!")
             flag_err = 0
@@ -402,7 +391,7 @@ class Main(QtGui.QMainWindow):
             self.showMessage("Error", "bitsPerSample!")
             flag_err = 0
         if(flag_err):
-            self.settings_data['showChannels'] = str(int(self.settings_data['channelsPerBoard']) * int(self.settings_data['nBoards']))
+            self.settings_data['showChannels'] = int(self.settings_data['channelsPerBoard']) * int(self.settings_data['nBoards'])
 
             if Settings().store(self.settings_data):
                 self.showMainWindow()
@@ -417,10 +406,10 @@ class Main(QtGui.QMainWindow):
                     "##\n" +
                     "## EMG capture settings" +
                     "##\n" +
-                    "# sampleRate: "+str(self.sampleR) + "\n" +
-                    "# channelsPerBoard: " + str(self.num_ch_board) + "\n"+
-                    "# nBoards: " + str(self.num_boards) + "\n" +
-                    "# bitsPerSample: " + str(self.num_bits) + "\n" +
+                    "# sampleRate: "+str(self.settings_data['sampleRate']) + "\n" +
+                    "# channelsPerBoard: " + str(self.settings_data['channelsPerBoard']) + "\n"+
+                    "# nBoards: " + str(self.settings_data['nBoards']) + "\n" +
+                    "# bitsPerSample: " + str(self.settings_data['bitsPerSample']) + "\n" +
                     "##\n" +
                     "## Data\n" +
                     "## t;ch0;ch1;...;ch(channelsPerBoard * nBoards - 1)\n")

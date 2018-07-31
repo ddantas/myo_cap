@@ -11,6 +11,5 @@ class DateAxis(pg.AxisItem):
         vMax = float(settings['vMax'])
         amplitude = (vMax - vMin)
         for x in values:
-            print(round( (x % amplitude) + vMin, 2))
             strns.append(round( (x % amplitude) + vMin, 2))
         return strns
