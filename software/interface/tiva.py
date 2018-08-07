@@ -44,7 +44,10 @@ class Main(QtGui.QMainWindow):
     def showMainWindow(self):
 
         # set display settings
+        self.settings_data['vMin'] = ( int(self.settings_data['vMin'] / self.settings_data['vertTick']) - 1 ) * self.settings_data['vertTick']
+        self.settings_data['vMax'] = ( int(self.settings_data['vMax'] / self.settings_data['vertTick']) + 1 ) * self.settings_data['vertTick']
         self.amplitude = self.settings_data['vMax'] - self.settings_data['vMin']
+        
         self.amplitude_max = self.amplitude * self.settings_data['showChannels']
 
         self.start = False
@@ -108,7 +111,7 @@ class Main(QtGui.QMainWindow):
                             " | vMax:  "+ str(self.settings_data['vMax']) + "V" +
                             " | Amplitude: " + str(self.amplitude) + "V" + 
                             " | HTick: " + str(self.settings_data['horizTick']) +
-                            " | VTick " + str(self.settings_data['vertTick']) + "x" + 
+                            " | VTick " + str(self.settings_data['vertTick']) + "V" + 
                             " | Channels: " + str(self.settings_data['showChannels']))
         self.layout.addItem(label_configs, row=0, colspan=4)
 
@@ -138,7 +141,7 @@ class Main(QtGui.QMainWindow):
 
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
-        self.axis_y.setTickSpacing(4000, self.amplitude/2**int(self.settings_data['vertTick']))
+        self.axis_y.setTickSpacing(4000, self.settings_data['vertTick'])
 
         # graph
         self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
@@ -179,6 +182,7 @@ class Main(QtGui.QMainWindow):
         window.show()
 
     def showDisplaySettings(self):
+        self.settings_data = Settings().load()
 
         self.ui_display = Ui_DisplaySettingsWindow()
         self.ui_display.setupUi(self)
@@ -333,7 +337,7 @@ class Main(QtGui.QMainWindow):
             self.showMessage("Error", "swipeSamples!")
             flag_err = 0
         try:
-            self.settings_data['vertTick'] = int(self.ui_display.input_vtick.text())
+            self.settings_data['vertTick'] = float(self.ui_display.input_vtick.text())
             check = 1 / self.settings_data['vertTick']
         except:
             self.showMessage("Error", "vertTick!")

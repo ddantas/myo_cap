@@ -7,8 +7,8 @@ class DateAxis(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         strns = []
         settings = Settings().load()
-        vMin = float(settings['vMin'])
-        vMax = float(settings['vMax'])
+        vMin = ( int(settings['vMin'] / settings['vertTick']) - 1 ) * settings['vertTick']
+        vMax = ( int(settings['vMax'] / settings['vertTick']) + 1 ) * settings['vertTick']
         amplitude = (vMax - vMin)
         for x in values:
             strns.append(round( (x % amplitude) + vMin, 2))

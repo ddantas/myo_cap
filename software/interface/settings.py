@@ -10,7 +10,7 @@ class Settings():
             for line in settings_out:
                 if (line[1] == " "):
                     line = line.replace(":", "").split(" ")
-                    if(str(line[1]) == "vMin" or line[1] == "vMax"):
+                    if(str(line[1]) == "vMin" or str(line[1]) == "vMax" or str(line[1]) == "vertTick"):
                         data[str(line[1])] = float(line[2])
                     else:
                         data[str(line[1])] = int(line[2])
