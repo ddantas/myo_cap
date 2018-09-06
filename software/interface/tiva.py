@@ -18,13 +18,13 @@ from pyqtgraph.Qt import QtCore, QtGui
 from date_axis_custom import DateAxis
 from settings import Settings
 from api_tiva import ApiTiva
-from win_capture_settings import Ui_CaptureSettingsWindow
-from win_display_settings import Ui_DisplaySettingsWindow
+from display_settings import DisplaySettings
+from capture_settings import CaptureSettings
 
 
 class Main(QtGui.QMainWindow): 
-    def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+    def __init__(self, parent=None):
+        super(Main, self).__init__(parent)
 
         # load data
         self.settings_data = Settings().load()
@@ -40,6 +40,17 @@ class Main(QtGui.QMainWindow):
 
         # time acquisition
         self.t = 0.0
+        
+    def showDisplaySettings(self):
+        self.win_display = DisplaySettings(self)
+        self.stopCapture()
+        self.win_display.show()
+
+    def showCaptureSettings(self):
+        self.win_capture = CaptureSettings(self)
+        self.stopCapture()
+        self.win_capture.show()
+
 
     def showMainWindow(self):
 
@@ -164,41 +175,6 @@ class Main(QtGui.QMainWindow):
         for i in range(self.settings_data['showChannels']):
             self.curve.append(self.graph.plot(self.data[i]))
         self.pw.showMaximized()
-
-    def showCaptureSettings(self):
-        self.ui_caps = Ui_CaptureSettingsWindow()
-        self.ui_caps.setupUi(self)
-
-        # set capture data
-        self.ui_caps.input_sampleR.setText(str(self.settings_data['sampleRate']))
-        self.ui_caps.input_ch.setText(str(self.settings_data['channelsPerBoard']))
-        self.ui_caps.input_numofboards.setText(str(self.settings_data['nBoards']))
-        self.ui_caps.input_bits.setText(str(self.settings_data['bitsPerSample']))
-
-        # init actions
-        self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
-        self.ui_caps.button_cancel.clicked.connect(window.close)
-        self.stopCapture()
-        window.show()
-
-    def showDisplaySettings(self):
-        self.settings_data = Settings().load()
-
-        self.ui_display = Ui_DisplaySettingsWindow()
-        self.ui_display.setupUi(self)
-
-        # set data
-        self.ui_display.input_swipe.setText(str(self.settings_data['swipeSamples']))
-        self.ui_display.input_vtick.setText(str(self.settings_data['vertTick']))
-        self.ui_display.input_htick.setText(str(self.settings_data['horizTick']))
-        self.ui_display.input_ch.setText(str(self.settings_data['showChannels']))
-        self.ui_display.input_voltMin.setText(str(self.settings_data['vMin']))
-        self.ui_display.input_voltMax.setText(str(self.settings_data['vMax']))
-        # init actions
-        self.ui_display.button_save.clicked.connect(self.storeDisplaySettings)
-        self.ui_display.button_cancel.clicked.connect(window.close)
-        self.stopCapture()
-        window.show()
 
     def showMessage(self, title, body):
         QMessageBox.about(self, title, body)
@@ -327,79 +303,6 @@ class Main(QtGui.QMainWindow):
             self.showMessage("Warning","No more data to plot.")
             self.button_show.setEnabled(True)
             self.timer_plot.stop()
-
-    def storeDisplaySettings(self):
-        flag_err = 1
-        try:
-            self.settings_data['swipeSamples'] = int(self.ui_display.input_swipe.text())
-            check = 1 / self.settings_data['swipeSamples']
-        except:
-            self.showMessage("Error", "swipeSamples!")
-            flag_err = 0
-        try:
-            self.settings_data['vertTick'] = float(self.ui_display.input_vtick.text())
-            check = 1 / self.settings_data['vertTick']
-        except:
-            self.showMessage("Error", "vertTick!")
-            flag_err = 0
-        try:
-            self.settings_data['horizTick'] = int(self.ui_display.input_htick.text())
-            check = 1 / self.settings_data['horizTick']
-        except:
-            self.showMessage("Error", "horizTick!")
-            flag_err = 0
-        try:
-            self.settings_data['showChannels'] = int(self.ui_display.input_ch.text())
-            check = 1 / self.settings_data['horizTick']
-        except:
-            self.showMessage("Error", "showChannels!")
-            flag_err = 0
-        try:
-            self.settings_data['vMin'] = float(self.ui_display.input_voltMin.text())
-        except:
-            self.showMessage("Error", "vMin!")
-            flag_err = 0
-        try:
-            self.settings_data['vMax'] = float(self.ui_display.input_voltMax.text())
-        except:
-            self.showMessage("Error", "vMax!")
-            flag_err = 0
-        if (self.settings_data['vMax'] < self.settings_data['vMin']):
-            self.showMessage("Error", "vMin > vMax!")
-            flag_err = 0
-        if (flag_err):
-            if Settings().store(self.settings_data):
-                self.showMainWindow()
-                window.close()
-
-    def storeCaptureSettings(self):
-        flag_err = 1
-        try:
-            self.settings_data['sampleRate'] = int(self.ui_caps.input_sampleR.text())
-        except:
-            self.showMessage("Error", "Sample Rate!")
-            flag_err = 0
-        try:
-            self.settings_data['channelsPerBoard'] = int(self.ui_caps.input_ch.text())
-        except:
-            self.showMessage("Error", "channelsPerBoard!")
-            flag_err = 0
-        try:
-            self.settings_data['nBoards'] = int(self.ui_caps.input_numofboards.text())
-        except:
-            self.showMessage("Error", "nBoards!")
-            flag_err = 0
-        try:
-            self.settings_data['bitsPerSample'] = int(self.ui_caps.input_bits.text())
-        except:
-            self.showMessage("Error", "bitsPerSample!")
-            flag_err = 0
-        if(flag_err):
-            self.settings_data['showChannels'] = int(self.settings_data['channelsPerBoard']) * int(self.settings_data['nBoards'])
-
-            if Settings().store(self.settings_data):
-                self.showMainWindow()
-                window.close()
     
     def storeLogHeader(self):
         output = open(self.log_file, "a")
