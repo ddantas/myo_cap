@@ -20,6 +20,7 @@ from settings import Settings
 from api_tiva import ApiTiva
 from display_settings import DisplaySettings
 from capture_settings import CaptureSettings
+from serial_ports import SerialPorts
 
 import sys, os
 mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
@@ -42,7 +43,7 @@ class Main(QtGui.QMainWindow):
 
         # time acquisition
         self.t = 0.0
-        
+
     def showDisplaySettings(self):
         self.win_display = DisplaySettings(self)
         self.stopCapture()
@@ -52,7 +53,6 @@ class Main(QtGui.QMainWindow):
         self.win_capture = CaptureSettings(self)
         self.stopCapture()
         self.win_capture.show()
-
 
     def showMainWindow(self):
 
@@ -89,8 +89,8 @@ class Main(QtGui.QMainWindow):
         # config combobox ports
         self.combobox_serial = QComboBox()
         self.combobox_serial.setEditable(False)
-        for port in list_ports.comports():
-            self.combobox_serial.addItem(port[0])
+        for port in SerialPorts().list():
+            self.combobox_serial.addItem(port)
         proxy_list = QGraphicsProxyWidget()
         proxy_list.setWidget(self.combobox_serial)
         self.layout.addItem(proxy_list, row=0, colspan=1)
@@ -188,14 +188,17 @@ class Main(QtGui.QMainWindow):
         self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
 
         try:
-            with open(mainPath+"/"+ self.file, 'r') as f:
-                for line in f:
-                    if line[0] != "#" and line != "":
-                        self.data_log.append(line)
+            self.loadData(mainPath+"/"+ self.file)
             self.button_start.setEnabled(False)
             self.button_show.setEnabled(True)
         except:
             self.showMessage("ERROR", "File")
+
+    def loadData(self, file):
+        with open(file, 'r') as f:
+                for line in f:
+                    if line[0] != "#" and line != "":
+                        self.data_log.append(line)
 
     def onChange(self, newIndex):
         if newIndex == 0:
@@ -218,6 +221,7 @@ class Main(QtGui.QMainWindow):
                 self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.storeLogHeader()
                 self.start = True
+                
                 self.button_start.setEnabled(False)
                 self.button_stop.setEnabled(True)
                 self.button_show.setEnabled(True)

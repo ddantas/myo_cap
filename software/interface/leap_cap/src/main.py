@@ -17,7 +17,7 @@ class ExampleApp(QtGui.QMainWindow, design_Ui.Ui_MainWindow):
         super(self.__class__, self).__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
         #self.pushButton.clicked.connect(self.startLeap)        
-        self.pushButton.clicked.connect(self.startKey)
+        #self.pushButton.clicked.connect(self.startKey)
 	#self.settings_data = Settings().load()
 
     def keyPressEvent(self, event):
