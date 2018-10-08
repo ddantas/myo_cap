@@ -9,7 +9,7 @@
 # nBoards: 1
 # bitsPerSample: 12
 # swipeSamples: 1000
-# vertTick: 0.4
+# vertTick: 1.0
 # horizTick: 100
 # vMin: -1.65
 # vMax: 1.65

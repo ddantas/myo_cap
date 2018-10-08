@@ -70,6 +70,6 @@ class Class_GCS(QtGui.QMainWindow):
 	settings.close()
 	self.close()
     def loadRoutine(self):
-	fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.','Log (*.log)')[0]
+	fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.','TXT (*.txt)')[0]
 	for endfile in fileNames: self.defaultCapPadrao = endfile
 

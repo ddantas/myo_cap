@@ -18,6 +18,7 @@ from EmgEmulation import Class_EMG
 
 sys.path.append("../../")
 
+from serial_ports import SerialPorts
 from settings import Settings
 from display_settings import DisplaySettings
 from capture_settings import CaptureSettings
@@ -223,11 +224,45 @@ class Ui_MainWindow(object):
 	self.linesEmg = f.read().splitlines()
 	f.close()    
 
-    def startCapture(self):	
-	self.tiva = Main(self)
-	self.tiva.showMainWindow()
-	self.start()
+    def startCapture(self):
+	settingsGCS = open('settingsGCS', 'r')
+	setCurrent = settingsGCS.read().splitlines()
+	self.device = setCurrent[0]	
+	self.routine = setCurrent[1]
+	self.hand = setCurrent[2]
 
+	try:
+		self.defaultCapPadrao = self.routine	
+		f = open(self.defaultCapPadrao,'r')
+    		self.linesCap = f.read().splitlines()
+	except:
+		print ("ERRO")
+	
+	##############################################
+
+	settingsEE = open('settingsEE', 'r')
+	setCurrent = settingsEE.read().splitlines()
+	enable = setCurrent[0]
+
+	self.tiva = Main(self)
+	self.tiva.showMainWindow()	
+	
+	self.serialPorts = SerialPorts()
+
+
+	if setCurrent[0] == 'True':
+				print setCurrent[1]
+				self.tiva.loadData(setCurrent[1])
+				self.tiva.showCapture()
+				#self.startDevice()
+			
+	else:	
+		if self.serialPorts.list():
+			self.tiva.startCapture()
+			self.startDevice()
+			print (2)
+		else:	
+			self.startDevice()
     def stopCapture(self):
 	print "StopCapture"
 
@@ -298,35 +333,11 @@ class Ui_MainWindow(object):
 	global sequence
 	modules.main(sequence, self.linesEmg)
 
-    def start(self):
-	settingsGCS = open('settingsGCS', 'r')
-	setCurrent = settingsGCS.read().splitlines()
-	device = setCurrent[0]	
-	routine = setCurrent[1]
-	hand = setCurrent[2]
-
-	try:
-		self.defaultCapPadrao = device		
-		self.linesCap = f.read().splitlines()
-		f.close()
-	except:
-		print ("ERRO")
-	
-###########################################################################
-
-	settingsEE = open('settingsEE', 'r')
-	setCurrent = settingsEE.read().splitlines()
-	if setCurrent[0] == 'TRUE':
-		print setCurrent[1]
-		self.tiva.loadData(setCurrent[1])
-		self.tiva.showCapture()
-	else:
-		self.tiva.startCapture()
-
-	if device == 'Keyboard':
+    def startDevice(self):
+	if self.device == 'Keyboard':
 		self.startKey()
-	if device == 'Leap Motion':
+	if self.device == 'Leap Motion':
 		self.startLeap()
-	if device != 'Keyboard' and device != 'Leap Motion':
+	if self.device == 'None':
 		print ("Not found")
 

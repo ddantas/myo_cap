@@ -21,7 +21,7 @@ class Class_EMG(QtGui.QMainWindow):
         self.ui_caps.setupUi(self)
 	self.defaultEmgPadrao = '../../data/2018-07-11_16-00-00.log'
 	
-	if check == 'TRUE':
+	if check == 'True':
 		self.ui_caps.checkBox.setChecked(True)
 	self.ui_caps.checkBox.stateChanged.connect(self.clickBox)
 	#self.ui_caps.pushButton.clicked.connect(self.loadRoutine)
@@ -32,10 +32,10 @@ class Class_EMG(QtGui.QMainWindow):
 	settings = open('settingsEE', 'w')
 	setCurrent = []
 	if self.ui_caps.checkBox.isChecked():
-		setCurrent.append('TRUE\n')
+		setCurrent.append('True\n')
 		setCurrent.append(self.defaultCapPadrao)
 	else :
-		setCurrent.append('FALSE')
+		setCurrent.append('False')
 
 	settings.writelines(setCurrent)
 	settings.close()
