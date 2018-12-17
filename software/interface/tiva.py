@@ -223,7 +223,7 @@ class Main(QtGui.QMainWindow):
                 self.apiTiva = ApiTiva(self.ser)
 
                 # log file
-                self.log_id = self.textfile.init(self.settings_data['showChannels'], ",", "ch")
+                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%d;%d;%d;%d", "ch")
                 # self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.storeLogHeader()
                 self.start = True
@@ -270,7 +270,7 @@ class Main(QtGui.QMainWindow):
 
     def captureSerial(self):
         self.packet = self.apiTiva.recvPkt()
-        self.textfile.log(self.log_id, self.packet[:-1].replace(" ", ", "))
+        self.textfile.log(self.log_id, self.packet[:-1].split(' '))
         self.data_log.append(self.packet.replace(" ", ";"))
 
     def plotSerialData(self):
@@ -330,7 +330,7 @@ class Main(QtGui.QMainWindow):
         self.textfile.metadata_save("bitsPerSample", self.settings_data['bitsPerSample'])
 
     def storeLogData(self):
-        self.textfile.save(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        self.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) )
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
