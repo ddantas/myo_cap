@@ -58,18 +58,21 @@ class Textfile():
         id -- log id
         value -- data
         '''
-        self.data_init[id][0] = map(float, values)
-        data_aux = ""
-        for value in self.data_init[1:]:
-            if(data_aux):
-                data_aux = data_aux + ", " + value[1] % tuple(value[0]) 
-            else:
-                data_aux = value[1] % tuple(value[0])
-        self.temp_data[self.count_data] = data_aux+"\n"
-        self.count_data += 1        
-        if(self.count_data >= 1000):
-            self.data.append(self.temp_data)
-            self.count_data = 0
+        try:
+            self.data_init[id][0] = map(float, values)
+            data_aux = ""
+            for value in self.data_init[1:]:
+                if(data_aux):
+                    data_aux = "%s, %s" % (data_aux, value[1] % tuple(value[0]))
+                else:
+                    data_aux = value[1] % tuple(value[0])
+            self.temp_data[self.count_data] = data_aux+"\n"
+            self.count_data += 1        
+            if(self.count_data >= 1000):
+                self.data.append(self.temp_data)
+                self.count_data = 0
+        except:
+            pass
 
     def save(self, filename):
         '''
@@ -78,6 +81,8 @@ class Textfile():
         Keyword arguments:
         filename -- relative path
         '''
+        if(self.data):
+            self.data.append(self.temp_data)
         try:
             output = open(mainPath + filename, "a")
             output.writelines(self.header)
@@ -99,6 +104,6 @@ class Textfile():
         self.data_header = ""
         self.id = 0
         self.temp_data = []
-        for x in range(1000):
+        for x in range(1001):
             self.temp_data.append("")
         self.count_data = 0
