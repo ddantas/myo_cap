@@ -17,7 +17,7 @@ class Textfile():
         nameCols -- name of columns
         '''
         if(self.data_header):
-            self.data_header = self.data_header + str(format)
+            self.data_header = self.data_header + ";" + str(format)
         else:
             self.data_header =  "# " + str(format)
         self.data_init.append([])
@@ -63,15 +63,12 @@ class Textfile():
             data_aux = ""
             for value in self.data_init[1:]:
                 if(data_aux):
-                    data_aux = "%s, %s" % (data_aux, value[1] % tuple(value[0]))
+                    data_aux = "%s;%s" % (data_aux, value[1] % tuple(value[0]))
                 else:
                     data_aux = value[1] % tuple(value[0])
-            self.temp_data[self.count_data] = data_aux+"\n"
-            self.count_data += 1        
-            if(self.count_data >= 1000):
-                self.data.append(self.temp_data)
-                self.count_data = 0
-        except:
+            self.data.append(data_aux+"\n")
+
+        except Exception as e:
             pass
 
     def save(self, filename):
@@ -81,17 +78,14 @@ class Textfile():
         Keyword arguments:
         filename -- relative path
         '''
-        if(self.data):
-            self.data.append(self.temp_data)
         try:
             output = open(mainPath + filename, "a")
             output.writelines(self.header)
             output.write(str(self.data_header+'\n'))
-            for lines in self.data:
-                output.writelines(lines)
+            output.writelines(self.data)
             output.close()
-        except IOError:
-           print("err!")
+        except Exception as e:
+           print(e)
 
     def start_variables(self):
         '''
