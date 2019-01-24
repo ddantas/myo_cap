@@ -10,14 +10,15 @@ import modules
 
 sys.path.append("../../")
 
-#from tiva import Main
 
 allFingers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 class LeapMotionListener(Leap.Listener):
- #   print modules.tivaGlobal
-    #id = modules.tivaGlobal.textfile.init(15, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;", "lp")
+    def __init__(self, tiva, textId):
+        self.tiva = tiva
+        self.textId = textId
+        Leap.Listener.__init__(self)
 
     finger_names = ['Polegar','Indicador','Meio','Anular','Mindinho']
     bone_names = ['Metacarpo','Proximal','Intermediario','Distal']
@@ -134,5 +135,4 @@ class LeapMotionListener(Leap.Listener):
                 pygame.draw.rect(modules.gameDisplay, black, [190,600,20,100])
                 pygame.draw.rect(modules.gameDisplay, black, [220,600,20,100])
 
-            print "2"+str(allFingers)
-            modules.tivaGlobal.textfile.log(id, allFingers)
+            self.tiva.textfile.log(self.textId, allFingers)

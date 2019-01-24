@@ -252,12 +252,14 @@ class Ui_MainWindow(object):
 
         if setCurrent[0] == 'True':
             self.tiva.loadData(setCurrent[1])
-            self.tiva.showCapture()
+            tk = tTiva(self.tiva,'show')
+            tk.start()
             self.startDevice()
         else:
             if self.serialPorts.list(): #CHECA A PORTA SERIAL
-                self.tiva.startCapture()
                 self.startDevice()
+                tk = tTiva(self.tiva,'start')
+                tk.start()
             else:
                 self.startDevice()
 
@@ -332,3 +334,11 @@ class Ui_MainWindow(object):
 			self.tiva = Main(self)
 			self.tiva.showMainWindow()
 
+
+class tTiva(threading.Thread):
+    def __init__(self, tiva, op):
+        if op == 'show':
+            tiva.showCapture()
+        if op == 'start':
+            tiva.startCapture()
+        threading.Thread.__init__(self)
