@@ -164,7 +164,7 @@ def leapCapture(self, tiva, textId):
 	controller = Leap.Controller()
 
 
-
+#time seg e nanoseg
 	try:
 		while not gameExit:
 			for event in pygame.event.get():

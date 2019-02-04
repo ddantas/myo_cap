@@ -10,10 +10,8 @@ except ImportError:
 from datetime import datetime
 import threading
 import converter, modules
-#import EmgEmulation_Ui
 import sys, imp, thread, time
 from GCS import Class_GCS
-from EmgEmulation import Class_EMG
 
 sys.path.append("../../")
 
@@ -74,6 +72,12 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
+
+        self.viewStatAct = QAction('Emg Emulation', self, checkable=True)
+        self.viewStatAct.setStatusTip('Emg Emulation')
+        self.viewStatAct.setChecked(self.checkableStatus())
+        self.viewStatAct.triggered.connect(self.toggleMenu)
+
         self.actionLoadcapture = QtWidgets.QAction(MainWindow)
         self.actionLoadcapture.setObjectName("actionLoadcapture")        
         self.actionSavecapture = QtWidgets.QAction(MainWindow)
@@ -97,8 +101,6 @@ class Ui_MainWindow(object):
         self.actionEmgCaptureSettings.setObjectName("actionEmgCaptureSettings")
         self.actionEmgDisplaySettings = QtWidgets.QAction(MainWindow)
         self.actionEmgDisplaySettings.setObjectName("actionEmgDisplaySettings")
-        self.actionEmgEmulation = QtWidgets.QAction(MainWindow)
-        self.actionEmgEmulation.setObjectName("actionEmgEmulation")
         self.actionGestureCaptureSettings = QtWidgets.QAction(MainWindow)
         self.actionGestureCaptureSettings.setObjectName("GestureCaptureSettings")
 
@@ -115,7 +117,7 @@ class Ui_MainWindow(object):
         self.menuSettings.addSeparator()
         self.menuSettings.addAction(self.actionEmgCaptureSettings)
         self.menuSettings.addAction(self.actionEmgDisplaySettings)
-        self.menuSettings.addAction(self.actionEmgEmulation)
+        self.menuSettings.addAction(self.viewStatAct)
         self.menuSettings.addAction(self.actionGestureCaptureSettings)
 
         self.menubar.addAction(self.menuFile.menuAction())
@@ -161,10 +163,6 @@ class Ui_MainWindow(object):
         self.actionEmgDisplaySettings.triggered.connect(self.emgDisplaySettings)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
-        self.actionEmgEmulation.triggered.connect(self.emgEmulation)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
         self.actionGestureCaptureSettings.triggered.connect(self.gestureCaptureSettings)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -179,7 +177,24 @@ class Ui_MainWindow(object):
         f = open(self.emgCapPadrao,'r')
         self.linesEmg = f.read().splitlines()
 
-	
+    def checkableStatus(self):
+        settings = open('settingsEE', 'r')
+        setCurrent = settings.read().splitlines()
+        if setCurrent[0] == "True":
+            return True
+        else:
+            return False
+
+    def toggleMenu(self, state):
+
+        self.defaultEmgPadrao = '../../data/2018-07-11_16-00-00.log'
+        if state:
+            fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.', 'Log (*.log)')[0]
+            for endfile in fileNames: self.defaultCapPadrao = endfile
+            self.statusbar.show()
+        else:
+            self.statusbar.hide()
+
     def retranslateUi(self, MainWindow):
 		_translate = QtCore.QCoreApplication.translate
 
@@ -199,7 +214,6 @@ class Ui_MainWindow(object):
 
 		self.actionEmgCaptureSettings.setText(_translate("MainWindow", "EMG capture settings", None))
 		self.actionEmgDisplaySettings.setText(_translate("MainWindow", "EMG display settings", None))
-		self.actionEmgEmulation.setText(_translate("MainWindow", "EMG emulation", None))
 		self.actionGestureCaptureSettings.setText(_translate("MainWindow", "Gesture capture settings", None))
 
 	
@@ -250,11 +264,18 @@ class Ui_MainWindow(object):
 
         self.serialPorts = SerialPorts()
 
+
         if setCurrent[0] == 'True':
-            self.tiva.loadData(setCurrent[1])
-            tk = tTiva(self.tiva,'show')
-            tk.start()
-            self.startDevice()
+            try:
+                self.tiva.loadData(setCurrent[1])
+                tk = tTiva(self.tiva,'show')
+                tk.start()
+                self.startDevice()
+            except:
+                self.tiva.loadData('../../data/2018-07-11_16-00-00.log')
+                tk = tTiva(self.tiva, 'show')
+                tk.start()
+                self.startDevice()
         else:
             if self.serialPorts.list(): #CHECA A PORTA SERIAL
                 self.startDevice()
@@ -281,12 +302,6 @@ class Ui_MainWindow(object):
         self.win_display = DisplaySettings(self)
         self.stopCapture()
         self.win_display.show()
-	
-    def emgEmulation(self):
-
-		self.win_EMG = Class_EMG(self)
-		self.stopCapture()
-		self.win_EMG.show()
 
     def gestureCaptureSettings(self):
 		self.win_GCS = Class_GCS(self)
@@ -337,7 +352,9 @@ class Ui_MainWindow(object):
 
 class tTiva(threading.Thread):
     def __init__(self, tiva, op):
+        print op
         if op == 'show':
+            print "CHEGOU!"
             tiva.showCapture()
         if op == 'start':
             tiva.startCapture()
