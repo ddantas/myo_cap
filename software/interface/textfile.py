@@ -59,7 +59,8 @@ class Textfile():
         value -- data
         '''
         try:
-            self.data_init[id][0] = map(float, values)
+            # self.data_init[id][0] = map(float, values)
+            self.data_init[id][0] = values
             data_aux = ""
             for value in self.data_init[1:]:
                 if(data_aux):

@@ -8,7 +8,7 @@
 # channelsPerBoard: 4
 # nBoards: 1
 # bitsPerSample: 12
-# swipeSamples: 1000
+# swipeSamples: 2000
 # vertTick: 1.0
 # horizTick: 100
 # vMin: -1.65

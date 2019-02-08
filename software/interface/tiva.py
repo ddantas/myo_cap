@@ -163,7 +163,7 @@ class Main(QtGui.QMainWindow):
         # graph
         self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
         self.graph.setYRange(0, self.amplitude_max)
-        self.graph.showGrid(x=True, y=True, alpha=0.5)
+        self.graph.showGrid(x=True, y=True, alpha=0.2)
         self.graph.setMenuEnabled(False, 'same')
         self.graph.hideButtons()
         self.graph.setMouseEnabled(False, False)
@@ -279,15 +279,18 @@ class Main(QtGui.QMainWindow):
             self.stopCapture()
 
     def captureSerial(self):
-        self.packet = self.apiTiva.recvPkt()
-        self.textfile.log(self.log_id, self.packet[:-1].split(' '))
-        self.data_log.append(self.packet)
+        try:
+            self.packet = self.apiTiva.recvPkt(int(self.settings_data['channelsPerBoard']), self.const_ADC)
+            self.textfile.log(self.log_id, self.packet)
+        except Exception as e:
+            print(e)
+            # self.data_log.append(self.packet)
 
     def plotSerialData(self):
         try:
             num_ch = 0
-            for word in self.packet.split(' '):
-                self.data[num_ch][self.num_sig] = int(word) * self.const_ADC
+            for value in self.packet:
+                self.data[num_ch][self.num_sig] = value
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
 
@@ -298,7 +301,7 @@ class Main(QtGui.QMainWindow):
             # plot data in graph
             if self.num_sig % int(self.settings_data['swipeSamples'] / 10) == 0:
                 for i in range(self.settings_data['showChannels']):
-                    self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] + (self.amplitude * i), pen=pg.mkPen('r', width=1.3))
+                    self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] + (self.amplitude * i), pen=pg.mkPen('r', width=0.4))
         except:
             self.showMessage("Error!","")
             self.button_show.setEnabled(True)

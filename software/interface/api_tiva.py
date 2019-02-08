@@ -12,14 +12,18 @@ class ApiTiva():
     def stop(self):
         self.serial.write("stop\n")
 
-    def recvPkt(self):
+    def recvPkt(self, len_ch, const_board):
+
         while self.serial.inWaiting() == 0:
             pass
-        packet = ''
-        for word in self.serial.readline().split():
-            packet += str(self.strToInt(word)) + ' '
-        packet = packet[:len(packet) - 1] + '\n'
-        return packet
+        result = []
+
+        # read from serial port
+        packet = self.serial.readline()
+        for i in range(len_ch):
+            pos = i * 2
+            result.append(round((self.strToInt(packet[pos:pos + 2]) * const_board), 5))
+        return result
 
     def setSampleRate(self, value):
         self.serial.write("S " + str(value) + "\n")
@@ -33,5 +37,9 @@ class ApiTiva():
         self.serial.write("N " + str(value) + "\n")
         packet = self.recvPkt(self.serial)
 
+    # convert string to int
     def strToInt(self, word):
-        return int(((ord(word[0]) - self.shift) * self.max_code) + (ord(word[1]) - self.shift))
+        if (len(word) > 1):
+            return int(((ord(word[0]) - self.shift) * self.max_code) + (ord(word[1]) - self.shift))
+        else:
+            return 0
