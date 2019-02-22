@@ -3,8 +3,8 @@ from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 import pygame 
 from pygame import *
-
-
+import numpy as np
+import time
 import modules
 
 
@@ -15,9 +15,15 @@ allFingers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 
 class LeapMotionListener(Leap.Listener):
-    def __init__(self, tiva, textId):
+
+    def __init__(self, tiva, textId, statusFinger):
+        self.statusFinger = statusFinger
         self.tiva = tiva
         self.textId = textId
+        self.ini = time.time()
+        timeBase = self.ini - self.ini
+        frame = 0
+        self.n = 10
         Leap.Listener.__init__(self)
 
     finger_names = ['Polegar','Indicador','Meio','Anular','Mindinho']
@@ -43,96 +49,77 @@ class LeapMotionListener(Leap.Listener):
        #     print"Saiu"
     def on_frame(self, controller):
 
-        #allFingers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-        #allFingers [:]
         frame = controller.frame()
-        output = ""
+        outputLeap = [0,0,0,0,0]
         for hand in frame.hands:
             del allFingers[:]
 
             for finger  in hand.fingers:
 
-                bone = finger.bone(3)
-                zDistal = str(bone.direction)
-                zDistal = zDistal.replace("(","")
-                zDistal = zDistal.replace(")","")
-                zDistal = zDistal.split(',')
-                zPosDis = zDistal[2]
-                zPosDis = float(zPosDis)
+                bone = finger.bone(0)
+                bone2 = finger.bone(1)
+                bone3 = finger.bone(2)
+                bone4 = finger.bone(3)
 
-                if zPosDis >= 0:
-                    zPosDis = zPosDis * 50
-                    zPosDis += 50
-                else:
-                    zPosDis = zPosDis * -50
-                    zPosDis = 50 - zPosDis
-            
-                bone = finger.bone(2)
-                zMedial = zMedial = str(bone.direction)
-                zMedial = zMedial.replace("(","")
-                zMedial = zMedial.replace(")","")
-                zMedial = zMedial.split(',')
-                zPosMed = zMedial[2]
-                zPosMed = float(zPosMed)
+                proximal_angle =  bone.direction.angle_to(bone2.direction)
+                intermediate_angle =  bone2.direction.angle_to(bone3.direction)
+                distal_angle =  bone3.direction.angle_to(bone4.direction)
 
-                if zPosMed >= 0:
-                    zPosMed = zPosMed * 50
-                    zPosMed += 50
-                else:
-                    zPosMed = zPosMed * -50
-                    zPosMed = 50 - zPosMed
-    
-                zProximal = zProximal = str(bone.direction)
-                zProximal = zProximal.replace("(","")
-                zProximal = zProximal.replace(")","")
-                zProximal = zProximal.split(',')
-                zPosProx = zProximal[2]
-                zPosProx = float(zPosProx)
+                C = 157.079
+                C2 = 100
+                try:
+                    proximal = (C2*proximal_angle / C)*100
 
-                bone = finger.bone(1)
-                if zPosProx >= 0:
-                    zPosProx = zPosProx * 50
-                    zPosProx += 50
-                else:
-                    zPosProx = zPosProx * -50
-                    zPosProx = 50 - zPosProx                
+                except ZeroDivisionError:
+                    proximal = 0
 
-                white = (255,255,255)
-                black = (0,0,0)
+                try:
+                    intermediate = (C2*intermediate_angle / C)*100
+
+                except ZeroDivisionError:
+                    intermediate = 0
+
+                try:
+                    distal = (C2*distal_angle / C)*100
+
+                except ZeroDivisionError:
+                    distal = 0
+
+                # print str(C)+"/"+str(proximal_angle)+"="+str(proximal)
+                # print str(C)+"/"+str(intermediate_angle)+"="+str(intermediate)
+                # print str(C)+"/"+str(distal_angle)+"="+str(distal)
+                # #proximal = np.dot(list(bone.direction), list(bone2.direction))
+                #print proximal
 
                 if self.finger_names[finger.type] == 'Polegar':
-                    allFingers[0:2] = int(zPosDis),int(zPosMed),int(zPosProx)
-                    pygame.draw.rect(modules.gameDisplay,white, [100,600,20,zPosDis])
-                    pygame.display.update()
+                    allFingers[0:2] = int(proximal),int(intermediate),int(distal)
+                    outputLeap[0]=distal
 
                 if self.finger_names[finger.type] == 'Indicador':
-                    allFingers[3:5] = int(zPosDis),int(zPosMed),int(zPosProx)
-                    pygame.draw.rect(modules.gameDisplay, white, [130,600,20,zPosDis])
-                    pygame.display.update()
+                    allFingers[3:5] = int(proximal),int(intermediate),int(distal)
+                    outputLeap[1] = distal
 
                 if self.finger_names[finger.type] == 'Meio':
-                    allFingers[6:8] = int(zPosDis),int(zPosMed),int(zPosProx)
-                    pygame.draw.rect(modules.gameDisplay, white, [160,600,20,zPosDis])
-                    pygame.display.update()
+                    allFingers[6:8] = int(proximal),int(intermediate),int(distal)
+                    outputLeap[2] = distal
 
                 if self.finger_names[finger.type] == 'Anular':
-                    allFingers[9:11] = int(zPosDis),int(zPosMed),int(zPosProx)
-                    pygame.draw.rect(modules.gameDisplay, white, [190,600,20,zPosDis])
-                    pygame.display.update()
+                    allFingers[9:11] = int(proximal),int(intermediate),int(distal)
+                    outputLeap[3] = distal
 
                 if self.finger_names[finger.type] == 'Mindinho':
-                    allFingers[12:14] = int(zPosDis),int(zPosMed),int(zPosProx)
-                    pygame.draw.rect(modules.gameDisplay, white, [220,600,20,zPosDis])
-                    pygame.display.update()
+                    allFingers[12:14] = int(proximal),int(intermediate),int(distal)
+                    outputLeap[4] = distal
 
-                pygame.display.update()
+            fim = time.time()
+            timeFim = fim - self.ini
 
-                #tiva.textfile.log(id, allFingers)
-                pygame.draw.rect(modules.gameDisplay, black, [100,600,20,100])
-                pygame.draw.rect(modules.gameDisplay, black, [130,600,20,100])
-                pygame.draw.rect(modules.gameDisplay, black, [160,600,20,100])
-                pygame.draw.rect(modules.gameDisplay, black, [190,600,20,100])
-                pygame.draw.rect(modules.gameDisplay, black, [220,600,20,100])
 
+            if (timeFim - timeBase) >=  self.n :
+                timeBase = timeFim
+                frameT = frame
+                self.frame = 0
+
+            self.frame += 1
             self.tiva.textfile.log(self.textId, allFingers)
+            self.statusFinger.display_screen(modules.gameDisplay, outputLeap,frameT/self.n)

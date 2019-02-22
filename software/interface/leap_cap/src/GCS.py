@@ -7,6 +7,7 @@ try:
 except ImportError:
     from PyQt5 import QtCore, QtWidgets, QtTest, QtGui
     from PyQt5.QtWidgets import *
+
 from win_GCS import Ui_Dialog
 from pyqtgraph.Qt import QtCore, QtGui
 

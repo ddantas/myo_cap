@@ -189,10 +189,15 @@ class Ui_MainWindow(object):
 
         self.defaultEmgPadrao = '../../data/2018-07-11_16-00-00.log'
         if state:
-            fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.', 'Log (*.log)')[0]
-            for endfile in fileNames: self.defaultCapPadrao = endfile
+            #fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.', 'Log (*.log)')[0]
+            #for endfile in fileNames: self.defaultCapPadrao = endfile
+            settings = open('settingsEE', 'w')
+            settings.writelines("True")
+            ##MENSAGEM SE ARQUIOVO N CARREGADO
             self.statusbar.show()
         else:
+            settings = open('settingsEE', 'w')
+            settings.writelines("False")
             self.statusbar.hide()
 
     def retranslateUi(self, MainWindow):
@@ -218,7 +223,6 @@ class Ui_MainWindow(object):
 
 	
     def loadCapture(self):
-	
 		fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.','Log (*.log)')[0]
 		for endfile in fileNames: self.defaultCapPadrao = endfile
 		f = open(str(self.defaultCapPadrao),'r')
@@ -247,28 +251,26 @@ class Ui_MainWindow(object):
 
         try:
             self.defaultCapPadrao = self.routine
-            f = open(self.defaultCapPadrao,'r')
+            f = open(self.defaultCapPadrao, 'r')
             self.linesCap = f.read().splitlines()
         except:
             print ("ERRO")
 
-##########################################################
+        ##########################################################
 
         settingsEE = open('settingsEE', 'r')
         setCurrent = settingsEE.read().splitlines()
         enable = setCurrent[0]
 
-
-        #self.tiva = Main(self)
+        # self.tiva = Main(self)
         self.tiva.showMainWindow()
 
         self.serialPorts = SerialPorts()
 
-
         if setCurrent[0] == 'True':
             try:
                 self.tiva.loadData(setCurrent[1])
-                tk = tTiva(self.tiva,'show')
+                tk = tTiva(self.tiva, 'show')
                 tk.start()
                 self.startDevice()
             except:
@@ -277,8 +279,8 @@ class Ui_MainWindow(object):
                 tk.start()
                 self.startDevice()
         else:
-            if self.serialPorts.list(): #CHECA A PORTA SERIAL
-                tk = tTiva(self.tiva,'start')
+            if self.serialPorts.list():  # CHECA A PORTA SERIAL
+                tk = tTiva(self.tiva, 'start')
                 tk.start()
                 self.startDevice()
             else:
@@ -352,7 +354,6 @@ class Ui_MainWindow(object):
 
 class tTiva(threading.Thread):
     def __init__(self, tiva, op):
-        print op
         if op == 'show':
             tiva.showCapture()
         if op == 'start':
