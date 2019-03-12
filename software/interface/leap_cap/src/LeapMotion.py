@@ -21,9 +21,10 @@ class LeapMotionListener(Leap.Listener):
         self.tiva = tiva
         self.textId = textId
         self.ini = time.time()
-        timeBase = self.ini - self.ini
-        frame = 0
-        self.n = 10
+        self.timeBase = self.ini - self.ini
+        self.frame = 0
+        self.frameT = 0
+        self.n = 1
         Leap.Listener.__init__(self)
 
     finger_names = ['Polegar','Indicador','Meio','Anular','Mindinho']
@@ -115,11 +116,11 @@ class LeapMotionListener(Leap.Listener):
             timeFim = fim - self.ini
 
 
-            if (timeFim - timeBase) >=  self.n :
-                timeBase = timeFim
-                frameT = frame
+            if (timeFim - self.timeBase) >=  self.n :
+                self.timeBase = timeFim
+                self.frameT = self.frame
                 self.frame = 0
 
             self.frame += 1
             self.tiva.textfile.log(self.textId, allFingers)
-            self.statusFinger.display_screen(modules.gameDisplay, outputLeap,frameT/self.n)
+            self.statusFinger.display_screen(modules.gameDisplay, outputLeap,self.frameT/self.n)

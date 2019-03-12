@@ -32,6 +32,12 @@ logend = open('../routine/log.txt', 'a')
 
 # outputKey = ""q
 
+def endCapture(self, tiva):
+	pygame.quit()
+	#sys.exit()
+	#tiva.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+
+
 def keyCapture(self, tiva, textId, statusFinger):
 	global gameDisplay
 	global logend
@@ -60,8 +66,7 @@ def keyCapture(self, tiva, textId, statusFinger):
 					gameExit = True
 
 				if pygame.key.get_pressed()[pygame.K_ESCAPE] != 0:
-					tiva.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
-					pygame.quit()
+					endCapture(self, tiva)
 
 				if pygame.key.get_pressed()[pygame.K_SPACE] != 0:
 					outputKey[0] = 100
@@ -96,7 +101,7 @@ def keyCapture(self, tiva, textId, statusFinger):
 					frame = 0
 
 				frame += 1
-				tiva.textfile.log(textId, outputKey)
+				#tiva.textfile.log(textId, outputKey)
 				statusFinger.display_screen(gameDisplay,outputKey,frameT/n)
 
 				p += 1
@@ -116,9 +121,11 @@ def leapCapture(self, tiva, textId, statusFinger):
 	global tivaGlobal
 	global gameDisplay
 
-	old_k_delay, old_k_interval = pygame.key.get_repeat()
+	#pygame.init()
 
-	pygame.key.set_repeat(500, 30)
+	#old_k_delay, old_k_interval = pygame.key.get_repeat()
+
+	#pygame.key.set_repeat(500, 30)
 	gameExit = False
 	listener = LeapMotionListener(tiva, textId, statusFinger)
 	controller = Leap.Controller()
@@ -129,19 +136,21 @@ def leapCapture(self, tiva, textId, statusFinger):
 		while not gameExit:
 			for event in pygame.event.get():
 				if pygame.key.get_pressed()[pygame.K_ESCAPE] != 0:
-					tiva.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
-					pygame.quit()
+					endCapture(self,tiva)
 					gameExit = True
+					#tiva.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+
+
 
 			controller.add_listener(listener)
 			controller.remove_listener(listener)
 
-	finally:
-		pygame.key.set_repeat(old_k_delay, old_k_interval)
+	except Exception as e:
+		print(e)
 
-
-def printScreen(sequencia):
+def printScreen(self, sequencia):
 	global gameDisplay
+
 	tamMin = 50
 	tamMax = 1200
 
@@ -152,6 +161,7 @@ def printScreen(sequencia):
 	white = (255, 255, 255)
 	jump = (tamMax / num_elementos_lista)
 	porcent = 0
+	gameExit = False
 
 	try:
 		pygame.draw.rect(gameDisplay, black, [10, 430, 1270, 20])
@@ -163,7 +173,9 @@ def printScreen(sequencia):
 		pygame.draw.rect(gameDisplay, white, [17, 412, 296, 13])
 		pygame.display.update()
 
-		while (j < num_elementos_lista):
+		while (j < num_elementos_lista and gameExit == False):
+			if pygame.key.get_pressed()[pygame.K_ESCAPE] != 0:
+				gameExit = True
 
 			img1 = pygame.image.load("../images/" + sequencia[j].img + ".png")
 			gameDisplay.blit(img1, (10, 30))
@@ -203,7 +215,6 @@ def printScreen(sequencia):
 			porcent += jump
 
 	except:
-		pygame.quit()
 		sys.exit()
 
 
@@ -215,6 +226,7 @@ def start(self, tiva, sequencia, lineEmg, device):
 	white = (255, 255, 255)
 	black = (0, 0, 0)
 	gameDisplay = pygame.display.set_mode((1600, 740))
+
 	gameDisplay.fill(white)
 	pygame.display.update()
 
@@ -232,7 +244,20 @@ def start(self, tiva, sequencia, lineEmg, device):
 	if device == 'None':
 		print ("Not found")
 
-	printScreen(sequencia)
+	tPS = tPrintS(sequencia)
+	tPS.start()
+	#printScreen(sequencia)
+
+class tPrintS(threading.Thread):
+	def __init__(self, sequencia):
+		self.sequencia = sequencia
+		threading.Thread.__init__(self)
+
+	def getSequencia(self):
+		return self.sequencia
+
+	def run(self):
+		printScreen(self=None, sequencia=self.getSequencia())
 
 
 class tKey(threading.Thread):

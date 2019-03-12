@@ -13,12 +13,15 @@ import converter, modules
 import sys, imp, thread, time
 from GCS import Class_GCS
 
+
+import datetime
 sys.path.append("../../")
 
 from serial_ports import SerialPorts
 from settings import Settings
 from display_settings import DisplaySettings
 from capture_settings import CaptureSettings
+
 
 from win_display_settings import Ui_DisplaySettingsWindow
 
@@ -230,7 +233,12 @@ class Ui_MainWindow(object):
 		f.close()
 
     def saveCapture(self):
-		print "SalveCapture"
+        fileName = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '.','CSV (*.csv)')[0]
+        self.tiva.textfile.save(str(fileName))
+        #file = open(self.fileName, 'w')
+        # text = self.textEdit.toPlainText()
+        # file.write(text)
+        # file.close()
 
     def loadEmgsignal(self):
 		fileNames = QFileDialog.getOpenFileNames(None, 'Open file', '.','Log (*.log)')[0]
@@ -263,11 +271,13 @@ class Ui_MainWindow(object):
         enable = setCurrent[0]
 
         # self.tiva = Main(self)
-        self.tiva.showMainWindow()
+        #self.tiva.showMainWindow()
 
         self.serialPorts = SerialPorts()
 
         if setCurrent[0] == 'True':
+
+            self.tiva.showMainWindow()
             try:
                 self.tiva.loadData(setCurrent[1])
                 tk = tTiva(self.tiva, 'show')
@@ -280,6 +290,8 @@ class Ui_MainWindow(object):
                 self.startDevice()
         else:
             if self.serialPorts.list():  # CHECA A PORTA SERIAL
+
+                self.tiva.showMainWindow()
                 tk = tTiva(self.tiva, 'start')
                 tk.start()
                 self.startDevice()
