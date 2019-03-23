@@ -32,7 +32,7 @@ except AttributeError:
 class Ui_CaptureSettingsWindow(object):
     def setupUi(self, CaptureSettingsWindow):
         CaptureSettingsWindow.setObjectName(_fromUtf8("CaptureSettingsWindow"))
-        CaptureSettingsWindow.resize(381, 287)
+        CaptureSettingsWindow.resize(381, 320)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -77,10 +77,10 @@ class Ui_CaptureSettingsWindow(object):
         self.label_12.setFont(font)
         self.label_12.setObjectName(_fromUtf8("label_12"))
         self.button_save = QtGui.QPushButton(self.centralwidget)
-        self.button_save.setGeometry(QtCore.QRect(20, 240, 151, 31))
+        self.button_save.setGeometry(QtCore.QRect(20, 270, 151, 31))
         self.button_save.setObjectName(_fromUtf8("button_save"))
         self.button_cancel = QtGui.QPushButton(self.centralwidget)
-        self.button_cancel.setGeometry(QtCore.QRect(200, 240, 151, 31))
+        self.button_cancel.setGeometry(QtCore.QRect(200, 270, 151, 31))
         self.button_cancel.setObjectName(_fromUtf8("button_cancel"))
         self.input_bits = QtGui.QLineEdit(self.centralwidget)
         self.input_bits.setEnabled(True)
@@ -96,8 +96,20 @@ class Ui_CaptureSettingsWindow(object):
         self.input_numofboards.setEnabled(True)
         self.input_numofboards.setGeometry(QtCore.QRect(200, 150, 151, 31))
         self.input_numofboards.setObjectName(_fromUtf8("input_numofboards"))
-        CaptureSettingsWindow.setCentralWidget(self.centralwidget)
 
+        self.input_baudrate = QtGui.QLineEdit(self.centralwidget)
+        self.input_baudrate.setEnabled(True)
+        self.input_baudrate.setGeometry(QtCore.QRect(200, 230, 151, 31))
+        self.input_baudrate.setObjectName(_fromUtf8("input_baudrate"))
+
+        self.label_18 = QtGui.QLabel(self.centralwidget)
+        self.label_18.setGeometry(QtCore.QRect(30, 230, 141, 31))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.label_18.setFont(font)
+        self.label_18.setObjectName(_fromUtf8("label_18"))
+        
+        CaptureSettingsWindow.setCentralWidget(self.centralwidget)
         self.retranslateUi(CaptureSettingsWindow)
         QtCore.QMetaObject.connectSlotsByName(CaptureSettingsWindow)
 
@@ -108,6 +120,8 @@ class Ui_CaptureSettingsWindow(object):
         self.label_13.setText(_translate("CaptureSettingsWindow", "Sample rate:", None))
         self.label_12.setText(_translate("CaptureSettingsWindow", "Bits per sample:", None))
         self.label_15.setText(_translate("CaptureSettingsWindow", "Num of boards:", None))
+        self.label_18.setText(_translate("CaptureSettingsWindow", "Baudrate:", None))
+
         self.button_save.setText(_translate("CaptureSettingsWindow", "Save", None))
         self.button_cancel.setText(_translate("CaptureSettingsWindow", "Cancel", None))
 

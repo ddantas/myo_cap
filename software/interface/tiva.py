@@ -35,7 +35,7 @@ class Main(QtGui.QMainWindow):
 
         # communication serial specifications
         self.ser = serial.Serial()
-        self.ser.baudrate = 921600
+        self.ser.baudrate = self.settings_data['baudrate']
         self.ser.timeout = 1
 
         # board TIVA parameters
@@ -79,7 +79,7 @@ class Main(QtGui.QMainWindow):
 
         # config layout
         self.layout = self.pw.addLayout()
-    
+
         # config combobox ports
         self.combobox_type = QComboBox()
         self.combobox_type.setEditable(False)
@@ -177,7 +177,7 @@ class Main(QtGui.QMainWindow):
         self.data_log = []
         self.data = np.zeros(shape=(self.settings_data['showChannels'], self.settings_data['swipeSamples']), dtype=float)
         self.num_sig = 0
-
+        
         for i in range(self.settings_data['showChannels']):
             self.curve.append(self.graph.plot(self.data[i]))
         self.pw.showMaximized()

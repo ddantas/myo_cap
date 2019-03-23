@@ -36,6 +36,7 @@ class Settings():
                         "# channelsPerBoard: " + str(data['channelsPerBoard']) + "\n" + 
                         "# nBoards: " + str(data['nBoards']) + "\n" +
                         "# bitsPerSample: " + str(data['bitsPerSample']) + "\n" +
+                        "# baudrate: " + str(data['baudrate']) + "\n" +
                         "# swipeSamples: "+ str(data['swipeSamples']) + "\n"+
                         "# vertTick: " + str(data['vertTick']) + "\n"+ 
                         "# horizTick: " + str(data['horizTick']) + "\n" +

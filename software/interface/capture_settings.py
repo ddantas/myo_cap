@@ -18,6 +18,7 @@ class CaptureSettings(QtGui.QMainWindow):
         self.ui_caps.input_ch.setText(str(self.settings_data['channelsPerBoard']))
         self.ui_caps.input_numofboards.setText(str(self.settings_data['nBoards']))
         self.ui_caps.input_bits.setText(str(self.settings_data['bitsPerSample']))
+        self.ui_caps.input_baudrate.setText(str(self.settings_data['baudrate']))
 
         # init actions
         self.ui_caps.button_save.clicked.connect(self.storeCaptureSettings)
@@ -45,6 +46,11 @@ class CaptureSettings(QtGui.QMainWindow):
             self.settings_data['bitsPerSample'] = int(self.ui_caps.input_bits.text())
         except:
             self.showMessage("Error", "bitsPerSample!")
+            flag_err = 0
+        try:
+            self.settings_data['baudrate'] = int(self.ui_caps.input_baudrate.text())
+        except:
+            self.showMessage("Error", "baudrate!")
             flag_err = 0
         if(flag_err):
             self.settings_data['showChannels'] = int(self.settings_data['channelsPerBoard']) * int(self.settings_data['nBoards'])
