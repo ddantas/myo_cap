@@ -7,8 +7,9 @@ import time
 import datetime
 import numpy as np
 import thread
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget)
+from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget, QLabel)
 from serial.tools import list_ports
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
@@ -26,9 +27,12 @@ from textfile import Textfile
 import sys, os
 mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
 
-class Main(QtGui.QMainWindow): 
-    def __init__(self, parent=None):
-        super(Main, self).__init__(parent)
+class Main(pg.GraphicsWindow): 
+    pg.setConfigOption('background', 'w')
+    pg.setConfigOption('foreground', 'k')
+    def __init__(self, parent=None, **kargs):
+        pg.GraphicsWindow.__init__(self, **kargs)
+        self.setParent(parent)
 
         # load data
         self.settings_data = Settings().load()
@@ -47,6 +51,9 @@ class Main(QtGui.QMainWindow):
 
         # init textfile class
         self.textfile = Textfile()
+
+        # start
+        self.showMainWindow()
 
     def showDisplaySettings(self):
         self.win_display = DisplaySettings(self)
@@ -74,12 +81,13 @@ class Main(QtGui.QMainWindow):
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')                
         
-        self.pw = pg.GraphicsWindow()
-        self.pw.setWindowTitle('EMG')
+        # self.pw = pg.GraphicsWindow()
+        # self.pw.setWindowTitle('EMG')
+        self.setWindowTitle('EMG')
 
         # config layout
-        self.layout = self.pw.addLayout()
-
+        self.layout = self.addLayout()
+        
         # config combobox ports
         self.combobox_type = QComboBox()
         self.combobox_type.setEditable(False)
@@ -122,7 +130,8 @@ class Main(QtGui.QMainWindow):
         self.layout.addItem(proxy_settings2, row=0, colspan=1)
 
         # config label
-        label_configs = pg.LabelItem()
+        proxy_settings3 = QGraphicsProxyWidget()
+        label_configs = QLabel()
         label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
                             " | vMin: "+ str(self.settings_data['vMin']) + "V"+ 
                             " | vMax:  "+ str(self.settings_data['vMax']) + "V" +
@@ -130,7 +139,9 @@ class Main(QtGui.QMainWindow):
                             " | HTick: " + str(self.settings_data['horizTick']) +
                             " | VTick " + str(self.settings_data['vertTick']) + "V" + 
                             " | Channels: " + str(self.settings_data['showChannels']))
-        self.layout.addItem(label_configs, row=0, colspan=4)
+        label_configs.setFixedHeight(30)
+        proxy_settings3.setWidget(label_configs)
+        self.layout.addItem(proxy_settings3, row=0, colspan=4)
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
@@ -161,7 +172,7 @@ class Main(QtGui.QMainWindow):
         self.axis_y.setTickSpacing(4000, self.settings_data['vertTick'])
 
         # graph
-        self.graph = self.layout.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
+        self.graph = self.addPlot(axisItems={'left': self.axis_y}, col=0,row=3, colspan=12)
         self.graph.setYRange(0, self.amplitude_max)
         self.graph.showGrid(x=True, y=True, alpha=0.2)
         self.graph.setMenuEnabled(False, 'same')
@@ -180,7 +191,7 @@ class Main(QtGui.QMainWindow):
         
         for i in range(self.settings_data['showChannels']):
             self.curve.append(self.graph.plot(self.data[i]))
-        self.pw.showMaximized()
+        self.showMaximized()
 
     def showMessage(self, title, body):
         QMessageBox.about(self, title, body)
@@ -347,8 +358,6 @@ class Main(QtGui.QMainWindow):
         self.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) )
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
-    window = Main()
-    window.showMainWindow()
-    sys.exit(app.exec_())
-    window.stopCapture()
+    w = Main()
+    w.show()
+    QtGui.QApplication.instance().exec_()
