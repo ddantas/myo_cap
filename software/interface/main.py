@@ -1,8 +1,8 @@
 from PyQt5 import QtGui, QtCore  # Import the PyQt4 module we'll need
 import sys  # We need sys so that we can pass argv to QApplication
-import win_main
+from win_main import Ui_MainWindow
 
-class MainWindow(QtGui.QMainWindow, win_main.Ui_MainWindow):
+class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)  # This is defined in design.py file automatically

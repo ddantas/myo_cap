@@ -81,8 +81,6 @@ class Main(pg.GraphicsWindow):
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')                
         
-        # self.pw = pg.GraphicsWindow()
-        # self.pw.setWindowTitle('EMG')
         self.setWindowTitle('EMG')
 
         # config layout
@@ -139,6 +137,7 @@ class Main(pg.GraphicsWindow):
                             " | HTick: " + str(self.settings_data['horizTick']) +
                             " | VTick " + str(self.settings_data['vertTick']) + "V" + 
                             " | Channels: " + str(self.settings_data['showChannels']))
+        label_configs.setAlignment(QtCore.Qt.AlignVCenter)
         label_configs.setFixedHeight(30)
         proxy_settings3.setWidget(label_configs)
         self.layout.addItem(proxy_settings3, row=0, colspan=4)
