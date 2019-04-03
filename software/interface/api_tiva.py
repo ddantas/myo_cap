@@ -13,7 +13,6 @@ class ApiTiva():
         self.serial.write("stop\n")
 
     def recvPkt(self, len_ch, const_board):
-
         while self.serial.inWaiting() == 0:
             pass
         result = []
@@ -26,15 +25,15 @@ class ApiTiva():
         return result
 
     def setSampleRate(self, value):
-        self.serial.write("S " + str(value) + "\n")
+        self.serial.write("sr " + str(value) + "\n")
         packet = self.recvPkt(self.serial)
 
     def setNChannels(self, value):
-        self.serial.write("C " + str(value) + "\n")
+        self.serial.write("sc " + str(value) + "\n")
         packet = self.recvPkt(self.serial)
 
     def setNBoards(self, value):
-        self.serial.write("N " + str(value) + "\n")
+        self.serial.write("sb " + str(value) + "\n")
         packet = self.recvPkt(self.serial)
 
     # convert string to int
