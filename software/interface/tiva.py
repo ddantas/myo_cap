@@ -9,10 +9,8 @@ import numpy as np
 import thread
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget, QLabel)
+from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget, QLabel,  QInputDialog, QLineEdit, QFileDialog)
 from serial.tools import list_ports
-from Tkinter import Tk
-from tkFileDialog import askopenfilename
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
@@ -198,15 +196,16 @@ class Main(pg.GraphicsWindow):
     def showInputFile(self):
         self.stopCapture()
         self.timer.stop()
-        Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-        self.file = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-
-        try:
-            self.loadData(self.file)
-            self.button_start.setEnabled(False)
-            self.button_show.setEnabled(True)
-        except:
-            self.showMessage("ERROR", "File")
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+        if fileName:
+            try:
+                self.loadData(fileName)
+                self.button_start.setEnabled(False)
+                self.button_show.setEnabled(True)
+            except:
+                self.showMessage("ERROR", "File")
 
     def loadData(self, file):
         with open(file, 'r') as f:
