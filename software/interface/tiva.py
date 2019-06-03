@@ -325,6 +325,7 @@ class Main(pg.GraphicsWindow):
             time.sleep(1.0/self.settings_data['sampleRate'])
             for word in line.split(' '):
                 self.data[num_ch][self.num_sig] = int(word) * self.const_ADC
+                # self.data[num_ch][self.num_sig] = float(word)
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
             # update test graph and store data
@@ -336,8 +337,8 @@ class Main(pg.GraphicsWindow):
                     self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] +
                                           (self.amplitude * i), pen=pg.mkPen('r', width=1.3))
         except:
-            self.control = 0
-            # self.showMessage("Warning","No more data to plot.")
+            # self.control = 0
+            self.showMessage("Warning","No more data to plot.")
 
 
     def storeLogHeader(self):
