@@ -84,6 +84,7 @@ class Textfile():
             output.writelines(self.header)
             output.write(str(self.data_header+'\n'))
             output.writelines(self.data)
+            self.start_variables()
             output.close()
         except Exception as e:
            print(e)
