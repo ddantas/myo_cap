@@ -300,7 +300,6 @@ class Main(pg.GraphicsWindow):
                 self.data[num_ch][self.num_sig] = float(word)
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
-
             self.plotGraph()
 
         except:
@@ -333,7 +332,9 @@ class Main(pg.GraphicsWindow):
         self.textfile.metadata_save("bitsPerSample", self.settings_data['bitsPerSample'])
 
     def storeLogData(self):
-        self.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) )
+        filename = '/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        self.textfile.save(filename)
+        self.showMessage("File stored!", 'File stored at %s' % filename)
         
     def showMessage(self, title, body):
         QMessageBox.about(self, title, body)
