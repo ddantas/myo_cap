@@ -319,6 +319,7 @@ class Main(pg.GraphicsWindow):
             self.control = 0
             self.showMessage("Warning","No more data to plot.")
             self.button_show.setEnabled(True)
+            self.button_start.setEnabled(True)
             self.timer_plot.stop()
 
     def storeLogHeader(self):
