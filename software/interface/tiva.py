@@ -252,7 +252,8 @@ class Main(pg.GraphicsWindow):
         # log file
         # self.log_id = self.textfile.init(self.settings_data['showChannels'], "%d;%d;%d;%d", "ch")
         # self.storeLogHeader()
-
+        self.data = np.zeros(shape=(self.settings_data['showChannels'], self.settings_data['swipeSamples']), dtype=float)
+        self.plotGraph()
         self.timer_plot = QtCore.QTimer()
         self.timer_plot.timeout.connect(self.plotLogData)
         self.timer_plot.start(0)
