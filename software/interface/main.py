@@ -12,7 +12,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.actionShow_Capture.triggered.connect(self.widget.showCapture)
 
         self.actionLoad_Capture.triggered.connect(self.widget.showInputFile)
-        # self.actionSave_Capture.triggered.connect(self.widget.showInputFile)
+        self.actionSave_Capture.triggered.connect(self.widget.storeLogData)
         # self.actionLoad_Settings.triggered.connect(self.widget.showInputFile)       
         # self.actionSave_Settings.triggered.connect(self.widget.showInputFile)
 
