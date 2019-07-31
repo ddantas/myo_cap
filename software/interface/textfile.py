@@ -16,15 +16,14 @@ class Textfile():
         format -- format to print data
         nameCols -- name of columns
         '''
+
         if(self.data_header):
             self.data_header = self.data_header + "/"
-            for i, item in enumerate(format.split(';')):
-                self.data_header = self.data_header + str(nameCols) + str(i) + ";"
         else:
             self.data_header =  "# "
-            for i, item in enumerate(format.split(';')):
-                self.data_header = self.data_header + str(nameCols) + str(i) + ";"
-
+        for i, item in enumerate(format.split(';')):
+            self.data_header = self.data_header + str(nameCols) + str(i) + ";"
+        self.data_header = self.data_header[:-1]
         self.data_init.append([])
         self.id += 1
         self.data_init[self.id].append([])
@@ -64,7 +63,6 @@ class Textfile():
         value -- data
         '''
         try:
-            # self.data_init[id][0] = map(float, values)
             self.data_init[id][0] = values
             data_aux = ""
             for value in self.data_init[1:]:
