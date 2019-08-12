@@ -213,7 +213,7 @@ class Main(pg.GraphicsWindow):
                 self.apiTiva = ApiTiva(self.ser)
 
                 # log file
-                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%f;%f;%f;%f", "ch1;ch2;ch3;ch4")
+                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%d;%d;%d;%d", "ch1;ch2;ch3;ch4")
                 # self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.storeLogHeader()
                 self.start = True
@@ -280,7 +280,7 @@ class Main(pg.GraphicsWindow):
         try:
             num_ch = 0
             for value in self.packet:
-                self.data[num_ch][self.num_sig] = value
+                self.data[num_ch][self.num_sig] = value * self.const_ADC
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
             self.plotGraph()
@@ -298,7 +298,7 @@ class Main(pg.GraphicsWindow):
             time.sleep(1.0/self.settings_data['sampleRate'])
 
             for word in line:
-                self.data[num_ch][self.num_sig] = float(word)
+                self.data[num_ch][self.num_sig] = float(word) * self.const_ADC
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
             self.plotGraph()

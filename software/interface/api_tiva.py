@@ -21,7 +21,7 @@ class ApiTiva():
         packet = self.serial.readline()
         for i in range(len_ch):
             pos = i * 2
-            result.append(round((self.strToInt(packet[pos:pos + 2]) * const_board), 5))
+            result.append(round((self.strToInt(packet[pos:pos + 2])), 5))
         return result
 
     def setSampleRate(self, value):
