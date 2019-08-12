@@ -50,6 +50,8 @@ class Main(pg.GraphicsWindow):
         # init textfile class
         self.textfile = Textfile()
 
+        self.menuFlag = True
+
         # start
         self.showMainWindow()
 
@@ -90,9 +92,8 @@ class Main(pg.GraphicsWindow):
         self.combobox_type.addItem("Serial")      
         self.combobox_type.addItem("File")            
         self.combobox_type.currentIndexChanged.connect(self.onChange)
-        proxy_list = QGraphicsProxyWidget()
-        proxy_list.setWidget(self.combobox_type)
-        self.layout.addItem(proxy_list, row=0, colspan=1)
+        proxy_select = QGraphicsProxyWidget()
+        proxy_select.setWidget(self.combobox_type)
 
         # config combobox ports
         self.combobox_serial = QComboBox()
@@ -101,7 +102,6 @@ class Main(pg.GraphicsWindow):
             self.combobox_serial.addItem(port)
         proxy_list = QGraphicsProxyWidget()
         proxy_list.setWidget(self.combobox_serial)
-        self.layout.addItem(proxy_list, row=0, colspan=1)
 
         # config file button
         proxy_file = QGraphicsProxyWidget()
@@ -109,21 +109,18 @@ class Main(pg.GraphicsWindow):
         self.button_file.clicked.connect(self.showInputFile)
         proxy_file.setWidget(self.button_file)
         self.button_file.setEnabled(False)
-        self.layout.addItem(proxy_file, row=0, colspan=1)
 
         #config display settings button
         proxy_settings = QGraphicsProxyWidget()
         button_settings = QPushButton('Display Settings')
         button_settings.clicked.connect(self.showDisplaySettings)
         proxy_settings.setWidget(button_settings)
-        self.layout.addItem(proxy_settings, row=0, colspan=1)
 
         # config capture settings button
         proxy_settings2 = QGraphicsProxyWidget()
         button_settings2 = QPushButton('Capture Settings')
         button_settings2.clicked.connect(self.showCaptureSettings)
         proxy_settings2.setWidget(button_settings2)
-        self.layout.addItem(proxy_settings2, row=0, colspan=1)
 
         # config label
         proxy_settings3 = QGraphicsProxyWidget()
@@ -138,7 +135,6 @@ class Main(pg.GraphicsWindow):
         label_configs.setAlignment(QtCore.Qt.AlignVCenter)
         label_configs.setFixedHeight(30)
         proxy_settings3.setWidget(label_configs)
-        self.layout.addItem(proxy_settings3, row=0, colspan=4)
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
@@ -146,15 +142,13 @@ class Main(pg.GraphicsWindow):
         self.button_start.clicked.connect(self.startCapture)
         self.button_start.setEnabled(True)
         proxy_play.setWidget(self.button_start)
-        self.layout.addItem(proxy_play, row=0, colspan=1)
 
         # config stop capture button
-        proxy_stop = QGraphicsProxyWidget()
+        proxy_show = QGraphicsProxyWidget()
         self.button_show = QPushButton('Show Capture')
         self.button_show.clicked.connect(self.showCapture)
         self.button_show.setEnabled(False)
-        proxy_stop.setWidget(self.button_show)
-        self.layout.addItem(proxy_stop, row=0, colspan=1)
+        proxy_show.setWidget(self.button_show)
 
         # config stop capture button
         proxy_stop = QGraphicsProxyWidget()
@@ -162,8 +156,20 @@ class Main(pg.GraphicsWindow):
         self.button_stop.clicked.connect(self.stopCapture)
         self.button_stop.setEnabled(False)
         proxy_stop.setWidget(self.button_stop)
-        self.layout.addItem(proxy_stop, row=0, colspan=1)
 
+        if(self.menuFlag):
+            self.layout.addItem(proxy_select, row=0, colspan=1)
+            self.layout.addItem(proxy_list, row=0, colspan=1)
+            self.layout.addItem(proxy_file, row=0, colspan=1)
+            self.layout.addItem(proxy_settings, row=0, colspan=1)
+            self.layout.addItem(proxy_settings2, row=0, colspan=1)   
+            self.layout.addItem(proxy_settings3, row=0, colspan=4)
+            self.layout.addItem(proxy_play, row=0, colspan=1)
+            self.layout.addItem(proxy_show, row=0, colspan=1)       
+            self.layout.addItem(proxy_stop, row=0, colspan=1)
+        else:
+            self.layout.addItem(proxy_settings3, row=0, colspan=4)
+            
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
         self.axis_y.setTickSpacing(4000, self.settings_data['vertTick'])
