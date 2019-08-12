@@ -213,7 +213,7 @@ class Main(pg.GraphicsWindow):
                 self.apiTiva = ApiTiva(self.ser)
 
                 # log file
-                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%f;%f;%f;%f", "ch")
+                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%f;%f;%f;%f", "ch1;ch2;ch3;ch4")
                 # self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.storeLogHeader()
                 self.start = True
