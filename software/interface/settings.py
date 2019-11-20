@@ -2,7 +2,7 @@ import datetime
 
 import sys, os
 
-mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
+mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap","")
 
 class Settings():
 
@@ -21,7 +21,8 @@ class Settings():
             settings_file.close()
             return data
         except IOError:
-           print("Please insert the settings file!")
+            print("Please insert the settings file!")
+            print(mainPath)
 
     def store(self, data):
         try:

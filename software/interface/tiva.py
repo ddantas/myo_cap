@@ -23,7 +23,6 @@ from serial_ports import SerialPorts
 from textfile import Textfile
 
 import sys, os
-mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
 
 class Main(pg.GraphicsWindow): 
     pg.setConfigOption('background', 'w')
@@ -111,30 +110,31 @@ class Main(pg.GraphicsWindow):
         self.button_file.setEnabled(False)
 
         #config display settings button
-        proxy_settings = QGraphicsProxyWidget()
-        button_settings = QPushButton('Display Settings')
-        button_settings.clicked.connect(self.showDisplaySettings)
-        proxy_settings.setWidget(button_settings)
+        proxy_display_settings = QGraphicsProxyWidget()
+        self.button_display_settings = QPushButton('Display Settings')
+        self.button_display_settings.clicked.connect(self.showDisplaySettings)
+        proxy_display_settings.setWidget(self.button_display_settings)
 
         # config capture settings button
-        proxy_settings2 = QGraphicsProxyWidget()
-        button_settings2 = QPushButton('Capture Settings')
-        button_settings2.clicked.connect(self.showCaptureSettings)
-        proxy_settings2.setWidget(button_settings2)
+        proxy_capture_settings = QGraphicsProxyWidget()
+        self.button_capture_settings = QPushButton('Capture Settings')
+        self.button_capture_settings.clicked.connect(self.showCaptureSettings)
+        proxy_capture_settings.setWidget(self.button_capture_settings)
 
         # config label
-        proxy_settings3 = QGraphicsProxyWidget()
-        label_configs = QLabel()
-        label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
-                            " | vMin: "+ str(self.settings_data['vMin']) + "V"+ 
-                            " | vMax:  "+ str(self.settings_data['vMax']) + "V" +
-                            " | Amplitude: " + str(self.amplitude) + "V" + 
+        proxy_configs = QGraphicsProxyWidget()
+        self.label_configs = QLabel()
+        self.label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
+                            " | vMin: " + str(self.settings_data['vMin']) + "V"+
+                            " | vMax:  " + str(self.settings_data['vMax']) + "V" +
                             " | HTick: " + str(self.settings_data['horizTick']) +
                             " | VTick " + str(self.settings_data['vertTick']) + "V" + 
                             " | Channels: " + str(self.settings_data['showChannels']))
-        label_configs.setAlignment(QtCore.Qt.AlignVCenter)
-        label_configs.setFixedHeight(30)
-        proxy_settings3.setWidget(label_configs)
+        self.label_configs.alignment()
+        self.label_configs.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_configs.setFixedHeight(25)
+        self.label_configs.setStyleSheet("background-color:#ffffff;")
+        proxy_configs.setWidget(self.label_configs)
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
@@ -161,14 +161,14 @@ class Main(pg.GraphicsWindow):
             self.layout.addItem(proxy_select, row=0, colspan=1)
             self.layout.addItem(proxy_list, row=0, colspan=1)
             self.layout.addItem(proxy_file, row=0, colspan=1)
-            self.layout.addItem(proxy_settings, row=0, colspan=1)
-            self.layout.addItem(proxy_settings2, row=0, colspan=1)   
-            self.layout.addItem(proxy_settings3, row=0, colspan=4)
+            self.layout.addItem(proxy_display_settings, row=0, colspan=1)
+            self.layout.addItem(proxy_capture_settings, row=0, colspan=1)
+            self.layout.addItem(proxy_configs, row=0, colspan=4)
             self.layout.addItem(proxy_play, row=0, colspan=1)
             self.layout.addItem(proxy_show, row=0, colspan=1)       
             self.layout.addItem(proxy_stop, row=0, colspan=1)
         else:
-            self.layout.addItem(proxy_settings3, row=0, colspan=4)
+            self.layout.addItem(proxy_configs, row=0, colspan=4)
             
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
@@ -262,7 +262,7 @@ class Main(pg.GraphicsWindow):
         self.timer_plot.start(0)
         self.button_show.setEnabled(False)
         self.button_start.setEnabled(False)
-        self.button_stop.setEnabled(False)
+        self.button_stop.setEnabled(True)
 
     def mainLoop(self):
         try:
