@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifndef M_PI
+#    define M_PI 3.14159265358979323846
+#endif
+
 
 // Constants
 
@@ -11,9 +15,10 @@
 
 #define Default_Func_Gen_Freq  100          // The default frequency of the generated signal is 500Hz.
 
-#define Sine_Wave              0           // Type of Waveform that can be used by the Function Generator.
-#define Square_Wave            1           // Type of Waveform that can be used by the Function Generator.
-#define Sawtooth_Wave          2           // Type of Waveform that can be used by the Function Generator.
+#define ADC_Acquisition        0           // ADC Acquisition Mode.
+#define Sine_Wave              1           // Type of Waveform that can be used by the Function Generator.
+#define Square_Wave            2           // Type of Waveform that can be used by the Function Generator.
+#define Sawtooth_Wave          3           // Type of Waveform that can be used by the Function Generator.
 
 
 //Function Prototype.
