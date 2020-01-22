@@ -28,6 +28,7 @@ main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/timer.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/inc/hw_timer.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/adc.h
 main.obj: ../function_gen.h
+main.obj: ../comunication_protocol.h
 
 ../main.c: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.3.LTS/include/stdio.h: 
@@ -57,3 +58,4 @@ C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/timer.h:
 C:/ti/TivaWare_C_Series-2.1.4.178/inc/hw_timer.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/adc.h: 
 ../function_gen.h: 
+../comunication_protocol.h: 

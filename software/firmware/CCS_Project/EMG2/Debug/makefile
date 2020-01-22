@@ -10,6 +10,7 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
+"./comunication_protocol.obj" \
 "./function_gen.obj" \
 "./main.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
@@ -157,8 +158,8 @@ EMG2.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "function_gen.obj" "main.obj" "tm4c123gh6pm_startup_ccs.obj" 
-	-$(RM) "function_gen.d" "main.d" "tm4c123gh6pm_startup_ccs.d" 
+	-$(RM) "comunication_protocol.obj" "function_gen.obj" "main.obj" "tm4c123gh6pm_startup_ccs.obj" 
+	-$(RM) "comunication_protocol.d" "function_gen.d" "main.d" "tm4c123gh6pm_startup_ccs.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
