@@ -16,10 +16,11 @@ class Textfile():
         format -- format to print data
         nameCols -- name of columns
         '''
+
         if(self.data_header):
-            self.data_header = self.data_header + ";" + str(nameCols) + "/" + str(format)
+            self.data_header = self.data_header + "/" + str(nameCols)
         else:
-            self.data_header =  "# " + str(nameCols) + "/" + str(format)
+            self.data_header =  "# " + str(nameCols)
         self.data_init.append([])
         self.id += 1
         self.data_init[self.id].append([])
@@ -59,7 +60,6 @@ class Textfile():
         value -- data
         '''
         try:
-            # self.data_init[id][0] = map(float, values)
             self.data_init[id][0] = values
             data_aux = ""
             for value in self.data_init[1:]:
@@ -84,6 +84,7 @@ class Textfile():
             output.writelines(self.header)
             output.write(str(self.data_header+'\n'))
             output.writelines(self.data)
+            self.start_variables()
             output.close()
         except Exception as e:
            print(e)

@@ -12,7 +12,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.actionShow_Capture.triggered.connect(self.widget.showCapture)
 
         self.actionLoad_Capture.triggered.connect(self.widget.showInputFile)
-        # self.actionSave_Capture.triggered.connect(self.widget.showInputFile)
+        self.actionSave_Capture.triggered.connect(self.widget.storeLogData)
         # self.actionLoad_Settings.triggered.connect(self.widget.showInputFile)       
         # self.actionSave_Settings.triggered.connect(self.widget.showInputFile)
 
@@ -21,6 +21,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':  # if we're running file directly and not importing it
     app = QtGui.QApplication(sys.argv)  # A new instance of QApplication
-    window = MainWindow()  # We set the window to be our ExampleApp (design
+    window = MainWindow()  # We set the window to be our ExampleApp design
     window.show()  # Show the window
     app.exec_()  # and execute the app

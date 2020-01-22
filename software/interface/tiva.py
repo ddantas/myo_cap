@@ -23,7 +23,6 @@ from serial_ports import SerialPorts
 from textfile import Textfile
 
 import sys, os
-mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
 
 class Main(pg.GraphicsWindow): 
     pg.setConfigOption('background', 'w')
@@ -49,6 +48,8 @@ class Main(pg.GraphicsWindow):
 
         # init textfile class
         self.textfile = Textfile()
+
+        self.menuFlag = True
 
         # start
         self.showMainWindow()
@@ -90,9 +91,8 @@ class Main(pg.GraphicsWindow):
         self.combobox_type.addItem("Serial")      
         self.combobox_type.addItem("File")            
         self.combobox_type.currentIndexChanged.connect(self.onChange)
-        proxy_list = QGraphicsProxyWidget()
-        proxy_list.setWidget(self.combobox_type)
-        self.layout.addItem(proxy_list, row=0, colspan=1)
+        proxy_select = QGraphicsProxyWidget()
+        proxy_select.setWidget(self.combobox_type)
 
         # config combobox ports
         self.combobox_serial = QComboBox()
@@ -101,7 +101,6 @@ class Main(pg.GraphicsWindow):
             self.combobox_serial.addItem(port)
         proxy_list = QGraphicsProxyWidget()
         proxy_list.setWidget(self.combobox_serial)
-        self.layout.addItem(proxy_list, row=0, colspan=1)
 
         # config file button
         proxy_file = QGraphicsProxyWidget()
@@ -109,36 +108,33 @@ class Main(pg.GraphicsWindow):
         self.button_file.clicked.connect(self.showInputFile)
         proxy_file.setWidget(self.button_file)
         self.button_file.setEnabled(False)
-        self.layout.addItem(proxy_file, row=0, colspan=1)
 
         #config display settings button
-        proxy_settings = QGraphicsProxyWidget()
-        button_settings = QPushButton('Display Settings')
-        button_settings.clicked.connect(self.showDisplaySettings)
-        proxy_settings.setWidget(button_settings)
-        self.layout.addItem(proxy_settings, row=0, colspan=1)
+        proxy_display_settings = QGraphicsProxyWidget()
+        self.button_display_settings = QPushButton('Display Settings')
+        self.button_display_settings.clicked.connect(self.showDisplaySettings)
+        proxy_display_settings.setWidget(self.button_display_settings)
 
         # config capture settings button
-        proxy_settings2 = QGraphicsProxyWidget()
-        button_settings2 = QPushButton('Capture Settings')
-        button_settings2.clicked.connect(self.showCaptureSettings)
-        proxy_settings2.setWidget(button_settings2)
-        self.layout.addItem(proxy_settings2, row=0, colspan=1)
+        proxy_capture_settings = QGraphicsProxyWidget()
+        self.button_capture_settings = QPushButton('Capture Settings')
+        self.button_capture_settings.clicked.connect(self.showCaptureSettings)
+        proxy_capture_settings.setWidget(self.button_capture_settings)
 
         # config label
-        proxy_settings3 = QGraphicsProxyWidget()
-        label_configs = QLabel()
-        label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
-                            " | vMin: "+ str(self.settings_data['vMin']) + "V"+ 
-                            " | vMax:  "+ str(self.settings_data['vMax']) + "V" +
-                            " | Amplitude: " + str(self.amplitude) + "V" + 
+        proxy_configs = QGraphicsProxyWidget()
+        self.label_configs = QLabel()
+        self.label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
+                            " | vMin: " + str(self.settings_data['vMin']) + "V"+
+                            " | vMax:  " + str(self.settings_data['vMax']) + "V" +
                             " | HTick: " + str(self.settings_data['horizTick']) +
                             " | VTick " + str(self.settings_data['vertTick']) + "V" + 
                             " | Channels: " + str(self.settings_data['showChannels']))
-        label_configs.setAlignment(QtCore.Qt.AlignVCenter)
-        label_configs.setFixedHeight(30)
-        proxy_settings3.setWidget(label_configs)
-        self.layout.addItem(proxy_settings3, row=0, colspan=4)
+        self.label_configs.alignment()
+        self.label_configs.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_configs.setFixedHeight(25)
+        self.label_configs.setStyleSheet("background-color:#ffffff;")
+        proxy_configs.setWidget(self.label_configs)
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
@@ -146,15 +142,13 @@ class Main(pg.GraphicsWindow):
         self.button_start.clicked.connect(self.startCapture)
         self.button_start.setEnabled(True)
         proxy_play.setWidget(self.button_start)
-        self.layout.addItem(proxy_play, row=0, colspan=1)
 
         # config stop capture button
-        proxy_stop = QGraphicsProxyWidget()
+        proxy_show = QGraphicsProxyWidget()
         self.button_show = QPushButton('Show Capture')
         self.button_show.clicked.connect(self.showCapture)
         self.button_show.setEnabled(False)
-        proxy_stop.setWidget(self.button_show)
-        self.layout.addItem(proxy_stop, row=0, colspan=1)
+        proxy_show.setWidget(self.button_show)
 
         # config stop capture button
         proxy_stop = QGraphicsProxyWidget()
@@ -162,8 +156,20 @@ class Main(pg.GraphicsWindow):
         self.button_stop.clicked.connect(self.stopCapture)
         self.button_stop.setEnabled(False)
         proxy_stop.setWidget(self.button_stop)
-        self.layout.addItem(proxy_stop, row=0, colspan=1)
 
+        if(self.menuFlag):
+            self.layout.addItem(proxy_select, row=0, colspan=1)
+            self.layout.addItem(proxy_list, row=0, colspan=1)
+            self.layout.addItem(proxy_file, row=0, colspan=1)
+            self.layout.addItem(proxy_display_settings, row=0, colspan=1)
+            self.layout.addItem(proxy_capture_settings, row=0, colspan=1)
+            self.layout.addItem(proxy_configs, row=0, colspan=4)
+            self.layout.addItem(proxy_play, row=0, colspan=1)
+            self.layout.addItem(proxy_show, row=0, colspan=1)       
+            self.layout.addItem(proxy_stop, row=0, colspan=1)
+        else:
+            self.layout.addItem(proxy_configs, row=0, colspan=4)
+            
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
         self.axis_y.setTickSpacing(4000, self.settings_data['vertTick'])
@@ -190,9 +196,6 @@ class Main(pg.GraphicsWindow):
             self.curve.append(self.graph.plot(self.data[i]))
         self.showMaximized()
 
-    def showMessage(self, title, body):
-        QMessageBox.about(self, title, body)
-
     def showInputFile(self):
         self.stopCapture()
         self.timer.stop()
@@ -207,22 +210,6 @@ class Main(pg.GraphicsWindow):
             except:
                 self.showMessage("ERROR", "File")
 
-    def loadData(self, file):
-        with open(file, 'r') as f:
-                for line in f:
-                    if line[0] != "#" and line != "":
-                        self.data_log.append(line[:-1].replace(";", " "))
-
-    def onChange(self, newIndex):
-        if newIndex == 0:
-            self.button_start.setEnabled(True)
-            self.button_show.setEnabled(False)
-            self.button_file.setEnabled(False)
-            self.combobox_serial.setEnabled(True)
-        elif newIndex == 1:
-            self.button_file.setEnabled(True)
-            self.combobox_serial.setEnabled(False)
-
     def startCapture(self):
         if self.combobox_type.currentText() == "Serial":
             try:
@@ -232,7 +219,7 @@ class Main(pg.GraphicsWindow):
                 self.apiTiva = ApiTiva(self.ser)
 
                 # log file
-                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%d;%d;%d;%d", "ch")
+                self.log_id = self.textfile.init(self.settings_data['showChannels'], "%d;%d;%d;%d", "ch1;ch2;ch3;ch4")
                 # self.log_file = "data/" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ".log"
                 self.storeLogHeader()
                 self.start = True
@@ -267,18 +254,15 @@ class Main(pg.GraphicsWindow):
     def showCapture(self):
         self.control = 0
         self.stopCapture()
-
+        self.num_sig = 0
         # log file
-        self.log_id = self.textfile.init(self.settings_data['showChannels'], "%d;%d;%d;%d", "ch")
-        self.storeLogHeader()
-
+        self.data = np.zeros(shape=(self.settings_data['showChannels'], self.settings_data['swipeSamples']), dtype=float)
         self.timer_plot = QtCore.QTimer()
         self.timer_plot.timeout.connect(self.plotLogData)
         self.timer_plot.start(0)
         self.button_show.setEnabled(False)
         self.button_start.setEnabled(False)
         self.button_stop.setEnabled(True)
-
 
     def mainLoop(self):
         try:
@@ -291,26 +275,18 @@ class Main(pg.GraphicsWindow):
         try:
             self.packet = self.apiTiva.recvPkt(int(self.settings_data['channelsPerBoard']), self.const_ADC)
             self.textfile.log(self.log_id, self.packet)
+            self.data_log.append(self.packet)
         except Exception as e:
             print(e)
-            # self.data_log.append(self.packet)
 
     def plotSerialData(self):
         try:
             num_ch = 0
             for value in self.packet:
-                self.data[num_ch][self.num_sig] = value
+                self.data[num_ch][self.num_sig] = value * self.const_ADC
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
-
-            # update test graph and store data
-            if self.num_sig % self.settings_data['swipeSamples'] == 0:
-                self.num_sig = 0
-
-            # plot data in graph
-            if self.num_sig % int(self.settings_data['swipeSamples'] / 10) == 0:
-                for i in range(self.settings_data['showChannels']):
-                    self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] + (self.amplitude * i), pen=pg.mkPen('r', width=0.4))
+            self.plotGraph()
         except:
             self.showMessage("Error!","")
             self.button_show.setEnabled(True)
@@ -319,27 +295,37 @@ class Main(pg.GraphicsWindow):
     def plotLogData(self):
         try:
             line = self.data_log[self.control]
-            self.textfile.log(self.log_id, line[:-1].split(' '))
+            # self.textfile.log(self.log_id, line[:-1].split(' '))
             self.control += 1
             num_ch = 0
             time.sleep(1.0/self.settings_data['sampleRate'])
-            for word in line.split(' '):
-                self.data[num_ch][self.num_sig] = int(word) * self.const_ADC
-                # self.data[num_ch][self.num_sig] = float(word)
+
+            for word in line:
+                self.data[num_ch][self.num_sig] = float(word) * self.const_ADC
                 num_ch = (num_ch + 1) % self.settings_data['showChannels']
             self.num_sig += 1
-            # update test graph and store data
-            if self.num_sig % self.settings_data['swipeSamples'] == 0:
-                self.num_sig = 0
-            # plot data in graph
-            if self.num_sig % int(self.settings_data['swipeSamples'] / 10) == 0:
-                for i in range(self.settings_data['showChannels']):
-                    self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] +
-                                          (self.amplitude * i), pen=pg.mkPen('r', width=1.3))
-        except:
-            # self.control = 0
-            self.showMessage("Warning","No more data to plot.")
+            self.plotGraph()
 
+        except:
+            self.control = 0
+            self.showMessage("Warning","No more data to plot.")
+            self.button_show.setEnabled(True)
+            self.button_start.setEnabled(True)
+            self.timer_plot.stop()
+
+    def plotGraph(self):
+        # update test graph and store data
+        if self.num_sig % self.settings_data['swipeSamples'] == 0:
+            self.num_sig = 0
+
+        # plot data in graph
+        if self.checkSwipe():
+            for i in range(self.settings_data['showChannels']):
+                self.curve[i].setData(self.data[self.settings_data['showChannels'] - i - 1] - self.settings_data['vMin'] + (self.amplitude * i), pen=pg.mkPen('r', width=0.4))
+
+    def checkSwipe(self):
+        return (self.num_sig == 0) or (self.num_sig % 200 == 0) or (self.num_sig + 1 % 200 == 0 and self.num_sig % 200 == self.num_sig % self.settings_data['swipeSamples']) 
+        # return (self.num_sig == 0) or (self.num_sig % 200 == 0)
 
     def storeLogHeader(self):
         self.textfile.message_save("File generated by myo_cap software")
@@ -354,7 +340,28 @@ class Main(pg.GraphicsWindow):
         self.textfile.metadata_save("bitsPerSample", self.settings_data['bitsPerSample'])
 
     def storeLogData(self):
-        self.textfile.save('/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) )
+        filename = '/data/%s.log' % (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        self.textfile.save(filename)
+        self.showMessage("File stored!", 'File stored at %s' % filename)
+        
+    def showMessage(self, title, body):
+        QMessageBox.about(self, title, body)
+
+    def onChange(self, newIndex):
+        if newIndex == 0:
+            self.button_start.setEnabled(True)
+            self.button_show.setEnabled(False)
+            self.button_file.setEnabled(False)
+            self.combobox_serial.setEnabled(True)
+        elif newIndex == 1:
+            self.button_file.setEnabled(True)
+            self.combobox_serial.setEnabled(False)
+
+    def loadData(self, file):
+        with open(file, 'r') as f:
+                for line in f:
+                    if line[0] != "#" and line != "":
+                        self.data_log.append(line[:-1].replace(";", " ").split(" "))
 
 if __name__ == '__main__':
     w = Main()
