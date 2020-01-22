@@ -1,4 +1,4 @@
-
+import struct
 class ApiTiva():
     def __init__(self, serial):
         # codification parameters
@@ -7,10 +7,10 @@ class ApiTiva():
         self.max_code = 64
 
     def start(self):
-        self.serial.write("start\n")
+        self.serial.write("ai")
     
     def stop(self):
-        self.serial.write("stop\n")
+        self.serial.write("as")
 
     def recvPkt(self, len_ch, const_board):
         while self.serial.inWaiting() == 0:
@@ -35,7 +35,33 @@ class ApiTiva():
     def setNBoards(self, value):
         self.serial.write("sb " + str(value) + "\n")
         packet = self.recvPkt(self.serial)
+    
+    def setADCmode(self):
+        self.serial.write("fa")
 
+    
+    def setFrequencyFuncGen(self, value):
+        z = struct.pack('>i',int(value))
+        self.serial.write("sf" + z)
+        #packet = self.recvPkt(self.serial)
+
+    def setFuncGenSquare(self, value):
+        self.serial.write("fq")
+        #packet = self.recvPkt(self.serial)
+
+    def setFuncGenSawtooth(self, value):
+        self.serial.write("fw")
+        #packet = self.recvPkt(self.serial)
+
+    def setFuncGenSine(self, value):        
+        self.serial.write("fn")
+        #self.serial.write(hex((int(value))))
+        #packet = self.recvPkt(self.serial)
+
+    def getFrequencyFuncGen(self, value):
+        self.serial.write("gf " + str(value) + "\n")
+        packet = self.recvPkt(self.serial)
+        
     # convert string to int
     def strToInt(self, word):
         if (len(word) > 1):

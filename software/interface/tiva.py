@@ -6,7 +6,7 @@ import sys
 import time
 import datetime
 import numpy as np
-import thread
+import _thread as thread
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (QPushButton, QMessageBox, QComboBox, QGraphicsProxyWidget, QLabel,  QInputDialog, QLineEdit, QFileDialog)
@@ -19,10 +19,12 @@ from settings import Settings
 from api_tiva import ApiTiva
 from display_settings import DisplaySettings
 from capture_settings import CaptureSettings
+from frequency_settings import FrequencySettings #relativo ao gerador de função
 from serial_ports import SerialPorts
 from textfile import Textfile
 
 import sys, os
+mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
 
 class Main(pg.GraphicsWindow): 
     pg.setConfigOption('background', 'w')
@@ -63,6 +65,12 @@ class Main(pg.GraphicsWindow):
         self.win_capture = CaptureSettings(self)
         self.stopCapture()
         self.win_capture.show()
+		
+    def showFuncGenFrequency(self): ##gerador de função
+        self.win_frequency = FrequencySettings(self)
+        self.stopCapture()
+        self.win_frequency.show()		
+        self.win_frequency.ui_display.button_save.clicked.connect(self.setFrequency)#tesdte
 
     def showMainWindow(self):
 
@@ -110,31 +118,30 @@ class Main(pg.GraphicsWindow):
         self.button_file.setEnabled(False)
 
         #config display settings button
-        proxy_display_settings = QGraphicsProxyWidget()
-        self.button_display_settings = QPushButton('Display Settings')
-        self.button_display_settings.clicked.connect(self.showDisplaySettings)
-        proxy_display_settings.setWidget(self.button_display_settings)
+        proxy_settings = QGraphicsProxyWidget()
+        button_settings = QPushButton('Display Settings')
+        button_settings.clicked.connect(self.showDisplaySettings)
+        proxy_settings.setWidget(button_settings)
 
         # config capture settings button
-        proxy_capture_settings = QGraphicsProxyWidget()
-        self.button_capture_settings = QPushButton('Capture Settings')
-        self.button_capture_settings.clicked.connect(self.showCaptureSettings)
-        proxy_capture_settings.setWidget(self.button_capture_settings)
+        proxy_settings2 = QGraphicsProxyWidget()
+        button_settings2 = QPushButton('Capture Settings')
+        button_settings2.clicked.connect(self.showCaptureSettings)
+        proxy_settings2.setWidget(button_settings2)
 
         # config label
-        proxy_configs = QGraphicsProxyWidget()
-        self.label_configs = QLabel()
-        self.label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
-                            " | vMin: " + str(self.settings_data['vMin']) + "V"+
-                            " | vMax:  " + str(self.settings_data['vMax']) + "V" +
+        proxy_settings3 = QGraphicsProxyWidget()
+        label_configs = QLabel()
+        label_configs.setText("Swipe: " + str(self.settings_data['swipeSamples']) +
+                            " | vMin: "+ str(self.settings_data['vMin']) + "V"+ 
+                            " | vMax:  "+ str(self.settings_data['vMax']) + "V" +
+                            " | Amplitude: " + str(self.amplitude) + "V" + 
                             " | HTick: " + str(self.settings_data['horizTick']) +
                             " | VTick " + str(self.settings_data['vertTick']) + "V" + 
                             " | Channels: " + str(self.settings_data['showChannels']))
-        self.label_configs.alignment()
-        self.label_configs.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_configs.setFixedHeight(25)
-        self.label_configs.setStyleSheet("background-color:#ffffff;")
-        proxy_configs.setWidget(self.label_configs)
+        label_configs.setAlignment(QtCore.Qt.AlignVCenter)
+        label_configs.setFixedHeight(30)
+        proxy_settings3.setWidget(label_configs)
 
         # config start capture button
         proxy_play = QGraphicsProxyWidget()
@@ -161,14 +168,14 @@ class Main(pg.GraphicsWindow):
             self.layout.addItem(proxy_select, row=0, colspan=1)
             self.layout.addItem(proxy_list, row=0, colspan=1)
             self.layout.addItem(proxy_file, row=0, colspan=1)
-            self.layout.addItem(proxy_display_settings, row=0, colspan=1)
-            self.layout.addItem(proxy_capture_settings, row=0, colspan=1)
-            self.layout.addItem(proxy_configs, row=0, colspan=4)
+            self.layout.addItem(proxy_settings, row=0, colspan=1)
+            self.layout.addItem(proxy_settings2, row=0, colspan=1)   
+            self.layout.addItem(proxy_settings3, row=0, colspan=4)
             self.layout.addItem(proxy_play, row=0, colspan=1)
             self.layout.addItem(proxy_show, row=0, colspan=1)       
             self.layout.addItem(proxy_stop, row=0, colspan=1)
         else:
-            self.layout.addItem(proxy_configs, row=0, colspan=4)
+            self.layout.addItem(proxy_settings3, row=0, colspan=4)
             
         # config axis y 
         self.axis_y = DateAxis(orientation='left')
@@ -209,7 +216,45 @@ class Main(pg.GraphicsWindow):
                 self.button_show.setEnabled(True)
             except:
                 self.showMessage("ERROR", "File")
-
+                
+    def sendInstruction(self, command, errmsg):
+        if self.combobox_type.currentText() == "Serial":
+            try:
+                if self.ser.is_open == False:
+                    self.ser.port = self.combobox_serial.currentText()
+                    self.ser.open()
+                #self.apiTiva = ApiTiva(self.ser)
+                self.ser.write(command)
+            except (OSError, serial.SerialException) as err:
+                self.showMessage(errmsg, str(err))
+    
+    def setFrequency(self):
+         # load data
+        self.settings_data = Settings().load()
+        value = self.settings_data['frequency']
+        if self.combobox_type.currentText() == "Serial":
+            try:
+                if self.ser.is_open == False:
+                    self.ser.port = self.combobox_serial.currentText()
+                    self.ser.open()
+                self.apiTiva = ApiTiva(self.ser)
+                self.apiTiva.setFrequencyFuncGen(value)
+            except (OSError, serial.SerialException) as err:
+                self.showMessage("SetFrequency Error!", str(err))        
+        
+    def setAdcMode(self):
+        self.sendInstruction("fa","ADC Error!")
+                
+    #functiongenerator
+    def setFuncgenSin(self):
+        self.sendInstruction("fn","FuncgenSin Error!")#        
+                
+    def setFuncgenSqr(self):
+        self.sendInstruction("fq","FuncgenSqr Error!")
+                
+    def setFuncgenSaw(self):
+        self.sendInstruction("fw","FuncgenSaw Error!")
+        
     def startCapture(self):
         if self.combobox_type.currentText() == "Serial":
             try:
@@ -262,7 +307,7 @@ class Main(pg.GraphicsWindow):
         self.timer_plot.start(0)
         self.button_show.setEnabled(False)
         self.button_start.setEnabled(False)
-        self.button_stop.setEnabled(True)
+        self.button_stop.setEnabled(False)
 
     def mainLoop(self):
         try:

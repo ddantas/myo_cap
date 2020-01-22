@@ -5,9 +5,12 @@
 # Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
+from time import sleep
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from tiva import Main
+
+from display_settings import DisplaySettings
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -86,8 +89,8 @@ class Ui_MainWindow(object):
         self.actionSquare_FuncGen.setObjectName("actionSquare_FuncGen")
         self.actionSawtooth_FuncGen = QtWidgets.QAction(MainWindow)
         self.actionSawtooth_FuncGen.setObjectName("actionSawtooth_FuncGen")
-
-        self.actionSawtooth_FuncGen = QtWidgets.QAction(MainWindow)
+        self.actionFrequency_FuncGen = QtWidgets.QAction(MainWindow)
+        self.actionFrequency_FuncGen.setObjectName("actionFrequency_FuncGen")
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuCapture.menuAction())
@@ -107,13 +110,16 @@ class Ui_MainWindow(object):
         self.menuSettings.addAction(self.actionCapture_Settings)
         self.menuSettings.addAction(self.actionDisplay_Settings)
 
+        self.menuFuncGen.addAction(self.actionFrequency_FuncGen)
+        self.menuFuncGen.addSeparator()
         self.menuFuncGen.addAction(self.actionSine_FuncGen)
         self.menuFuncGen.addAction(self.actionSquare_FuncGen)
-        self.menuFuncGen.addAction(self.actionSawtooth_FuncGen)
-        self.menuSettings.addSeparator()
-
+        self.menuFuncGen.addAction(self.actionSawtooth_FuncGen)   
+              
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+		
+    
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -139,7 +145,48 @@ class Ui_MainWindow(object):
 
         self.actionSine_FuncGen.setText(_translate("MainWindow", "Sine"))
         self.actionSine_FuncGen.setCheckable(True)
+        self.actionSine_FuncGen.triggered.connect(self.setSineFunc)
         self.actionSquare_FuncGen.setText(_translate("MainWindow", "Square"))
         self.actionSquare_FuncGen.setCheckable(True)
+        self.actionSquare_FuncGen.triggered.connect(self.setSquareFunc)
         self.actionSawtooth_FuncGen.setText(_translate("MainWindow", "Sawtooth"))
         self.actionSawtooth_FuncGen.setCheckable(True)
+        self.actionSawtooth_FuncGen.triggered.connect(self.setSawtoothFunc)
+        self.actionFrequency_FuncGen.setText(_translate("MainWindow", "Frequency"))
+
+        self.actionFrequency_FuncGen.triggered.connect(self.widget.showFuncGenFrequency) #win_frequency_funcgen
+##      
+    def setSawtoothFunc(self):
+        if (self.actionSawtooth_FuncGen.isChecked()==False):
+            self.widget.setAdcMode()
+        else:
+            self.actionSquare_FuncGen.setChecked(False)
+            self.actionSine_FuncGen.setChecked(False)
+            self.widget.stopCapture() 
+            sleep(0.1)
+            self.widget.setFuncgenSaw()                   
+        
+    def setSineFunc(self):
+        if (self.actionSine_FuncGen.isChecked()==False):
+            self.widget.setAdcMode()
+        else:            
+            self.actionSquare_FuncGen.setChecked(False)
+            self.actionSawtooth_FuncGen.setChecked(False)
+            self.widget.stopCapture()
+            sleep(0.1)
+            self.widget.setFuncgenSin()
+        
+    def setSquareFunc(self):
+        if (self.actionSquare_FuncGen.isChecked()==False):
+            self.widget.setAdcMode()
+        else:    
+            self.actionSawtooth_FuncGen.setChecked(False)
+            self.actionSine_FuncGen.setChecked(False)
+            self.widget.stopCapture()
+            sleep(0.1)
+            self.widget.setFuncgenSqr()
+    
+#    def checkADCmode(self, action):
+ #       if (action.isChecked()==False):
+  #          print(action)
+

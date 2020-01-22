@@ -2,7 +2,7 @@ import datetime
 
 import sys, os
 
-mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap","")
+mainPath = os.path.realpath(os.path.dirname(sys.argv[0])).replace("/leap_cap/src","")
 
 class Settings():
 
@@ -14,15 +14,15 @@ class Settings():
             for line in settings_out:
                 if (line[1] == " "):
                     line = line.replace(":", "").split(" ")
-                    if(str(line[1]) == "vMin" or str(line[1]) == "vMax" or str(line[1]) == "vertTick"):
+                    if(str(line[1]) == "vMin" or str(line[1]) == "vMax" or str(line[1]) == "vertTick"
+                        or str(line[1]) == "frequency"):
                         data[str(line[1])] = float(line[2])
                     else:
                         data[str(line[1])] = int(line[2])
             settings_file.close()
             return data
         except IOError:
-            print("Please insert the settings file!")
-            print(mainPath)
+           print("Please insert the settings file!")
 
     def store(self, data):
         try:
@@ -43,6 +43,7 @@ class Settings():
                         "# horizTick: " + str(data['horizTick']) + "\n" +
                         "# vMin: " + str(data['vMin']) + "\n"+ 
                         "# vMax: " + str(data['vMax']) + "\n" +
+                        "# frequency: " + str(data['frequency']) + "\n" + ##gerador de funcao
                         "# showChannels: " + str(data['showChannels']))
             settings_file.close()
             return True
