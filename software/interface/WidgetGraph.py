@@ -38,8 +38,6 @@ class WidgetGraph(pg.PlotWidget):
         num_ticks_ch = int(num_ticks_neg + num_ticks_pos)
         num_ticks_axis = (self.settings.getShowChannels() * num_ticks_ch) + 1
 
-        print(num_ticks_ch, num_ticks_axis)
-
         if self.settings.getVMin() < 0:
             tick_min = (-1) * num_ticks_neg * self.settings.getVTick()
         else:

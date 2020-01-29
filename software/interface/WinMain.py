@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 from UiMain import UiMain
 from WinDisplaySettings import WinDisplaySettings
 from WinCaptureSettings import WinCaptureSettings
+from WinFuncGenSettings import WinFuncGenSettings
 from SerialPort import SerialPort
 from Settings import Settings
 from WidgetGraph import WidgetGraph
@@ -38,6 +39,11 @@ class WinMain(QtWidgets.QMainWindow):
         self.ui_main.action_save_settings.triggered.connect(self.saveSettings)
         self.ui_main.action_display_settings.triggered.connect(self.showWinDisplaySettings)
         self.ui_main.action_capture_settings.triggered.connect(self.showWinCaptureSettings)
+        self.ui_main.action_funcgen_settings.triggered.connect(self.showWinFuncGenSettings)
+        self.ui_main.action_sine.triggered.connect(self.setSine)
+        self.ui_main.action_square.triggered.connect(self.setSquare)
+        self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
+
         self.ui_main.action_start_capture.setEnabled(False)
         self.ui_main.action_stop_capture.setEnabled(False)
         self.ui_main.action_show_capture.setEnabled(False)
@@ -73,35 +79,27 @@ class WinMain(QtWidgets.QMainWindow):
             ' | Htick: ' + str(self.settings.getHTick()) + ' | Show channels: ' + str(self.settings.getShowChannels()))
 
     def changeDataSource(self, index):
-        # for serial selection
-        if index == 0:
+
+        if index != -1:
+            # new buttons configuration
+            self.ui_main.button_start_capture.setEnabled(True)
+            self.ui_main.button_stop_capture.setEnabled(False)
+            self.ui_main.button_show_capture.setEnabled(False)
+
             # new menu capture configuration
             self.ui_main.action_start_capture.setEnabled(True)
             self.ui_main.action_stop_capture.setEnabled(False)
             self.ui_main.action_show_capture.setEnabled(False)
 
-            # new combo box configuration
+        # for serial selection
+        if index == 0:
             self.ui_main.combo_port.setEnabled(True)
-
-            # new buttons configuration
-            self.ui_main.button_select_file.setEnabled(False)
-            self.ui_main.button_start_capture.setEnabled(True)
-            self.ui_main.button_stop_capture.setEnabled(False)
-            self.ui_main.button_show_capture.setEnabled(False)
+            self.ui_main.button_select_file.setEnabled((False))
 
         # for file selection
         elif index == 1:
-            # new menu capture configuration
-            self.ui_main.action_start_capture.setEnabled(False)
-            self.ui_main.action_stop_capture.setEnabled(False)
-
-            # new combo box configuration
-            self.ui_main.combo_port.setEnabled(False)
-
-            # new buttons configuration
             self.ui_main.button_select_file.setEnabled(True)
-            self.ui_main.button_start_capture.setEnabled(False)
-            self.ui_main.button_stop_capture.setEnabled(False)
+            self.ui_main.combo_port.setEnabled(False)
 
     def loadSettings(self):
         self.settings.load()
@@ -119,6 +117,10 @@ class WinMain(QtWidgets.QMainWindow):
     def showWinCaptureSettings(self):
         self.win_capture_settings = WinCaptureSettings(self.settings)
         self.win_capture_settings.show()
+
+    def showWinFuncGenSettings(self):
+        self.win_funcgen_settings = WinFuncGenSettings(self.settings)
+        self.win_funcgen_settings.show()
 
     def showWinSelectFile(self):
         options = QtWidgets.QFileDialog.Options()
@@ -162,6 +164,23 @@ class WinMain(QtWidgets.QMainWindow):
         # new capture menu configuration
         self.ui_main.action_show_capture.setEnabled(False)
         self.ui_main.action_stop_capture.setEnabled(True)
+
+    def setSine(self):
+        if self.ui_main.action_sine.isChecked() == True:
+            self.ui_main.action_square.setChecked(False)
+            self.ui_main.action_sawtooth.setChecked(False)
+            self.ui_main.button_start_capture.setEnabled(True)
+
+    def setSquare(self):
+        if self.ui_main.action_square.isChecked() == True:
+            self.ui_main.action_sine.setChecked(False)
+            self.ui_main.action_sawtooth.setChecked(False)
+            self.ui_main.button_start_capture.setEnabled(True)
+
+    def setSawtooth(self):
+        if self.ui_main.action_sawtooth.isChecked() == True:
+            self.ui_main.action_square.setChecked(False)
+            self.ui_main.action_sine.setChecked(False)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

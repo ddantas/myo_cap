@@ -29,6 +29,9 @@ class Settings:
             print(SETTINGS_PATH)
             print(os.getcwd())
 
+        self.data['funcGenFreq'] = 100
+        self.data['stressTime'] = 10
+
     def save(self):
         try:
             settings_file = open(SETTINGS_PATH, "w")
@@ -43,7 +46,6 @@ class Settings:
                         "# channelsPerBoard: " + str(self.data['channelsPerBoard']) + "\n" +
                         "# nBoards: " + str(self.data['nBoards']) + "\n" +
                         "# bitsPerSample: " + str(self.data['bitsPerSample']) + "\n" +
-                        "# baudrate: " + str(self.data['baudrate']) + "\n" +
                         "# swipe: "+ str(self.data['swipe']) + "\n" +
                         "# vTick: " + str(self.data['vTick']) + "\n" +
                         "# hTick: " + str(self.data['hTick']) + "\n" +
@@ -61,6 +63,12 @@ class Settings:
 
     def getSettingsPath(self):
         return SETTINGS_PATH
+
+    def getFuncGenFreq(self):
+        return self.data['funcGenFreq']
+
+    def getStressTime(self):
+        return self.data['stressTime']
 
     def getSampleRate(self):
         return self.data['sampleRate']
@@ -94,6 +102,12 @@ class Settings:
 
     def getShowChannels(self):
         return self.data['showChannels']
+
+    def setFuncGenFreq(self, value):
+        self.data['funcGenFreq'] = value
+
+    def setStressTime(self, value):
+        self.data['stressTime'] = value
 
     def setSampleRate(self, value):
         self.data['sampleRate'] = value

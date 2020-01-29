@@ -42,10 +42,12 @@ class UiMain:
         self.createMenuFile()
         self.createMenuCapture()
         self.createMenuSettings()
+        self.createMenuFuncGen()
 
         self.menu_bar.addAction(self.menu_file.menuAction())
         self.menu_bar.addAction(self.menu_capture.menuAction())
         self.menu_bar.addAction(self.menu_settings.menuAction())
+        self.menu_bar.addAction(self.menu_funcgen.menuAction())
 
         self.win_main.setMenuBar(self.menu_bar)
 
@@ -82,12 +84,36 @@ class UiMain:
         self.action_save_settings = QtWidgets.QAction('Save settings')
         self.action_capture_settings = QtWidgets.QAction('Capture settings')
         self.action_display_settings = QtWidgets.QAction('Display settings')
+        self.action_com_settings = QtWidgets.QAction('Communication settings')
 
         self.menu_settings.addAction(self.action_load_settings)
         self.menu_settings.addAction(self.action_save_settings)
         self.menu_settings.addSeparator()
         self.menu_settings.addAction(self.action_capture_settings)
         self.menu_settings.addAction(self.action_display_settings)
+        self.menu_settings.addAction(self.action_com_settings)
+
+    def createMenuFuncGen(self):
+        self.menu_funcgen = QtWidgets.QMenu(self.menu_bar)
+        self.menu_funcgen.setTitle("Function generator")
+
+        self.action_funcgen_settings = QtWidgets.QAction('Settings')
+        self.action_sine = QtWidgets.QAction('Sine')
+        self.action_square = QtWidgets.QAction('Square')
+        self.action_sawtooth = QtWidgets.QAction('Sawtooth')
+        self.action_stresstest = QtWidgets.QAction('Start stress test')
+
+        self.menu_funcgen.addAction(self.action_funcgen_settings)
+        self.menu_funcgen.addSeparator()
+        self.menu_funcgen.addAction(self.action_sine)
+        self.menu_funcgen.addAction(self.action_square)
+        self.menu_funcgen.addAction(self.action_sawtooth)
+        self.menu_funcgen.addSeparator()
+        self.menu_funcgen.addAction(self.action_stresstest)
+
+        self.action_sine.setCheckable(True)
+        self.action_square.setCheckable(True)
+        self.action_sawtooth.setCheckable(True)
 
     def createTaskBar(self):
         self.createTaskBarComboBoxes()
