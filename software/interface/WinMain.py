@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 from UiMain import UiMain
 from WinDisplaySettings import WinDisplaySettings
 from WinCaptureSettings import WinCaptureSettings
+from WinCommSettings import WinCommSettings
 from WinFuncGenSettings import WinFuncGenSettings
 from SerialPort import SerialPort
 from Settings import Settings
@@ -39,6 +40,7 @@ class WinMain(QtWidgets.QMainWindow):
         self.ui_main.action_save_settings.triggered.connect(self.saveSettings)
         self.ui_main.action_display_settings.triggered.connect(self.showWinDisplaySettings)
         self.ui_main.action_capture_settings.triggered.connect(self.showWinCaptureSettings)
+        self.ui_main.action_comm_settings.triggered.connect(self.showWinCommSettings)
         self.ui_main.action_funcgen_settings.triggered.connect(self.showWinFuncGenSettings)
         self.ui_main.action_sine.triggered.connect(self.setSine)
         self.ui_main.action_square.triggered.connect(self.setSquare)
@@ -117,6 +119,10 @@ class WinMain(QtWidgets.QMainWindow):
     def showWinCaptureSettings(self):
         self.win_capture_settings = WinCaptureSettings(self.settings)
         self.win_capture_settings.show()
+
+    def showWinCommSettings(self):
+        self.win_comm_settings = WinCommSettings(self.settings)
+        self.win_comm_settings.show()
 
     def showWinFuncGenSettings(self):
         self.win_funcgen_settings = WinFuncGenSettings(self.settings)

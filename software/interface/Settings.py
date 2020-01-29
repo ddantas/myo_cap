@@ -29,6 +29,9 @@ class Settings:
             print(SETTINGS_PATH)
             print(os.getcwd())
 
+        self.data['pktSize'] = 2
+        self.data['baudrate'] = 9600
+
         self.data['funcGenFreq'] = 100
         self.data['stressTime'] = 10
 
@@ -63,6 +66,12 @@ class Settings:
 
     def getSettingsPath(self):
         return SETTINGS_PATH
+
+    def getPktSize(self):
+        return self.data['pktSize']
+
+    def getBaudrate(self):
+        return self.data['baudrate']
 
     def getFuncGenFreq(self):
         return self.data['funcGenFreq']
@@ -102,6 +111,12 @@ class Settings:
 
     def getShowChannels(self):
         return self.data['showChannels']
+
+    def setPktSize(self, value):
+        self.data['pktSize'] = value
+
+    def setBaudrate(self, value):
+        self.data['baudrate'] = value
 
     def setFuncGenFreq(self, value):
         self.data['funcGenFreq'] = value

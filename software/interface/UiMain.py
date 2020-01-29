@@ -84,14 +84,14 @@ class UiMain:
         self.action_save_settings = QtWidgets.QAction('Save settings')
         self.action_capture_settings = QtWidgets.QAction('Capture settings')
         self.action_display_settings = QtWidgets.QAction('Display settings')
-        self.action_com_settings = QtWidgets.QAction('Communication settings')
+        self.action_comm_settings = QtWidgets.QAction('Communication settings')
 
         self.menu_settings.addAction(self.action_load_settings)
         self.menu_settings.addAction(self.action_save_settings)
         self.menu_settings.addSeparator()
         self.menu_settings.addAction(self.action_capture_settings)
         self.menu_settings.addAction(self.action_display_settings)
-        self.menu_settings.addAction(self.action_com_settings)
+        self.menu_settings.addAction(self.action_comm_settings)
 
     def createMenuFuncGen(self):
         self.menu_funcgen = QtWidgets.QMenu(self.menu_bar)
