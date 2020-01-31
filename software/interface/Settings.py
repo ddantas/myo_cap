@@ -29,12 +29,6 @@ class Settings:
             print(SETTINGS_PATH)
             print(os.getcwd())
 
-        self.data['pktSize'] = 2
-        self.data['baudrate'] = 9600
-
-        self.data['funcGenFreq'] = 100
-        self.data['stressTime'] = 10
-
     def save(self):
         try:
             settings_file = open(SETTINGS_PATH, "w")
@@ -45,17 +39,20 @@ class Settings:
                         "##\n"+
                         "## EMG capture settings \n"+
                         "##\n"+
-                        "# sampleRate: "+ str(self.data['sampleRate']) + "\n" +
-                        "# channelsPerBoard: " + str(self.data['channelsPerBoard']) + "\n" +
-                        "# nBoards: " + str(self.data['nBoards']) + "\n" +
-                        "# bitsPerSample: " + str(self.data['bitsPerSample']) + "\n" +
-                        "# swipe: "+ str(self.data['swipe']) + "\n" +
-                        "# vTick: " + str(self.data['vTick']) + "\n" +
-                        "# hTick: " + str(self.data['hTick']) + "\n" +
-                        "# vMin: " + str(self.data['vMin']) + "\n" +
-                        "# vMax: " + str(self.data['vMax']) + "\n" +
-                        "# showChannels: " + str(self.data['showChannels']))
-
+                        "# sampleRate: "+ str(self.getSampleRate()) + "\n" +
+                        "# channelsPerBoard: " + str(self.getChannelsPerBoard()) + "\n" +
+                        "# nBoards: " + str(self.getNBoards()) + "\n" +
+                        "# bitsPerSample: " + str(self.getBitsPerSample()) + "\n" +
+                        "# swipe: "+ str(self.getSwipe()) + "\n" +
+                        "# vTick: " + str(self.getVTick()) + "\n" +
+                        "# hTick: " + str(self.getHTick()) + "\n" +
+                        "# vMin: " + str(self.getVMin()) + "\n" +
+                        "# vMax: " + str(self.getVMax()) + "\n" +
+                        "# showChannels: " + str(self.getShowChannels())  + "\n" +
+                        "# baudrate: " + str(self.getBaudrate()) + "\n" +
+                        "# pktSize: " + str(self.getPktSize()) + "\n" +
+                        "# funcGenFreq: " + str(self.getFuncGenFreq()) + "\n" +
+                        "# stressTime: " + str(self.getStressTime()))
             settings_file.close()
 
             return True

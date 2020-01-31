@@ -13,15 +13,14 @@ class WinDisplaySettings(QtWidgets.QMainWindow):
         self.settings = settings
         self.graph = graph
 
-        self.ui_display_settings = UiDisplaySettings()
-        self.ui_display_settings.setupUi(self)
+        self.ui_display_settings = UiDisplaySettings(self)
 
         self.ui_display_settings.button_apply.clicked.connect(self.applyChanges)
         self.ui_display_settings.button_cancel.clicked.connect(self.close)
 
-        self.loadTextBoxes()
+        self.loadSettings()
 
-    def loadTextBoxes(self):
+    def loadSettings(self):
         self.ui_display_settings.text_swipe.setText(str(self.settings.getSwipe()))
         self.ui_display_settings.text_vtick.setText(str(self.settings.getVTick()))
         self.ui_display_settings.text_htick.setText(str(self.settings.getHTick()))

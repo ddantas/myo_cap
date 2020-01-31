@@ -6,12 +6,8 @@ WIN_TITLE = 'Myograph - Display settings'
 
 class UiDisplaySettings:
 
-    def setupUi(self, win_display_settings):
+    def __init__(self, win_display_settings):
         self.win_display_settings = win_display_settings
-
-        # window size
-        self.win_display_settings.setMinimumWidth(300)
-        self.win_display_settings.setMinimumHeight(240)
 
         # window name
         self.win_display_settings.setWindowTitle(WIN_TITLE)

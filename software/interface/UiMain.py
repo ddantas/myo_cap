@@ -6,7 +6,7 @@ WIN_TITLE = 'Myograph'
 
 class UiMain:
 
-    def setupUi(self, win_main, graph):
+    def __init__(self, win_main, graph):
         self.win_main = win_main
 
         #window size

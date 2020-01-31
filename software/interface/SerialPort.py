@@ -3,14 +3,12 @@ import sys
 import glob
 from serial import Serial
 
-BAUDRATE = 921600
-
 class SerialPort(Serial):
 
-    def __init__(self):
+    def __init__(self, baudrate):
         super(SerialPort, self).__init__()
 
-        self.baudrate = BAUDRATE
+        self.baudrate = baudrate
         self.timeout = 1
 
     def listPorts(self):

@@ -6,7 +6,7 @@ from WinDisplaySettings import WinDisplaySettings
 from WinCaptureSettings import WinCaptureSettings
 from WinCommSettings import WinCommSettings
 from WinFuncGenSettings import WinFuncGenSettings
-from SerialPort import SerialPort
+from Tiva import Tiva
 from Settings import Settings
 from WidgetGraph import WidgetGraph
 import sys
@@ -17,16 +17,18 @@ class WinMain(QtWidgets.QMainWindow):
         # supeclass constructor
         super(WinMain, self).__init__()
 
-        # setup main user interface
-        self.ui_main = UiMain()
-
+        # setup settings
         self.settings = Settings()
         self.settings.load()
 
+        # setup graph widget
         self.graph = WidgetGraph(self.settings)
-        self.ui_main.setupUi(self, self.graph)
 
-        self.ser_port = SerialPort()
+        # setup main user interface
+        self.ui_main = UiMain(self, self.graph)
+
+        # setup board
+        self.board = Tiva(self.settings)
 
         self.setupWidgets()
 
@@ -64,7 +66,7 @@ class WinMain(QtWidgets.QMainWindow):
 
         # setup combo box for serial ports
         self.ui_main.combo_port.setEnabled(False)
-        for port in self.ser_port.listPorts():
+        for port in self.board.listPorts():
             self.ui_main.combo_port.addItem(port)
 
         # setup combo box for data source

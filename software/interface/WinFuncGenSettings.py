@@ -10,15 +10,14 @@ class WinFuncGenSettings(QtWidgets.QMainWindow):
 
         self.settings = settings
 
-        self.ui_funcgen_settings = UiFuncGenSettings()
-        self.ui_funcgen_settings.setupUi(self)
+        self.ui_funcgen_settings = UiFuncGenSettings(self)
 
         self.ui_funcgen_settings.button_apply.clicked.connect(self.applyChanges)
         self.ui_funcgen_settings.button_cancel.clicked.connect(self.close)
 
-        self.loadTextBoxes()
+        self.loadSettings()
 
-    def loadTextBoxes(self):
+    def loadSettings(self):
         self.ui_funcgen_settings.text_freq.setText(str(self.settings.getFuncGenFreq()))
         self.ui_funcgen_settings.text_time.setText(str(self.settings.getStressTime()))
 

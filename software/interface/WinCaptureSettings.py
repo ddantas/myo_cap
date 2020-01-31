@@ -11,15 +11,14 @@ class WinCaptureSettings(QtWidgets.QMainWindow):
 
         self.settings = settings
 
-        self.ui_capture_settings = UiCaptureSettings()
-        self.ui_capture_settings.setupUi(self)
+        self.ui_capture_settings = UiCaptureSettings(self)
 
         self.ui_capture_settings.button_apply.clicked.connect(self.applyChanges)
         self.ui_capture_settings.button_cancel.clicked.connect(self.close)
 
-        self.loadTextBoxes()
+        self.loadSettings()
 
-    def loadTextBoxes(self):
+    def loadSettings(self):
         self.ui_capture_settings.text_sample_rate.setText(str(self.settings.getSampleRate()))
         self.ui_capture_settings.text_ch_board.setText(str(self.settings.getChannelsPerBoard()))
         self.ui_capture_settings.text_num_boards.setText(str(self.settings.getNBoards()))

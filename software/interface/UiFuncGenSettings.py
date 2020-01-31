@@ -6,12 +6,8 @@ WIN_TITLE = 'Myograph - Function generator settings'
 
 class UiFuncGenSettings:
 
-    def setupUi(self, win_funcgen_settings):
+    def __init__(self, win_funcgen_settings):
         self.win_funcgen_settings = win_funcgen_settings
-
-        # window size
-        self.win_funcgen_settings.setMinimumWidth(300)
-        self.win_funcgen_settings.setMinimumHeight(120)
 
         # window name
         self.win_funcgen_settings.setWindowTitle(WIN_TITLE)
@@ -66,6 +62,6 @@ class UiFuncGenSettings:
         self.grid_widget.addWidget(self.text_time, 1, col_textbox)
 
         # buttons position
-        row_buttons = 4
+        row_buttons = 2
         self.grid_widget.addWidget(self.button_apply, row_buttons, 0, 2, 1)
         self.grid_widget.addWidget(self.button_cancel, row_buttons, 1, 2, 1)

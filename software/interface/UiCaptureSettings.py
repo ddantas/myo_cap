@@ -6,12 +6,8 @@ WIN_TITLE = 'Myograph - Capture settings'
 
 class UiCaptureSettings:
 
-    def setupUi(self, win_capture_settings):
+    def __init__(self, win_capture_settings):
         self.win_capture_settings = win_capture_settings
-
-        # window size
-        self.win_capture_settings.setMinimumWidth(300)
-        self.win_capture_settings.setMinimumHeight(180)
 
         # window name
         self.win_capture_settings.setWindowTitle(WIN_TITLE)

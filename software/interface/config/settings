@@ -14,3 +14,7 @@
 # vMin: -1.6
 # vMax: 1.6
 # showChannels: 4
+# baudrate: 921600
+# pktSize: 2
+# funcGenFreq: 100
+# stressTime: 10
