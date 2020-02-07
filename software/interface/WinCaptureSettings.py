@@ -30,9 +30,3 @@ class WinCaptureSettings(QtWidgets.QMainWindow):
         self.settings.setNBoards(int(self.ui_capture_settings.text_num_boards.text()))
         self.settings.setBitsPerSample(int(self.ui_capture_settings.text_bits_sample.text()))
         self.close()
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    win_display_settings = WinCaptureSettings()
-    win_display_settings.show()
-    sys.exit(app.exec())

@@ -40,9 +40,3 @@ class WinDisplaySettings(QtWidgets.QMainWindow):
         self.win_main.updateInfoGraph()
 
         self.close()
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    win_display_settings = WinDisplaySettings()
-    win_display_settings.show()
-    sys.exit(app.exec())

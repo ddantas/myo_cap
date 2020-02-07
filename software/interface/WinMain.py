@@ -9,6 +9,7 @@ from WinFuncGenSettings import WinFuncGenSettings
 from Tiva import Tiva
 from Settings import Settings
 from WidgetGraph import WidgetGraph
+from TextFile import Textfile
 import sys
 
 class WinMain(QtWidgets.QMainWindow):
@@ -29,6 +30,9 @@ class WinMain(QtWidgets.QMainWindow):
 
         # setup board
         self.board = Tiva(self.settings)
+
+        # setup text file
+        self.textfile = Textfile()
 
         self.setupWidgets()
 
@@ -146,6 +150,14 @@ class WinMain(QtWidgets.QMainWindow):
         self.ui_main.button_start_capture.setEnabled(False)
         self.ui_main.button_stop_capture.setEnabled(True)
 
+        if self.board.getCommStatus() == False:
+            self.board.openComm(self.ui_main.combo_port.currentText())
+
+        num_cols = self.settings.getNBoards() * self.settings.getChannelsPerBoard()
+        name_cols = self.patternStr('ch', True)
+        format = self.patternStr('%d', False)
+        self.log_id = self.textfile.initFile(num_cols, format, name_cols)
+
     def stopCapture(self):
         if self.ui_main.combo_data_source.currentIndex() == 0:
             # new buttons configuration
@@ -189,6 +201,19 @@ class WinMain(QtWidgets.QMainWindow):
         if self.ui_main.action_sawtooth.isChecked() == True:
             self.ui_main.action_square.setChecked(False)
             self.ui_main.action_sine.setChecked(False)
+
+    def patternStr(self, pattern, num_it, add_it):
+        str_out = ''
+        for i in range(num_it):
+            str_out = str_out + pattern
+
+            if add_it:
+                str_out = str_out + str(i)
+
+            if i < num_it - 1:
+                str_out = str_out + ';'
+
+        return str_out
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
