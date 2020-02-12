@@ -2,6 +2,7 @@
 
 from PyQt5 import QtWidgets
 from UiFuncGenSettings import UiFuncGenSettings
+import Board
 
 class WinFuncGenSettings(QtWidgets.QMainWindow):
 

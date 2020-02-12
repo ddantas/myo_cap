@@ -153,12 +153,23 @@ class WinMain(QtWidgets.QMainWindow):
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
 
+
+        # Sends a Start Command
+        self.board.start()
+        
+        
         num_cols = self.settings.getNBoards() * self.settings.getChannelsPerBoard()
         name_cols = self.patternStr('ch', True)
         format = self.patternStr('%d', False)
         self.log_id = self.textfile.initFile(num_cols, format, name_cols)
 
     def stopCapture(self):
+        
+        
+        # Sends a Stop Command
+        self.board.stop() 
+        
+        
         if self.ui_main.combo_data_source.currentIndex() == 0:
             # new buttons configuration
             self.ui_main.button_start_capture.setEnabled(True)
@@ -190,17 +201,38 @@ class WinMain(QtWidgets.QMainWindow):
             self.ui_main.action_square.setChecked(False)
             self.ui_main.action_sawtooth.setChecked(False)
             self.ui_main.button_start_capture.setEnabled(True)
+            
+            ###
+            if self.board.getCommStatus() == False:
+                self.board.openComm(self.ui_main.combo_port.currentText())
+            
+            # Sets the Wve Form to Sine
+            self.board.setSineWaveMode()
 
     def setSquare(self):
         if self.ui_main.action_square.isChecked() == True:
             self.ui_main.action_sine.setChecked(False)
             self.ui_main.action_sawtooth.setChecked(False)
             self.ui_main.button_start_capture.setEnabled(True)
+            
+            ###
+            if self.board.getCommStatus() == False:
+                self.board.openComm(self.ui_main.combo_port.currentText())
+            
+            # Sets the Wve Form to Sine
+            self.board.setSquareWaveMode()
 
     def setSawtooth(self):
         if self.ui_main.action_sawtooth.isChecked() == True:
             self.ui_main.action_square.setChecked(False)
             self.ui_main.action_sine.setChecked(False)
+            
+            ###
+            if self.board.getCommStatus() == False:
+                self.board.openComm(self.ui_main.combo_port.currentText())
+                
+            # Sets the Wve Form to Sine
+            self.board.setSawtoothWaveMode()
 
     def patternStr(self, pattern, num_it, add_it):
         str_out = ''
