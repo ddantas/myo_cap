@@ -123,6 +123,3 @@ void ConfigureUART(void) {
 - <b>Definição:</b> Função que deve ser chamada após a interrupção do timer periódico para manter o Trigger.
 - <b>Parâmetros:</b> "ui32Base" é o endereço base para o modulo do timer, "ui32IntFlags" mascara de bits utilizada para limpar o vetor de interrupções do timer em questão.
 
-# Link para requisitos de software #
-
-https://www.dropbox.com/s/z635f89p6a7jl0g/myo_cap_gui_requisitos_2020.pdf?dl=0
