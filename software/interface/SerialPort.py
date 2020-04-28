@@ -35,3 +35,10 @@ class SerialPort(Serial):
         self.port = port
         self.open()
         self.close()
+        
+    def getCommStatus(self):
+        return self.is_open
+
+    def openComm(self, port):
+        self.port = port
+        self.open()

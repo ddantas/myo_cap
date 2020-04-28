@@ -14,9 +14,6 @@ class WidgetGraph(pg.PlotWidget):
 
         super(WidgetGraph, self).__init__()
         
-        # Remove after tests
-        self.settings.setShowChannels(5)
-
         self.configureGraph()
 
     def configureGraph(self):
@@ -24,7 +21,7 @@ class WidgetGraph(pg.PlotWidget):
         self.updateAxisX()
         self.updateAxisY()
 
-        #self.setMenuEnabled(False, 'same')
+        self.setMenuEnabled(False, 'same')
         self.setMouseEnabled(False, False)
         self.disableAutoRange( )
         self.hideButtons()

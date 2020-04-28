@@ -88,7 +88,7 @@ class Settings:
     def getBitsPerSample(self):
         return self.data['bitsPerSample']
 
-    def getBaudrate(self):
+    def getBaudrate_(self):
         return self.data['baudrate']
 
     def getSwipe(self):
@@ -133,7 +133,7 @@ class Settings:
     def setBitsPerSample(self, value):
         self.data['bitsPerSample'] = value
 
-    def setBaudrate(self, value):
+    def setBaudrate_(self, value):
         self.data['baudrate'] = value
 
     def setSwipe(self, value):
