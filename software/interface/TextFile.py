@@ -1,40 +1,47 @@
 # -*- coding: utf-8 -*-
 
-DATA_PATH = "config/data"
+import numpy as np
 
-class Textfile:
+DATA_PATH = 'data/'
+
+class TextFile():
 
     def __init__(self):
         self.initVariables()
 
     def initVariables(self):
-        self.data = []
         self.header = []
-        self.data_init = []
-        self.data_init.append('')
         self.data_header = ''
+        self.data = []
         self.id = 0
-        self.temp_data = []
+        self.line = []
+        self.line.append('')
 
-        for x in range(1001):
-            self.temp_data.append('')
-
-        self.count_data = 0
-
-    def initFile(self, num_cols, format, name_cols):
-        if(self.data_header):
-            self.data_header = self.data_header + '/' + str(name_cols)
+    def initFile(self, format, name_cols):
+        self.initVariables()
+        if len(self.data_header):
+            self.data_header = self.data_header + '/' + name_cols
         else:
-            self.data_header = '# ' + str(name_cols)
-
-        self.data_init.append([])
+            self.data_header = '# ' + name_cols
+        self.line[self.id] = []        
+        self.line[self.id].append([])
+        self.line[self.id].append(format)
+        self.line[self.id].append(name_cols)
         self.id += 1
-        self.data_init[self.id].append([])
-        self.data_init[self.id].append(format)
-        self.data_init[self.id].append(num_cols)
-        self.data_init[self.id].append(name_cols)
+        return self.id - 1
 
-        return self.id
+    def saveLog(self, id, values):
+        try:
+            self.line[id][0] = values
+            aux = ''
+            for value in self.line[0:]:
+                if(len(aux)):
+                    aux = '%s;%s' % (aux, value[1] % tuple(value[0]))
+                else:
+                    aux = value[1] % tuple(value[0])
+            self.data.append(aux + '\n')
+        except Exception as e:
+            print(e)
 
     def writeHeaderLine(self, msg):
         self.header.append('## %s \n' % (msg))
@@ -42,27 +49,18 @@ class Textfile:
     def writeMetadataLine(self, msg, value):
         self.header.append('# %s: %s \n' % (msg, value))
 
-    def saveLog(self, id, values):
+    def saveFile(self, file_name):
         try:
-            self.data_init[id][0] = values
-            data_aux = ""
-            for value in self.data_init[1:]:
-                if(data_aux):
-                    data_aux = '%s;%s' % (data_aux, value[1] % tuple(value[0]))
-                else:
-                    data_aux = value[1] % tuple(value[0])
-
-            self.data.append(data_aux + '\n')
-        except Exception as e:
-            pass
-
-    def saveFile(self, filename):
-        try:
-            output = open(DATA_PATH + filename, 'a')
+            output = open(DATA_PATH + file_name, 'a')
             output.writelines(self.header)
             output.write(str(self.data_header + '\n'))
             output.writelines(self.data)
-            self.initVariables()
             output.close()
         except Exception as e:
            print(e)
+
+    def getLog(self, pos):
+        return np.fromstring(self.data[pos], dtype=np.uint16, sep=';')
+    
+    def getLogLength(self):
+        return len(self.data)
