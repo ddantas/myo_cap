@@ -5,11 +5,13 @@ import UiCommSettings
 
 class WinCommSettings(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self, settings):
+    def __init__(self, settings, board, winMain):
         # calling superclass constructor
         super(WinCommSettings, self).__init__()
         # global objects
         self.settings = settings
+        self.board = board
+        self.winMain = winMain
         # ui display settings
         self.ui_comm_settings = UiCommSettings.UiCommSettings(self)
         # connect ui buttons to modules
@@ -25,7 +27,12 @@ class WinCommSettings(PyQt5.QtWidgets.QMainWindow):
 
     # set new values at settings object
     def applyChanges(self):
-        # set packet size
-        self.settings.setPktSize(self.ui_comm_settings.text_pkt_size.text())
+         
+        self.winMain.stopCapture()
+        
+        if self.board.setPacketSize( int(self.ui_comm_settings.text_pkt_size.text()) ):
+            # set packet size
+            self.settings.setPktSize(self.ui_comm_settings.text_pkt_size.text())
+            
         # close window
         self.close()

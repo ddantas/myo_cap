@@ -59,9 +59,15 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.button_start_capture.clicked.connect(self.startCapture)
         self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
         self.ui_main.button_show_capture.clicked.connect(self.showCapture)
+                
         # setup combo box for serial ports
         for port in self.board.listPorts():
             self.ui_main.combo_port.addItem(port)
+        
+        # Sync the Boar With the Interface Settings            
+        self.ui_main.combo_port.setCurrentIndex(-1)
+        self.ui_main.combo_port.currentIndexChanged.connect( self.sync_board_settings )       
+        
         # setup graph configurations
         self.updateInfoGraph()
 
@@ -89,15 +95,15 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.win_display_settings.show()
 
     def showWinCaptureSettings(self):
-        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph)
+        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board, self)
         self.win_capture_settings.show()
 
     def showWinCommSettings(self):
-        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings)
+        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board, self)
         self.win_comm_settings.show()
 
     def showWinFuncGenSettings(self):
-        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings)
+        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board, self)
         self.win_funcgen_settings.show()
 
     def showWinSelectFile(self):
@@ -117,6 +123,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
 
     def startCapture(self):
+        
+        self.ui_main.button_start_capture.setEnabled(False)
+        self.ui_main.action_start_capture.setEnabled(False)
+        self.ui_main.action_show_capture.setEnabled(False)
+        self.ui_main.button_show_capture.setEnabled(False)
+        
         self.source = self.ui_main.combo_data_source.currentText()
         self.graph.createPlots()
         if self.source == 'Serial':
@@ -134,12 +146,17 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.timer_capture.start(1000.0/self.settings.getSampleRate())
 
     def stopCapture(self):
+        self.timer_capture.stop()
         if self.board.getCommStatus():
             self.board.stop()
-            if self.board.stop() == 'ok':            
-                self.timer_capture.stop()
+            if self.board.stop() == 'ok':                            
                 self.textfile.saveFile(self.file_name)
                 self.showMessage('Capture saved!', self.file_name)
+                
+                self.ui_main.button_start_capture.setEnabled(True)
+                self.ui_main.action_start_capture.setEnabled(True)
+                self.ui_main.action_show_capture.setEnabled(True)
+                self.ui_main.button_show_capture.setEnabled(True)                                            
             else:
                 self.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
 
@@ -170,9 +187,42 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         if len(pkt_samples):
             self.graph.plotSamples(np.array(pkt_samples))
 
+    """def setSine(self):
+        if self.ui_main.action_sine.isChecked():
+            self.ui_main.action_square.setChecked(False)
+            self.ui_main.action_sawtooth.setChecked(False)
+            if self.board.getCommStatus():
+                self.board.openComm(self.ui_main.combo_port.currentText())
+            # Sets the Wave Form to Sine
+            self.board.setSineWaveMode()"""
+
+    def sync_board_settings(self):
+            
+         if self.board.getCommStatus() == False:
+            self.board.openComm(self.ui_main.combo_port.currentText())
+            
+            self.board.stop()
+            
+            if   self.ui_main.action_sine.isChecked():      self.board.setSineWaveMode()
+            elif self.ui_main.action_square.isChecked():    self.board.setSquareWaveMode()
+            elif self.ui_main.action_sawtooth.isChecked():  self.board.setSawtoothWaveMode()
+            else:                                           self.board.setAdcMode()
+            
+            self.board.setFucGenFreq( self.settings.getFuncGenFreq() )
+            self.board.setBitsPerSample( self.settings.getBitsPerSample() )
+            self.board.setChannelsperBoard( self.settings.getChannelsPerBoard() )
+            self.board.setNumAcquisBoards( self.settings.getNBoards() )
+            self.board.setPacketSize( self.settings.getPktSize() )
+            self.board.setSampleRate( self.settings.getSampleRate() )
+            
+            self.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized' )
+            
+        
     def setSine(self):
+        self.stopCapture()
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
+            
         if self.ui_main.action_sine.isChecked() == True:
             self.ui_main.action_square.setChecked(False)
             self.ui_main.action_sawtooth.setChecked(False)
@@ -181,9 +231,22 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
                self.board.setFucGenFreq(self.settings.getFuncGenFreq()) 
             self.board.setSineWaveMode()
-        else: self.board.setAdcMode()
+        else:   
+                self.board.setAdcMode()
+                self.ui_main.button_start_capture.setEnabled(True)
+        
+
+    """def setSquare(self):
+        if self.ui_main.action_square.isChecked():
+            self.ui_main.action_sine.setChecked(False)
+            self.ui_main.action_sawtooth.setChecked(False)
+            if not self.board.getCommStatus():
+                self.board.openComm(self.ui_main.combo_port.currentText())
+            # Sets the Wve Form to Sine
+            self.board.setSquareWaveMode()"""
 
     def setSquare(self):
+        self.stopCapture()
         if self.board.getCommStatus() == False:
                 self.board.openComm(self.ui_main.combo_port.currentText())
         if  self.ui_main.action_square.isChecked() == True:
@@ -193,9 +256,21 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
                self.board.setFucGenFreq(self.settings.getFuncGenFreq())
             self.board.setSquareWaveMode()
-        else: self.board.setAdcMode()
+        else: 
+            self.board.setAdcMode()
+            self.ui_main.button_start_capture.setEnabled(True)
+
+    """def setSawtooth(self):
+        if self.ui_main.action_sawtooth.isChecked():
+            self.ui_main.action_square.setChecked(False)
+            self.ui_main.action_sine.setChecked(False)
+            if not self.board.getCommStatus():
+                self.board.openComm(self.ui_main.combo_port.currentText())
+            # Sets the Wve Form to Sine
+            self.board.setSawtoothWaveMode()"""
         
     def setSawtooth(self):
+        self.stopCapture()
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
         if self.ui_main.action_sawtooth.isChecked() == True:
@@ -205,7 +280,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
                self.board.setFucGenFreq(self.settings.getFuncGenFreq())
             self.board.setSawtoothWaveMode()
-        else: self.board.setAdcMode()
+        else: 
+            self.board.setAdcMode()
+            self.ui_main.button_start_capture.setEnabled(True)
 
     def configFile(self):
         name_cols = self.patternStr('ch', self.settings.getTotChannels(), True)
