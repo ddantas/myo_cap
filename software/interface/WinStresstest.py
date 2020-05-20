@@ -2,7 +2,7 @@
 
 import PyQt5
 import UiStresstest
-
+from PyQt5.QtCore import QBasicTimer
 
 class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
@@ -14,15 +14,54 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         
         self.board = board
         self.winMain = winMain 
-    
+
+        
+        
         # stress test ui
         self.ui_stress_test = UiStresstest.UiStresstest(self)
         # connect ui buttons to modules
-        self.ui_stress_test.button_apply.clicked.connect(self.applyChanges)
+        self.ui_stress_test.button_stop.clicked.connect(self.startProgress)
         self.ui_stress_test.button_cancel.clicked.connect(self.close)
         # load settings
-        self.loadSettings()
+        self.loadSettings()        
+        # progressBar        
+        self.progressBar = self.ui_stress_test.progressBar
+        # buttons
+        self.btnStart = self.ui_stress_test.button_stop
+        self.btnReset = self.ui_stress_test.button_cancel
 
+        # timer
+        self.timer = QBasicTimer()
+        self.step = 0
+
+        #start
+        self.startProgress()
+	
+        # start capture
+##        self.winMain.startCapture()
+
+    # progressBar
+    def resetBar(self):
+        self.step = 0
+        self.progressBar.setValue(0)
+
+    def startProgress(self):
+        if self.timer.isActive():
+            self.timer.stop()
+            self.btnStart.setText('Start')
+        else:
+            self.timer.start(100, self)
+            self.btnStart.setText('Stop')
+
+    def timerEvent(self, event):
+        if self.step >= 100:
+            self.timer.stop()
+            self.btnStart.setText('Done')
+            return
+
+        self.step +=1
+        self.progressBar.setValue(self.step)
+            
     # load settings to text boxes
     def loadSettings(self):
         #load frequency
