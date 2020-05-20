@@ -28,7 +28,7 @@ class UiStresstest:
         self.label_time = PyQt5.QtWidgets.QLabel()
         self.label_time.setText('Test length (s):')
         self.label_freq = PyQt5.QtWidgets.QLabel()
-        self.label_freq.setText('Capture frequency: (Hz):')
+        self.label_freq.setText('Capture frequency (Hz):')
         self.label_ex_samp = PyQt5.QtWidgets.QLabel()
         self.label_ex_samp.setText('Expected samples:')
         self.label_re_samp = PyQt5.QtWidgets.QLabel()
@@ -36,7 +36,7 @@ class UiStresstest:
         self.label_dr_samp = PyQt5.QtWidgets.QLabel()
         self.label_dr_samp.setText('Dropped samples:')
         self.label_drop = PyQt5.QtWidgets.QLabel()
-        self.label_drop.setText('Drop rate: (%)')
+        self.label_drop.setText('Drop rate (%):')
         
     def createTextBoxes(self):
         # create frequency text box
@@ -45,6 +45,18 @@ class UiStresstest:
         # create time text box
         self.text_time = PyQt5.QtWidgets.QLabel()
         self.text_time.setFixedWidth(100)
+        # create expected samples text box
+        self.text_ex_samp = PyQt5.QtWidgets.QLabel()
+        self.text_ex_samp.setFixedWidth(100)
+        # create received samples text box
+        self.text_re_samp = PyQt5.QtWidgets.QLabel()
+        self.text_re_samp.setFixedWidth(100)
+        # create dropped samples text box
+        self.text_dr_samp = PyQt5.QtWidgets.QLabel()
+        self.text_dr_samp.setFixedWidth(100)
+        # create drop rate text box
+        self.text_drop = PyQt5.QtWidgets.QLabel()
+        self.text_drop.setFixedWidth(100)
 
     def createButtons(self):
         # create apply button
@@ -58,11 +70,12 @@ class UiStresstest:
 
     def createProgressBar(self):
         self.progressBar = PyQt5.QtWidgets.QProgressBar()
-        self.progressBar.setGeometry(30, 40, 200, 25)
+##        self.progressBar.setTextVisible(False)
+##        self.progressBar.setGeometry(30, 40, 200, 25)
         
     def posWidgets(self):
         #progressbar position
-        self.grid_widget.addWidget(self.progressBar, 0, 1)
+        self.grid_widget.addWidget(self.progressBar, 0, 0)
         ##self.grid_widget.addSeparator()
         # labels position
         col_labels = 0
@@ -76,6 +89,10 @@ class UiStresstest:
         col_boxes = 1
         self.grid_widget.addWidget(self.text_freq, 1, col_boxes)
         self.grid_widget.addWidget(self.text_time, 2, col_boxes)
+        self.grid_widget.addWidget(self.text_ex_samp, 3, col_boxes)
+        self.grid_widget.addWidget(self.text_re_samp, 4, col_boxes)
+        self.grid_widget.addWidget(self.text_dr_samp, 5, col_boxes)
+        self.grid_widget.addWidget(self.text_drop, 6, col_boxes)
         # buttons position
         row_buttons = 7
         self.grid_widget.addWidget(self.button_stop, row_buttons, 0, 2, 1)
