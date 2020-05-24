@@ -33,7 +33,7 @@ class Settings:
                         '## Available from github.com/ddantas/myo_cap \n' +
                         '## Timestamp: ' + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + ' \n' +
                         '##\n'+
-                        '## EMG capture settings \n'+
+                        '## EMG capture settings\n' +
                         '##\n'+
                         '# sampleRate: '+ str(self.getSampleRate()) + '\n' +
                         '# channelsPerBoard: ' + str(self.getChannelsPerBoard()) + '\n' +
@@ -44,8 +44,13 @@ class Settings:
                         '# hTick: ' + str(self.getHTick()) + '\n' +
                         '# vMin: ' + str(self.getVMin()) + '\n' +
                         '# vMax: ' + str(self.getVMax()) + '\n' +
+                        '## EMG communication settings\n' +
+                        '##\n'+
                         '# baudrate: ' + str(self.getBaudrate()) + '\n' +
                         '# pktSize: ' + str(self.getPktSize()) + '\n' +
+                        '# pktComp: ' + str(self.getPktComp()) + '\n' +
+                        '## EMG function generator settings\n' +
+                        '##\n'+
                         '# funcGenFreq: ' + str(self.getFuncGenFreq()) + '\n' +
                         '# stressTime: ' + str(self.getStressTime()))
             settings_file.close()
@@ -59,6 +64,9 @@ class Settings:
     def getPktSize(self):
         return self.data['pktSize']
 
+    def getPktComp(self):
+        return self.data['pktComp']
+    
     def getFuncGenFreq(self):
         return self.data['funcGenFreq']
 
@@ -100,6 +108,9 @@ class Settings:
 
     def setPktSize(self, value):
         self.data['pktSize'] = value
+
+    def setPktComp(self, value):
+        self.data['pktComp'] = value
 
     def setBaudrate(self, value):
         self.data['baudrate'] = value

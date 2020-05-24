@@ -6,15 +6,13 @@ from PyQt5.QtCore import QBasicTimer
 
 class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self, settings, board, winMain):
+    def __init__(self, settings, board, win_main):
         # calling superclass constructor
         super(WinStresstest, self).__init__()
         # global objects
         self.settings = settings
-        
         self.board = board
-        self.winMain = winMain 
-
+        self.win_main = win_main
         #settings
         self.freq = self.settings.getFuncGenFreq()
         self.time = self.settings.getStressTime()
@@ -95,14 +93,12 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
     # set new values at settings object and board
     def applyChanges(self):
-        
-        self.winMain.stopCapture()
-        self.board.stop()
-        
-        if self.board.setFucGenFreq( self.ui_funcgen_settings.text_freq.text() ) == 'ok': 
+        try:
             # set frequency
-            self.settings.setFuncGenFreq(self.ui_funcgen_settings.text_freq.text())
-        
+            if self.board.setFucGenFreq( self.ui_funcgen_settings.text_freq.text() ) == 'ok': 
+                self.settings.setFuncGenFreq(self.ui_funcgen_settings.text_freq.text())
+        except:
+            self.win_main.showMessage('Error','Communication settings did not apply!\nPlease, connect the board.')
         # set stress time
         self.settings.setStressTime(self.ui_funcgen_settings.text_time.text())
         # close window

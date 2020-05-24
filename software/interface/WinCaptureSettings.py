@@ -6,14 +6,14 @@ import sys
 
 class WinCaptureSettings(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self, settings, graph, board, winMain):
+    def __init__(self, settings, graph, board, win_main):
         # calling superclass constructor
         super(WinCaptureSettings, self).__init__()
         # global objects
         self.settings = settings
         self.graph = graph
         self.board = board
-        self.winMain = winMain
+        self.win_main = win_main
         # capture settings ui
         self.ui_capture_settings = UiCaptureSettings.UiCaptureSettings(self)
         # connect ui buttons to modules
@@ -35,24 +35,24 @@ class WinCaptureSettings(PyQt5.QtWidgets.QMainWindow):
 
     # set new values at settings object
     def applyChanges(self):
-        
-        self.winMain.stopCapture()
-        
-        if self.board.setSampleRate( int(self.ui_capture_settings.text_sample_rate.text()) ):
-            # set sample rate
-            self.settings.setSampleRate(int(self.ui_capture_settings.text_sample_rate.text()))
-        
-        if self.board.setChannelsperBoard( int(self.ui_capture_settings.text_ch_board.text()) ):
-            # set sample channels per board
-            self.settings.setChannelsPerBoard(int(self.ui_capture_settings.text_ch_board.text()))
+        try:
+            if self.board.setSampleRate(int(self.ui_capture_settings.text_sample_rate.text())):
+                # set sample rate
+                self.settings.setSampleRate(int(self.ui_capture_settings.text_sample_rate.text()))
             
-        if self.board.setNumAcquisBoards( int(self.ui_capture_settings.text_num_boards.text()) ):    
-            # set sample number of boards
-            self.settings.setNBoards(int(self.ui_capture_settings.text_num_boards.text()))
-            
-        if self.board.setBitsPerSample( int(self.ui_capture_settings.text_bits_sample.text()) ):    
-            # set bits per sample
-            self.settings.setBitsPerSample(int(self.ui_capture_settings.text_bits_sample.text()))
+            if self.board.setChannelsperBoard( int(self.ui_capture_settings.text_ch_board.text()) ):
+                # set sample channels per board
+                self.settings.setChannelsPerBoard(int(self.ui_capture_settings.text_ch_board.text()))
+                
+            if self.board.setNumAcquisBoards( int(self.ui_capture_settings.text_num_boards.text()) ):    
+                # set sample number of boards
+                self.settings.setNBoards(int(self.ui_capture_settings.text_num_boards.text()))
+                
+            if self.board.setBitsPerSample(int(self.ui_capture_settings.text_bits_sample.text())):    
+                # set bits per sample
+                self.settings.setBitsPerSample(int(self.ui_capture_settings.text_bits_sample.text()))
+        except:
+            self.win_main.showMessage('Error','Capture settings did not apply!\nPlease, connect the board.')
        
         # update graph
         self.graph.configureGraph()

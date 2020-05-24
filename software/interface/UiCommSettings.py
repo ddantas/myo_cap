@@ -20,6 +20,7 @@ class UiCommSettings:
         # layout construction
         self.createLabels()
         self.createTextBoxes()
+        self.createCheckBoxes()
         self.createButtons()
         self.posWidgets()
 
@@ -27,11 +28,18 @@ class UiCommSettings:
         # create packet size label
         self.label_pkt_size = PyQt5.QtWidgets.QLabel()
         self.label_pkt_size.setText('Packet size (bytes):')
+        #create packet compression
+        self.label_pkt_compression = PyQt5.QtWidgets.QLabel()
+        self.label_pkt_compression.setText('Packet compression:')
 
     def createTextBoxes(self):
         # create packet size text box
         self.text_pkt_size = PyQt5.QtWidgets.QLineEdit()
         self.text_pkt_size.setFixedWidth(100)
+    
+    def createCheckBoxes(self):
+        # create packet compression checkbox
+        self.check_pkt_compression = PyQt5.QtWidgets.QCheckBox()
 
     def createButtons(self):
         # create apply button
@@ -47,10 +55,12 @@ class UiCommSettings:
         # labels position
         col_labels = 0
         self.grid_widget.addWidget(self.label_pkt_size, 0, col_labels)
-        # text boxes postion
-        col_textbox = 1
-        self.grid_widget.addWidget(self.text_pkt_size, 0, col_textbox)
+        self.grid_widget.addWidget(self.label_pkt_compression, 1, col_labels)
+        # text boxes and checkbox postion
+        col_textbox_check = 1
+        self.grid_widget.addWidget(self.text_pkt_size, 0, col_textbox_check)
+        self.grid_widget.addWidget(self.check_pkt_compression, 1, col_textbox_check)
         # buttons position
-        row_buttons = 1
+        row_buttons = 2
         self.grid_widget.addWidget(self.button_apply, row_buttons, 0, 2, 1)
         self.grid_widget.addWidget(self.button_cancel, row_buttons, 1, 2, 1)

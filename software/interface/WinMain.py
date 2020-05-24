@@ -97,18 +97,22 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.win_display_settings.show()
 
     def showWinCaptureSettings(self):
+        self.stopCapture()
         self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board, self)
         self.win_capture_settings.show()
 
     def showWinCommSettings(self):
+        self.stopCapture()
         self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board, self)
         self.win_comm_settings.show()
 
     def showWinFuncGenSettings(self):
+        self.stopCapture()
         self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board, self)
         self.win_funcgen_settings.show()
 
     def showWinStresstest(self):
+        self.stopCapture()
         self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
         self.win_stress_test.show() #99
 
