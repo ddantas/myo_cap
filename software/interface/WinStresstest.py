@@ -17,8 +17,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         self.freq = self.settings.getFuncGenFreq()
         self.time = self.settings.getStressTime()
         #data
-        self.received = 0
-        self.received = self.winMain.textfile.getLogLength()
+        self.recvData()
         
         # stress test ui
         self.ui_stress_test = UiStresstest.UiStresstest(self)
@@ -43,6 +42,12 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         # start capture
 ##        self.winMain.startCapture()
 
+    # received data
+    def recvData(self):
+        try:
+            self.received = self.winMain.textfile.getLogLength()
+        except:
+            self.received = 0
     # progressBar
     def resetBar(self):
         self.step = 0
