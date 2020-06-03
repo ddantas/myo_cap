@@ -6,13 +6,12 @@ import UiFuncGenSettings
 
 class WinFuncGenSettings(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self, settings, board, win_main):
+    def __init__(self, settings, board):
         # calling superclass constructor
         super(WinFuncGenSettings, self).__init__()
         # global objects
         self.settings = settings
         self.board = board
-        self.win_main = win_main
         # function generator ui
         self.ui_funcgen_settings = UiFuncGenSettings.UiFuncGenSettings(self)
         # connect ui buttons to modules
@@ -30,12 +29,9 @@ class WinFuncGenSettings(PyQt5.QtWidgets.QMainWindow):
 
     # set new values at settings object and board
     def applyChanges(self):        
-        try:
-            # set frequency
-            if self.board.setFucGenFreq(self.ui_funcgen_settings.text_freq.text()) == 'ok': 
-                self.settings.setFuncGenFreq(self.ui_funcgen_settings.text_freq.text())
-        except:
-            self.win_main.showMessage('Error','Function generator settings did not apply!\nPlease, connect the board.')
+        # set frequency
+        if self.board.setFucGenFreq(self.ui_funcgen_settings.text_freq.text()) == 'ok': 
+            self.settings.setFuncGenFreq(self.ui_funcgen_settings.text_freq.text())
         # set stress time
         self.settings.setStressTime(self.ui_funcgen_settings.text_time.text())
         # close window

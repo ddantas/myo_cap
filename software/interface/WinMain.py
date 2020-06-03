@@ -5,6 +5,7 @@ import time
 import datetime as dt
 import numpy as np
 import PyQt5
+import AuxFunctions as AuxFunc
 import UiMain
 import Tiva
 import Settings
@@ -81,16 +82,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def loadSettings(self):
         if self.settings.load():
-            self.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
+            AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
             self.graph.configureGraph()
         else:
-            self.showMessage('Error!', 'Insert an settings file at ' + Settings.SETTINGS_PATH)
+            AuxFunc.showMessage('Error!', 'Insert an settings file at ' + Settings.SETTINGS_PATH)
 
     def saveSettings(self):
         if self.settings.save():
-            self.showMessage('Settings stored!', 'Settings stored at ' + self.settings.getSettingsPath())
+            AuxFunc.showMessage('Settings stored!', 'Settings stored at ' + self.settings.getSettingsPath())
         else:
-            self.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
+            AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
 
     def showWinDisplaySettings(self):
         self.win_display_settings = WinDisplaySettings.WinDisplaySettings(self, self.settings, self.graph)
@@ -98,22 +99,22 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def showWinCaptureSettings(self):
         self.stopCapture()
-        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board, self)
+        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
         self.win_capture_settings.show()
 
     def showWinCommSettings(self):
         self.stopCapture()
-        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board, self)
+        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
         self.win_comm_settings.show()
 
     def showWinFuncGenSettings(self):
         self.stopCapture()
-        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board, self)
+        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board)
         self.win_funcgen_settings.show()
 
     def showWinStresstest(self):
         self.stopCapture()
-        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
+        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board)
         self.win_stress_test.show() #99
 
     def showWinSelectFile(self):
@@ -124,7 +125,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
             self.openCSV(self.file_name)
         else:
-            self.showMessage('Error!', 'Select FILE option at the first combo box.')                
+            AuxFunc.showMessage('Error!', 'Select FILE option at the first combo box.')                
 
     def showCapture(self):
         self.source = 'Log'
@@ -148,9 +149,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 if self.board.start() == 'ok':
                     self.timer_capture.start(0)
                 else:
-                    self.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')                
+                    AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')                
             else:
-                self.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
+                AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
         elif self.source == 'File':
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())
@@ -161,14 +162,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.stop()
             if self.board.stop() == 'ok':                            
                 self.textfile.saveFile(self.file_name)
-                self.showMessage('Capture saved!', self.file_name)
+                AuxFunc.showMessage('Capture saved!', self.file_name)
                 
                 self.ui_main.button_start_capture.setEnabled(True)
                 self.ui_main.action_start_capture.setEnabled(True)
                 self.ui_main.action_show_capture.setEnabled(True)
                 self.ui_main.button_show_capture.setEnabled(True)                                            
             else:
-                self.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
+                AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
 
     def mainLoop(self):
         if self.source == 'Serial':
@@ -182,7 +183,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.log_pos += 1
             else:
                 self.timer_capture.stop()
-                self.showMessage('Finish!', 'All data was plotted.')
+                AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
         else:
             # receive samples csv file
@@ -191,7 +192,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.log_pos += 1
             else:
                 self.timer_capture.stop()
-                self.showMessage('Finish!', 'All data was plotted.')
+                AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
         # send samples from packet to graph
         if len(pkt_samples):
@@ -225,7 +226,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.setPacketSize( self.settings.getPktSize() )
             self.board.setSampleRate( self.settings.getSampleRate() )
             
-            self.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized' )
+            AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized' )
             
         
     def setSine(self):
@@ -295,8 +296,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.ui_main.button_start_capture.setEnabled(True)
 
     def configFile(self):
-        name_cols = self.patternStr('ch', self.settings.getTotChannels(), True)
-        format = self.patternStr('%d', self.settings.getTotChannels(), False)
+        name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
+        format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
         self.log_id = self.textfile.initFile(format, name_cols)
         date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         self.textfile.writeHeaderLine('File generated by myo_cap software')
@@ -311,20 +312,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.textfile.writeMetadataLine('bitsPerSample', self.settings.getBitsPerSample())
         file_name = date_time + '.csv'
         return file_name
-
-    def patternStr(self, pattern, num_it, add_it):
-        str_out = ''
-        for i in range(num_it):
-            str_out = str_out + pattern
-            if add_it:
-                str_out = str_out + str(i)
-
-            if i < num_it - 1:
-                str_out = str_out + ';'
-        return str_out
-
-    def showMessage(self, title, body):
-        PyQt5.QtWidgets.QMessageBox.about(self, title, body)
 
     def openCSV(self, file_name):
         self.log = []
@@ -345,7 +332,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                         self.log.append(np.fromstring(line, dtype=np.uint16, sep=';'))
             self.graph.configureGraph()
         except:
-            self.showMessage('Error!', 'Insert an CSV capture file.')
+            AuxFunc.showMessage('Error!', 'Insert an CSV capture file.')
 
 if __name__ == '__main__':
     app = PyQt5.QtWidgets.QApplication([])    
