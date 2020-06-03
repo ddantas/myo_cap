@@ -6,6 +6,7 @@ import glob
 import ctypes
 import struct
 import time
+import AuxFunctions as AuxFunc
 
 BITS_PER_BYTE = 8
 MAX_CODE = 64
@@ -96,6 +97,14 @@ class Board:
     def decodePkt(self, pkt):
         return self.settings.getPktSize()
 
+    def write(self, packet):
+        try:
+            self.serial.write(packet)
+            self.serial.reset_input_buffer()
+            time.sleep(0.1)
+        except:
+            AuxFunc.showMessage('Error', 'Capture settings did not apply!\nPlease, connect the board.')
+
     #Commands    
     ## Note: Before call other Commands, Call stop() first.
 
@@ -103,169 +112,131 @@ class Board:
         command = b'ai'
         op =  0  
         packet = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
 
     def stop(self):
         command = b'as'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
 
     def setSampleRate(self, sample_rate):
         command = b'sr'
         op      = sample_rate
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setChannelsperBoard(self, channels_per_board):
         command = b'sc'
         op      = channels_per_board
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
         
     def setNumAcquisBoards(self, num_acquis_boards):
         command = b'sb'
         op      = num_acquis_boards
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setBitsPerSample(self, bits_per_sample):
         command = b'ss'
         op      = bits_per_sample
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setPacketSize(self, packet_size):
         command = b'sp'
         op      = packet_size
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setFucGenFreq(self, func_gen_freq):
         command = b'sf'
         op      = func_gen_freq
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
 
     def setAdcMode(self):
         command = b'fa'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setSquareWaveMode(self):
         command = b'fq'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setSineWaveMode(self):
         command = b'fn'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def setSawtoothWaveMode(self):
         command = b'fw'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
             
     def getSampleRate(self):
         command = b'gr'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def getChannelsperBoard(self):
         command = b'gc'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def getNumAcquisBoards(self):
         command = b'gb'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def getBitsPerSample(self):
         command = b'gs'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
 
     def getPacketSize(self):
         command = b'gp'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def getFucGenFreq(self):
         command = b'gf'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()
     
     def getStreamingWaveForm(self):
         command = b'gw'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
-        self.serial.write(packet)
-        self.serial.reset_input_buffer()
-        time.sleep(0.1)
+        self.write(packet)
         return self.receive()

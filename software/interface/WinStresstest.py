@@ -6,13 +6,12 @@ from PyQt5.QtCore import QBasicTimer
 
 class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self, settings, board, win_main):
+    def __init__(self, settings, board):
         # calling superclass constructor
         super(WinStresstest, self).__init__()
         # global objects
         self.settings = settings
         self.board = board
-        self.win_main = win_main
         #settings
         self.freq = self.settings.getFuncGenFreq()
         self.time = self.settings.getStressTime()
