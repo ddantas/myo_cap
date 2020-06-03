@@ -15,7 +15,7 @@ import WinCaptureSettings
 import WinDisplaySettings
 import WinCommSettings
 import WinFuncGenSettings
-import WinStresstest #99
+import WinStresstest 
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
@@ -51,7 +51,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.action_capture_settings.triggered.connect(self.showWinCaptureSettings)
         self.ui_main.action_comm_settings.triggered.connect(self.showWinCommSettings)
         self.ui_main.action_funcgen_settings.triggered.connect(self.showWinFuncGenSettings)
-        self.ui_main.action_stresstest.triggered.connect(self.showWinStresstest) #99
+        self.ui_main.action_stresstest.triggered.connect(self.showWinStresstest)
         self.ui_main.action_sine.triggered.connect(self.setSine)
         self.ui_main.action_square.triggered.connect(self.setSquare)
         self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
@@ -114,8 +114,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def showWinStresstest(self):
         self.stopCapture()
-        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board)
-        self.win_stress_test.show() #99
+        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
+        self.win_stress_test.show()
 
     def showWinSelectFile(self):
         self.source = self.ui_main.combo_data_source.currentText()

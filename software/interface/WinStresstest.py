@@ -6,19 +6,17 @@ from PyQt5.QtCore import QBasicTimer
 
 class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self, settings, board):
+    def __init__(self, settings, board, win_main):
         # calling superclass constructor
         super(WinStresstest, self).__init__()
         # global objects
         self.settings = settings
         self.board = board
+        self.win_main = win_main
         #settings
         self.freq = self.settings.getFuncGenFreq()
         self.time = self.settings.getStressTime()
 
-        #
-##        self.win_main.startCapture()
-##        self.win_main.stopCapture()
         #data
         self.recvData()
         
@@ -42,9 +40,6 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         #start
         self.startProgress()
 	
-        # start capture
-##        self.win_main.self.showMessage('Start!', 'Co')
-##        self.win_main.startCapture()
 
     # received data
     def recvData(self):
@@ -80,14 +75,14 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
         self.step +=1
         self.progressBar.setValue(self.step)
-        # simulated capture
-##        self.received +=1
+        
         # refresh window capture information
         self.loadSettings()
         self.recvData()
 
     #log test
     def logTestData(self):
+        self.win_main.textfile.writeHeaderLine('')
         self.win_main.textfile.writeHeaderLine('Stress test results')
         self.win_main.textfile.writeHeaderLine('')
         self.win_main.textfile.writeMetadataLine('testLength',self.time)
@@ -117,4 +112,3 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         self.drop = 100*self.dr_samp/self.ex_samp
         self.ui_stress_test.text_drop.setText(str(self.drop))
 
-   
