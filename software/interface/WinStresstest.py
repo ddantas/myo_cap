@@ -16,6 +16,10 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         #settings
         self.freq = self.settings.getFuncGenFreq()
         self.time = self.settings.getStressTime()
+
+        #
+##        self.win_main.startCapture()
+##        self.win_main.stopCapture()
         #data
         self.recvData()
         
@@ -40,12 +44,13 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         self.startProgress()
 	
         # start capture
-##        self.winMain.startCapture()
+##        self.win_main.self.showMessage('Start!', 'Co')
+##        self.win_main.startCapture()
 
     # received data
     def recvData(self):
         try:
-            self.received = self.winMain.textfile.getLogLength()
+            self.received = self.win_main.textfile.getLogLength()
         except:
             self.received = 0
     # progressBar
@@ -57,27 +62,44 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         if self.timer.isActive():
             self.timer.stop()
             self.btnStart.setText('Start')
-            # start capture
-##            self.winMain.startCapture()
+            #reset test midway
+            self.resetBar()
         else:
             self.timer.start((1000*self.time)/100, self)
             self.btnStart.setText('Stop')
+            # start capture
+            self.win_main.startCapture()
 
     def timerEvent(self, event):
         if self.step >= 100:
             self.timer.stop()
             self.btnStart.setText('Done')
             # stop capture
-##            self.winMain.stopCapture()
+            self.logTestData()
+            self.win_main.stopCapture()
             return
 
         self.step +=1
         self.progressBar.setValue(self.step)
         # simulated capture
-        self.received +=1
+##        self.received +=1
         # refresh window capture information
         self.loadSettings()
-            
+        self.recvData()
+
+    #log test
+    def logTestData(self):
+        self.win_main.textfile.writeHeaderLine('Stress test results')
+        self.win_main.textfile.writeHeaderLine('')
+        self.win_main.textfile.writeMetadataLine('testLength',self.time)
+        self.win_main.textfile.writeMetadataLine('testFrequency',self.freq)
+        self.win_main.textfile.writeMetadataLine('expectedSamples',self.ex_samp)
+        self.win_main.textfile.writeMetadataLine('receivedSamples',self.received)
+        self.win_main.textfile.writeMetadataLine('droppedSamples',self.dr_samp)
+        self.win_main.textfile.writeMetadataLine('dropRate',self.drop)
+        pass
+
+    
     # load settings to text boxes
     def loadSettings(self):
         # load stress time
@@ -96,15 +118,4 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         self.drop = 100*self.dr_samp/self.ex_samp
         self.ui_stress_test.text_drop.setText(str(self.drop))
 
-    # set new values at settings object and board
-    def applyChanges(self):
-        try:
-            # set frequency
-            if self.board.setFucGenFreq( self.ui_funcgen_settings.text_freq.text() ) == 'ok': 
-                self.settings.setFuncGenFreq(self.ui_funcgen_settings.text_freq.text())
-        except:
-            self.win_main.showMessage('Error','Communication settings did not apply!\nPlease, connect the board.')
-        # set stress time
-        self.settings.setStressTime(self.ui_funcgen_settings.text_time.text())
-        # close window
-        self.close()
+   
