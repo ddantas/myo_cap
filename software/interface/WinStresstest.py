@@ -2,7 +2,6 @@
 
 import PyQt5
 import UiStresstest
-from PyQt5.QtCore import QBasicTimer
 
 class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
@@ -34,7 +33,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         self.btnReset = self.ui_stress_test.button_cancel
 
         # timer
-        self.timer = QBasicTimer()
+        self.timer = PyQt5.QtCore.QBasicTimer()
         self.step = 0
 
         #start
@@ -70,7 +69,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
             self.btnStart.setText('Done')
             # stop capture
             self.logTestData()
-            self.win_main.stopCapture()
+            self.win_main.stopCapture(False)
             return
 
         self.step +=1

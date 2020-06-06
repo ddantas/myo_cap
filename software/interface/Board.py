@@ -18,7 +18,7 @@ class Board:
         self.settings = settings
         self.serial = serial.Serial()
         self.serial.baudrate = self.settings.getBaudrate()
-        self.serial.timeout = 5
+        self.serial.timeout = 3
 
     def testPort(self, port):
         self.serial.port = port
