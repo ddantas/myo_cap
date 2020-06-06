@@ -21,22 +21,23 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         
         # stress test ui
         self.ui_stress_test = UiStresstest.UiStresstest(self)
-        # connect ui buttons to modules
-        self.ui_stress_test.button_stop.clicked.connect(self.startProgress)
-        self.ui_stress_test.button_cancel.clicked.connect(self.close)
-        # load settings
-        self.loadSettings()        
-        # progressBar        
+            # progressBar        
         self.progressBar = self.ui_stress_test.progressBar
-        # buttons
+            # buttons
         self.btnStart = self.ui_stress_test.button_stop
-        self.btnReset = self.ui_stress_test.button_cancel
-
+        self.btnCancel = self.ui_stress_test.button_cancel
+            # connect ui buttons to modules
+        self.btnStart.clicked.connect(self.startProgress)
+        self.btnCancel.clicked.connect(self.cancelTest)
+        
+        # load settings
+        self.loadSettings()
+        
         # timer
         self.timer = PyQt5.QtCore.QBasicTimer()
         self.step = 0
 
-        #start
+        # start
         self.startProgress()
 	
 
@@ -46,16 +47,22 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
             self.received = self.win_main.textfile.getLogLength()
         except:
             self.received = 0
+
     # progressBar
     def resetBar(self):
         self.step = 0
         self.progressBar.setValue(0)
 
+    def cancelTest(self):
+        self.timer.stop()
+        self.win_main.stopCapture(False)
+        self.close()
+        
     def startProgress(self):
         if self.timer.isActive():
             self.timer.stop()
             self.btnStart.setText('Start')
-            #reset test midway
+            # reset test midway
             self.resetBar()
         else:
             self.timer.start((1000*self.time)/100, self)
