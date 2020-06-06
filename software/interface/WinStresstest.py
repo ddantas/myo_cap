@@ -59,7 +59,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
             self.resetBar()
         else:
             self.timer.start((1000*self.time)/100, self)
-            self.btnStart.setText('Stop')
+            self.btnStart.setText('Stop/Reset')
             # start capture
             self.win_main.startCapture()
 
@@ -67,9 +67,10 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         if self.step >= 100:
             self.timer.stop()
             self.btnStart.setText('Done')
+            self.btnStart.setEnabled(False)
             # stop capture
             self.logTestData()
-            self.win_main.stopCapture(False)
+            self.win_main.stopCapture(True)
             return
 
         self.step +=1
