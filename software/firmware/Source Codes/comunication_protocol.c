@@ -27,7 +27,7 @@
 #include "tiva_HAL.h"
 
 
-//  Prototypes  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  Prototypes  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void start_trasmission ();
 void stop_trasmission  ();
@@ -35,12 +35,14 @@ void acknowledgment    ();
 void not_acknowledgment();
 
 void set_func_gen_frequency( tiva_status* tiva_actual_status, uint32_t frequency );
+void set_transmission_mode (tiva_status*  tiva_actual_status, uint32_t mode );
 void set_sample_rate       (tiva_status*  tiva_actual_status, uint32_t sample_rate  );
 void set_number_of_channels(tiva_status*  tiva_actual_status, uint32_t num_channels );
 void set_number_of_acquis_boards (tiva_status*  tiva_actual_status, uint32_t num_acquis_boards );
 void set_number_of_bytes_in_packet (tiva_status*  tiva_actual_status, uint32_t num_bytes_in_pkt );
 void set_bits_per_sample (tiva_status*  tiva_actual_status, uint32_t bits_per_sample );
 
+void get_transmission_mode (tiva_status*  tiva_actual_status );
 void get_sample_rate (tiva_status*  tiva_actual_status );
 void get_number_of_channels (tiva_status*  tiva_actual_status );
 void get_number_of_boards (tiva_status*  tiva_actual_status );
@@ -69,6 +71,8 @@ void command_handler(comunication_packet *pkt_received, tiva_status *tiva_actual
 
         // Set Parameters of the Capture and Transmission
 
+        case SET_TRANSMISSION_MODE     :    set_transmission_mode (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand );                               break;
+
         case SET_SAMPLE_RATE           :    set_sample_rate (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                                      break;
 
         case SET_NUMBER_CHANNELS       :    set_number_of_channels (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                               break;
@@ -81,6 +85,8 @@ void command_handler(comunication_packet *pkt_received, tiva_status *tiva_actual
 
 
         // Get Parameters of the Capture and Transmission
+
+        case GET_TRANSMISSION_MODE     :    get_transmission_mode (tiva_actual_state);                                                         acknowledgment();      break;
 
         case GET_SAMPLE_RATE           :    get_sample_rate (tiva_actual_state);                                                               acknowledgment();      break;
 
@@ -166,8 +172,9 @@ void recieve_packet(comunication_packet* pkt_to_be_received){
 
 void start_trasmission(){
 
-    TimerEnable(TIMER0_BASE, TIMER_A);
+
     IntEnable(INT_TIMER0A);
+    TimerEnable(TIMER0_BASE, TIMER_A);
 
 }
 
@@ -232,6 +239,36 @@ void set_func_gen_frequency( tiva_status* tiva_actual_status, uint32_t frequency
 }
 
 
+void set_transmission_mode (tiva_status*  tiva_actual_status, uint32_t mode ){
+
+    // Checks if the new Sample Rate is Achievable
+    if( mode < 2 ){
+
+       (*tiva_actual_status).type_of_transmission  =  mode;
+
+       // Sends a Message of Success
+       acknowledgment();
+
+    }
+
+    // Sends a Error Message
+    else{
+
+        comunication_packet pkt_send;
+        pkt_send.uint32_param_pkt.command        = ERROR_MSG;
+        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_UKN_TRANSMISSION_MODE);
+        send_packet(&pkt_send);
+
+        // Transmit the Samples
+        uint32_t byte_index;
+        for(byte_index = 0; byte_index < pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_UKN_TRANSMISSION_MODE[byte_index]);
+
+
+    }
+}
+
+
+
 void set_sample_rate (tiva_status*  tiva_actual_status, uint32_t sample_rate ){
 
     // Calculates the new Sampling Rate of the ADC => (Sample Rate by Channel) * (Number of Channels to be Sampled)
@@ -277,7 +314,7 @@ void set_number_of_channels (tiva_status*  tiva_actual_status, uint32_t num_chan
        (*tiva_actual_status).num_channels_per_board =  num_channels;
 
        // Recalculate and set the Number of Instants of Capture that will be transmitted in a packet.
-       (*tiva_actual_status).num_samples_per_chn_buf = (*tiva_actual_status).num_bytes_in_packet / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
+       (*tiva_actual_status).num_samples_per_chn_buf = ( 8 * (*tiva_actual_status).num_bytes_in_packet ) / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
 
        // Sends a Message of Success
        acknowledgment();
@@ -309,7 +346,8 @@ void set_number_of_acquis_boards (tiva_status*  tiva_actual_status, uint32_t num
        (*tiva_actual_status).nums_of_acquis_boards =  num_acquis_boards;
 
        // Recalculate and set the Number of Instants of Capture that will be transmitted in a packet.
-       (*tiva_actual_status).num_samples_per_chn_buf = (*tiva_actual_status).num_bytes_in_packet / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
+       (*tiva_actual_status).num_samples_per_chn_buf = ( 8 * (*tiva_actual_status).num_bytes_in_packet ) / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
+
 
        // Sends a Message of Success
        acknowledgment();
@@ -345,7 +383,8 @@ void set_number_of_bytes_in_packet (tiva_status*  tiva_actual_status, uint32_t n
        (*tiva_actual_status).num_bytes_in_packet =  num_bytes_in_pkt;
 
        // Calculate and set the Number of Instants of Capture that will be transmitted in a packet.
-       (*tiva_actual_status).num_samples_per_chn_buf = num_bytes_in_pkt / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
+       (*tiva_actual_status).num_samples_per_chn_buf = ( 8 * num_bytes_in_pkt ) /  ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
+
 
        // Sends a Message of Success
        acknowledgment();
@@ -378,8 +417,7 @@ void set_bits_per_sample (tiva_status*  tiva_actual_status, uint32_t bits_per_sa
         (*tiva_actual_status).bits_per_sample =  bits_per_sample;
 
         // Recalculate and set the Number of Instants of Capture that will be transmitted in a packet.
-        (*tiva_actual_status).num_samples_per_chn_buf = (*tiva_actual_status).num_bytes_in_packet / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
-
+        (*tiva_actual_status).num_samples_per_chn_buf = ( 8 * (*tiva_actual_status).num_bytes_in_packet) / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
 
         // Sends a Message of Success
         acknowledgment();
@@ -403,6 +441,15 @@ void set_bits_per_sample (tiva_status*  tiva_actual_status, uint32_t bits_per_sa
 
 }
 
+
+void get_transmission_mode (tiva_status*  tiva_actual_status ){
+
+   comunication_packet pkt_send;
+   pkt_send.uint32_param_pkt.command        = INT32_VALUE;
+   pkt_send.uint32_param_pkt.uint32_operand = (*tiva_actual_status).type_of_transmission;
+   send_packet(&pkt_send);
+
+}
 
 void get_sample_rate (tiva_status*  tiva_actual_status ){
 

@@ -14,4 +14,5 @@
 	<filesToOpen value="main.c,"/>
 	<isTargetManual value="false"/>
 	<connection value="common/targetdb/connections/Stellaris_ICDI_Connection.xml"/>
+	<origin value="C:/Users/Zero_Desktop/workspace_v7/Nova pasta"/>
 </projectOptions>

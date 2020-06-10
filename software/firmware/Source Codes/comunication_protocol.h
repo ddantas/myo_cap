@@ -81,6 +81,7 @@ typedef union{
 #define START_TRANSMISSION          0x6169  //  "ai"
 #define STOP_TRANSMISSION           0x6173  //  "as"
 
+#define SET_TRANSMISSION_MODE       0x736d  //  "sm"
 #define SET_SAMPLE_RATE             0x7372  //  "sr"
 #define SET_NUMBER_CHANNELS         0x7363  //  "sc"
 #define SET_NUMBER_BOARDS           0x7362  //  "sb"
@@ -88,6 +89,7 @@ typedef union{
 #define SET_BITS_PER_SAMPLE         0x7373  //  "ss"
 #define SET_ADC_ACQUISITION         0x6661  //  "fa"
 
+#define GET_TRANSMISSION_MODE       0x676d  //  "gm"
 #define GET_SAMPLE_RATE             0x6772  //  "gr"
 #define GET_NUMBER_CHANNELS         0x6763  //  "gc"
 #define GET_NUMBER_BOARDS           0x6762  //  "gb"
@@ -134,6 +136,10 @@ typedef union{
 
 #define MSG_UKN_TYPE_OF_ACQUISIION   "The Board do not Recognize this Acquisition Mode."
 
+
+// Types of Transmission Mode
+
+#define MSG_UKN_TRANSMISSION_MODE    "The Board do not Recognize this Transmission Mode."
 
 
 // Properties ofcomunication_packet: Offset and Size in Bytes.

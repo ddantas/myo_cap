@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from functools import partial
-import sys
-import time
+#import time
 import datetime as dt
 import numpy as np
 import PyQt5
@@ -18,9 +16,13 @@ import WinCommSettings
 import WinFuncGenSettings
 import WinStresstest 
 
+UNPACKED = 0
+PACKED   = 1
+
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def __init__(self):
+        
         # supeclass constructor
         super(WinMain, self).__init__()
         # setup settings
@@ -34,11 +36,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.board = Tiva.Tiva(self.settings)
         # setup text file
         self.textfile = TextFile.TextFile()
+        # setup widgets
+        self.setupWidgets()
         # setup timer
         self.timer_capture = PyQt5.QtCore.QTimer()
         self.timer_capture.timeout.connect(self.mainLoop)
-        # setup widgets
-        self.setupWidgets()
+        
 
     def setupWidgets(self):
         # setup menu
@@ -61,17 +64,21 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.button_display_settings.clicked.connect(self.showWinDisplaySettings)
         self.ui_main.button_capture_settings.clicked.connect(self.showWinCaptureSettings)
         self.ui_main.button_start_capture.clicked.connect(self.startCapture)
-        self.ui_main.button_stop_capture.clicked.connect(partial(self.stopCapture, True))
+        self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
         self.ui_main.button_show_capture.clicked.connect(self.showCapture)
                 
         # setup combo box for serial ports
         for port in self.board.listPorts():
             self.ui_main.combo_port.addItem(port)
         
-        # Sync the Boar With the Interface Settings            
+        # Sync the Boar With the Interface Settings     
+        # Uncomment the Next two Lines
         self.ui_main.combo_port.setCurrentIndex(-1)
-        self.ui_main.combo_port.currentIndexChanged.connect(self.syncBoard)       
-        
+        self.ui_main.combo_port.currentIndexChanged.connect( self.syncBoard )
+        # Comment the Next Line
+        #self.board.openComm('COM3')
+        #self.sync_board_settings ()
+
         # setup graph configurations
         self.updateInfoGraph()
 
@@ -99,22 +106,23 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.win_display_settings.show()
 
     def showWinCaptureSettings(self):
-        self.stopCapture(False)
+        self.stopCapture()
         self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
         self.win_capture_settings.show()
+        self.board.getBitsPerSample()
 
     def showWinCommSettings(self):
-        self.stopCapture(False)
+        self.stopCapture()
         self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
         self.win_comm_settings.show()
 
     def showWinFuncGenSettings(self):
-        self.stopCapture(False)
+        self.stopCapture()
         self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board)
         self.win_funcgen_settings.show()
 
     def showWinStresstest(self):
-        self.stopCapture(False)
+        self.stopCapture()
         self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
         self.win_stress_test.show()
 
@@ -136,10 +144,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def startCapture(self):
         
-        self.ui_main.button_start_capture.setEnabled(False)
-        self.ui_main.action_start_capture.setEnabled(False)
-        self.ui_main.action_show_capture.setEnabled(False)
-        self.ui_main.button_show_capture.setEnabled(False)
+        
+        
+        #self.settings.setBitsPerSample(5) 
+        print( 'Bits per Sample    : ' + str(self.settings.getBitsPerSample()) )
+        print( 'Number of Boards   : ' + str(self.settings.getNBoards()) )
+        print( 'Number of  Channels: ' + str(self.settings.getChannelsPerBoard()) )
+        
+        
         
         self.source = self.ui_main.combo_data_source.currentText()
         self.graph.createPlots()
@@ -150,23 +162,36 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 if self.board.start() == 'ok':
                     self.timer_capture.start(0)
                 else:
-                    AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')                
+                    AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')
+                    return -1
             else:
                 AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
         elif self.source == 'File':
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())
+        
+        self.ui_main.button_start_capture.setEnabled(False)
+        self.ui_main.action_start_capture.setEnabled(False)
+        self.ui_main.action_show_capture.setEnabled(False)
+        self.ui_main.button_show_capture.setEnabled(False)
 
-    def stopCapture(self, store):
+        print( 'Bits per Sample: ' + str( self.settings.getBitsPerSample() ) )
+        
+        
+    def stopCapture(self):
+        
         self.timer_capture.stop()
+        
         if self.board.getCommStatus():
             self.board.stop()
-            print(store)
             if self.board.stop() == 'ok':                            
-                if store:
+                
+                # Checks if a Stop Capture was alredy executed
+                if( hasattr(self, 'file_name') ):
                     self.textfile.saveFile(self.file_name)
                     AuxFunc.showMessage('Capture saved!', self.file_name)
-                
+                    del self.file_name
+
                 self.ui_main.button_start_capture.setEnabled(True)
                 self.ui_main.action_start_capture.setEnabled(True)
                 self.ui_main.action_show_capture.setEnabled(True)
@@ -176,9 +201,19 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def mainLoop(self):
         if self.source == 'Serial':
+            
             # receive samples from board and save to log
-            pkt_samples = self.board.receiveStrPkt()
+            
+            if ( int( self.settings.getPktComp() ) == UNPACKED ):
+            #if self.type_transmission == UNPACKED:               
+                pkt_samples = self.board.receiveStrPkt()
+                #print('Pkt: ' + str( pkt_samples ))
+            if ( int( self.settings.getPktComp() ) == PACKED ):
+            #if self.type_transmission == PACKED:              
+                pkt_samples = self.board.receive()
+            
             self.textfile.saveLog(self.log_id, pkt_samples)
+            
         elif self.source == 'Log':
             # receive samples from log
             if self.log_pos < self.textfile.getLogLength():
@@ -197,25 +232,61 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.timer_capture.stop()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
-        # send samples from packet to graph
+        
+        #self.stopCapture()
+        
         if len(pkt_samples):
-            self.graph.plotSamples(np.array(pkt_samples))
+            
+            print( "List of Samples: " + str(pkt_samples) )
+            # send samples from packet to graph
+            for instant_index in range(self.board.unpacker.num_instants):
+                
+                # Plot a instant of Samples
+                instant_offset = self.settings.getTotChannels() * instant_index
+                self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
+  
 
-    """def setSine(self):
-        if self.ui_main.action_sine.isChecked():
-            self.ui_main.action_square.setChecked(False)
-            self.ui_main.action_sawtooth.setChecked(False)
-            if self.board.getCommStatus():
-                self.board.openComm(self.ui_main.combo_port.currentText())
-            # Sets the Wave Form to Sine
-            self.board.setSineWaveMode()"""
 
+    '''
+    def sync_board_settings(self):
+            
+         if self.board.getCommStatus() == False:
+            self.board.openComm(self.ui_main.combo_port.currentText())
+            
+            self.board.stop()
+            
+            if   self.ui_main.action_sine.isChecked():      self.board.setSineWaveMode()
+            elif self.ui_main.action_square.isChecked():    self.board.setSquareWaveMode()
+            elif self.ui_main.action_sawtooth.isChecked():  self.board.setSawtoothWaveMode()
+            else:                                           self.board.setAdcMode()
+            
+            self.board.setFucGenFreq( int( self.settings.getFuncGenFreq() ) )
+            self.board.setBitsPerSample( int( self.settings.getBitsPerSample() ) )
+            print('----------' + str( self.settings.getBitsPerSample() ) )
+            print( '# Bits per Sample: ' + str( self.board.getBitsPerSample() ) )
+            self.board.setChannelsperBoard( int( self.settings.getChannelsPerBoard() ) )
+            print( '# Number of Channels per Board: ' + str( self.board.getChannelsperBoard() ) )
+            self.board.setNumAcquisBoards( int( self.settings.getNBoards() ) )
+            print( '# Number of Acquisition Boards: ' + str( self.board.getNumAcquisBoards() ) )
+            self.board.setPacketSize( int( self.settings.getPktSize() ) )
+            print( '# Packet Size: ' + str( self.board.getPacketSize() ) )
+            
+            self.board.setSampleRate( int( self.settings.getSampleRate() ) )
+            print( 'Sample Rate per Channel: ' + str( self.board.getSampleRate() ) )
+            
+            self.board.setTransmissionMode( int( self.settings.getPktComp() ) )
+            
+            
+            AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized' )
+    '''    
     def syncBoard(self):      
+        
         if self.board.getCommStatus() == True:
             self.board.closeComm()
 
         self.board.openComm(self.ui_main.combo_port.currentText())
-            
+
+        
         if self.board.stop() == 'ok':
             if self.ui_main.action_sine.isChecked():
                 self.board.setSineWaveMode()
@@ -225,27 +296,28 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.board.setSawtoothWaveMode()
             else:
                 self.board.setAdcMode()
-            
+
             self.board.setFucGenFreq(self.settings.getFuncGenFreq())
             self.board.setBitsPerSample(self.settings.getBitsPerSample())
             self.board.setChannelsperBoard(self.settings.getChannelsPerBoard())
             self.board.setNumAcquisBoards(self.settings.getNBoards())
             self.board.setPacketSize(self.settings.getPktSize())
             self.board.setSampleRate(self.settings.getSampleRate())
-            
+            self.board.setTransmissionMode( int( self.settings.getPktComp() ) )
+
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
-            AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )
+            AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )        
         
     def setSine(self):
-        self.stopCapture(False)
+        self.stopCapture()
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
             
         if self.ui_main.action_sine.isChecked() == True:
             self.ui_main.action_square.setChecked(False)
             self.ui_main.action_sawtooth.setChecked(False)
-            self.ui_main.button_start_capture.setEnabled(True)         
+            self.ui_main.button_start_capture.setEnabled(True)          
             # sets the wave form to sine
             if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
                self.board.setFucGenFreq(self.settings.getFuncGenFreq()) 
@@ -255,17 +327,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.ui_main.button_start_capture.setEnabled(True)
         
 
-    """def setSquare(self):
-        if self.ui_main.action_square.isChecked():
-            self.ui_main.action_sine.setChecked(False)
-            self.ui_main.action_sawtooth.setChecked(False)
-            if not self.board.getCommStatus():
-                self.board.openComm(self.ui_main.combo_port.currentText())
-            # Sets the Wve Form to Sine
-            self.board.setSquareWaveMode()"""
-
     def setSquare(self):
-        self.stopCapture(False)
+        self.stopCapture()
         if self.board.getCommStatus() == False:
                 self.board.openComm(self.ui_main.combo_port.currentText())
         if  self.ui_main.action_square.isChecked() == True:
@@ -279,17 +342,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.setAdcMode()
             self.ui_main.button_start_capture.setEnabled(True)
 
-    """def setSawtooth(self):
-        if self.ui_main.action_sawtooth.isChecked():
-            self.ui_main.action_square.setChecked(False)
-            self.ui_main.action_sine.setChecked(False)
-            if not self.board.getCommStatus():
-                self.board.openComm(self.ui_main.combo_port.currentText())
-            # Sets the Wve Form to Sine
-            self.board.setSawtoothWaveMode()"""
-        
+
     def setSawtooth(self):
-        self.stopCapture(False)
+        self.stopCapture()
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
         if self.ui_main.action_sawtooth.isChecked() == True:
@@ -302,6 +357,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else: 
             self.board.setAdcMode()
             self.ui_main.button_start_capture.setEnabled(True)
+            
 
     def configFile(self):
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)

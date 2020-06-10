@@ -69,7 +69,7 @@ uint16_t function_gen(uint8_t wave_form_, uint32_t timestamp_, uint32_t func_gen
 
 uint16_t sin_wave_gen(float pecent_of_period_)     {                                       // The argument to Sine function it is the sample number inside of a period of the function.
 
-    double sin_argument = pecent_of_period_ * 2 * M_PI;                                    //  The angle of Sine Function will be a percentage of 2 * Pi.
+    float sin_argument = pecent_of_period_ * 2 * M_PI;                                    //  The angle of Sine Function will be a percentage of 2 * Pi.
                                                                                            //  See Note 1.
 
     return (uint16_t) round( Highest_12b_Num * ( (sin( sin_argument ) + 1) / 2) ) ;        //  Shifts the Sine value by 1 than divide the result by 2  to make the the value

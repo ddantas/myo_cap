@@ -3,10 +3,10 @@
 import serial
 import sys
 import glob
-import ctypes
 import struct
 import time
 import AuxFunctions as AuxFunc
+import Unpacker
 
 BITS_PER_BYTE = 8
 MAX_CODE = 64
@@ -18,7 +18,8 @@ class Board:
         self.settings = settings
         self.serial = serial.Serial()
         self.serial.baudrate = self.settings.getBaudrate()
-        self.serial.timeout = 3
+        self.serial.timeout = 0.01
+        self.unpacker = Unpacker.Unpacker(settings)       
 
     def testPort(self, port):
         self.serial.port = port
@@ -73,29 +74,47 @@ class Board:
         else:
             return 0
 
+
     def receive(self):
+        
         try:
             pkt_header = self.serial.read(6)
+        
             ## Convertes the 2 firsts bytes in op1 into a uint32
             instruction = (pkt_header[0:2]).decode()
+            
+            print("--------------------------------------------------------------------------------------------------------")
+            print("Instruction Reply   : " + str(instruction) )
+            
             ## Convertes the 4 bytes in op1 into a uint32
             operand1 =  (struct.unpack('>I', pkt_header[2:6]))[0]
-            if (instruction == 'vu') or (instruction == 'me') or (instruction == 'mw') or instruction == 'ms':            
+            print( "Content of Operand 1: " + str(operand1) )
+            
+            if (instruction == 'vu') or (instruction == 'me') or (instruction == 'mw') or (instruction == 'ms'):            
+                
                 if instruction == 'vu':
                     return operand1
+                
                 elif (instruction == 'me') or (instruction == 'mw'):
-                    operand2 = self.serial.read(operand1.value)
+                    operand2 = self.serial.read(operand1)
                     return     operand2.decode()
+                
                 elif instruction == 'ms':
-                    operand2 = self.serial.read(operand1.value)
-                    return     self.decodePkt(operand2)
+                    
+                    self.operand2 = self.serial.read(operand1)
+                    
+                    #print( "Content of Operand 2: " + format( hex(self.operand2),'#0' + str( 2 * operand1 + 2) + 'x') )
+                    print( "Content of Operand 2: " + str(self.operand2) )
+                    print("--------------------------------------------------------------------------------------------------------")
+                    
+                    return  self.unpacker.unpack_pkt( self.operand2) 
+
+                                   
             elif instruction == 'ok':
                 return instruction
         except:
-            return None
+            return []
 
-    def decodePkt(self, pkt):
-        return self.settings.getPktSize()
 
     def write(self, packet):
         try:
@@ -113,6 +132,9 @@ class Board:
         op =  0  
         packet = struct.pack('>2sI', command, int(op))
         self.write(packet)
+        
+        print('Start Command!↓')
+        
         return self.receive()
 
     def stop(self):
@@ -120,8 +142,18 @@ class Board:
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
         self.write(packet)
+        
+        print('Stop Command!↓')
+        
         return self.receive()
-
+    
+    def setTransmissionMode(self, mode):
+        command = b'sm'
+        op      = mode
+        packet  = struct.pack('>2sI', command, int(op))
+        self.write(packet)
+        return self.receive()
+       
     def setSampleRate(self, sample_rate):
         command = b'sr'
         op      = sample_rate
@@ -148,6 +180,9 @@ class Board:
         op      = bits_per_sample
         packet  = struct.pack('>2sI', command, int(op))
         self.write(packet)
+        
+        print('Set Bits per Sample!↓')
+        
         return self.receive()
     
     def setPacketSize(self, packet_size):
@@ -187,6 +222,13 @@ class Board:
     
     def setSawtoothWaveMode(self):
         command = b'fw'
+        op      = 0
+        packet  = struct.pack('>2sI', command, int(op))
+        self.write(packet)
+        return self.receive()
+    
+    def getTransmissionMode(self):
+        command = b'gm'
         op      = 0
         packet  = struct.pack('>2sI', command, int(op))
         self.write(packet)

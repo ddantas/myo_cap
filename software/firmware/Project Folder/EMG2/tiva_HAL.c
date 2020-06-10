@@ -41,6 +41,9 @@ void tiva_actual_state_init( tiva_status* tiva_actual_status )
         tiva_actual_status->func_gen_frequency       = Default_Func_Gen_Freq                   ;  // Starts with the Default Function Generator Frequency.
         tiva_actual_status->timestamp                = 0                                       ;  // Starts from the Begining of the Wave Form.
         tiva_actual_status->wave_form                = ADC_Acquisition                         ;  // Starts Transmitting from the ADC.
+        //tiva_actual_status->wave_form                = Square_Wave                         ;  // Starts Transmitting from the ADC.
+
+
         tiva_actual_status->bits_per_sample          = DEFAULT_BITS_PER_SAMPLE                 ;  // Sets the Default bits per Sample.
         tiva_actual_status->num_channels_per_board   = DEFAULT_NUM_CHANNELS_PER_BOARD          ;
         tiva_actual_status->nums_of_acquis_boards    = DEFAULT_NUM_ACQUISITION_BOARDS          ;
@@ -48,6 +51,7 @@ void tiva_actual_state_init( tiva_status* tiva_actual_status )
         tiva_actual_status->num_samples_per_chn_buf  = DEFAULT_NUM_SAMPLES_PER_CHANNEL         ;
         tiva_actual_status->num_bytes_in_packet      = DEFAULT_NUM_BYTES_IN_PACKET             ;
         tiva_actual_status->baudrate                 = DEFAULT_BAUDRATE                        ;
+        tiva_actual_status->type_of_transmission     = DEFAULT_TYPE_OF_TRANSMISSION            ;
 }
 
 

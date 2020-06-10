@@ -99,6 +99,7 @@ class WidgetGraph(pg.PlotWidget):
             self.channel_plot.append(self.plot(self.samples[index_ch, :]))
 
     def plotSamples(self, data):
+        
         # evaluating samples values at y axis
         self.samples[:, self.swipe_pos] = (data * self.scale_factor) + self.offset[:]
         # plot when swipe_pos is multiple of htick or when swipe reaches the end of the x axis

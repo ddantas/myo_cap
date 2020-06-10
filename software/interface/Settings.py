@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import os
+
 
 SETTINGS_PATH = 'config/settings'
 

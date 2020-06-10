@@ -24,15 +24,24 @@ class WinCommSettings(PyQt5.QtWidgets.QMainWindow):
         # load packet size
         self.ui_comm_settings.text_pkt_size.setText(str(self.settings.getPktSize()))
         # load packet compression
+        print( self.settings.getPktComp() )
+        
         if self.settings.getPktComp():
-            self.ui_comm_settings.check_pkt_compression.setChecked(True)
+            self.ui_comm_settings.check_pkt_compression.setChecked( True )
 
     # set new values at settings object
     def applyChanges(self):
+        
         # set packet size
         if self.board.setPacketSize(int(self.ui_comm_settings.text_pkt_size.text())):
-            self.settings.setPktSize(self.ui_comm_settings.text_pkt_size.text())
+            
+            self.settings.setPktSize(int(self.ui_comm_settings.text_pkt_size.text() ) )
+       
         # set packet compression
-        self.settings.setPktComp(int(self.ui_comm_settings.check_pkt_compression.isChecked()))
+        print( int(self.ui_comm_settings.check_pkt_compression.isChecked() ) )
+        if self.board.setTransmissionMode( int(self.ui_comm_settings.check_pkt_compression.isChecked()) ):
+        
+            self.settings.setPktComp(int(self.ui_comm_settings.check_pkt_compression.isChecked()))
+            
         # close window
         self.close()

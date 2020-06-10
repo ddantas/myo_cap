@@ -38,23 +38,26 @@
 
 #define DEFAULT_NUM_ACQUISITION_BOARDS        1
 #define DEFAULT_NUM_CHANNELS_PER_BOARD        4
-#define DEFAULT_NUM_SAMPLES_PER_CHANNEL      64  // Choose Number of Samples multiple of 64. Each Call to the Packing Function Needs a place with 64 bits of size to store the result.
-#define DEFAULT_BITS_PER_SAMPLE              12
-#define DEFAULT_SAMPLERATE                 2000
-#define DEFAULT_NUM_BYTES_IN_PACKET         384
+#define DEFAULT_NUM_SAMPLES_PER_CHANNEL       1  // Choose Number of Samples multiple of 64. Each Call to the Packing Function Needs a place with 64 bits of size to store the result.
+#define DEFAULT_BITS_PER_SAMPLE               5
+#define DEFAULT_SAMPLERATE                 1000
+#define DEFAULT_NUM_BYTES_IN_PACKET          16
 
 #define DEFAULT_BAUDRATE                 921600
+#define DEFAULT_TYPE_OF_TRANSMISSION     PACKED
 
 //------------------------------------------------------
 // Maximum Values for Tiva Parameters
 //------------------------------------------------------
 
+
 #define NUM_MAX_ACQUISITION_BOARDS            4
-#define NUM_MAX_CHANNELS_PER_BOARD            4
+#define NUM_MAX_CHANNELS_PER_BOARD            8
 #define NUM_MAX_SAMPLES_PER_CHANNEL         128  // Maximum Number of Instants. Considering the Use of:  4 Acquisitions Boards; 4 Channels per Board; 12 bits per Sample.
 #define NUM_MAX_BITS_PER_SAMPLE              12
 #define NUM_MAX_NUM_BYTES_IN_PACKET        3072  // Considering the Use of:  4 Acquisitions Boards; 4 Channels per Board; 12 bits per Sample. Less will be available if conditions different of the case 2 are used.
 #define ADC_MAX_SAMPLING_RATE           1000000  // 1MHz. The Limit of Sampling Rate that can be achieve by using only One Channel.
+#define LENGTH_MAX_STRING_STREAM_BUFFER (NUM_MAX_ACQUISITION_BOARDS * NUM_MAX_CHANNELS_PER_BOARD) * 2
 
 
 // Case 1:
@@ -103,6 +106,7 @@ typedef struct {
     uint32_t func_gen_frequency      ;
 
     uint32_t baudrate                ;
+    uint8_t  type_of_transmission    ;
 
 } tiva_status;
 
@@ -127,7 +131,6 @@ uint16_t adc_sample_acquisition();
 
 #define NUM_MAX_SAMPLES_BUFFER          (uint16_t) (   NUM_MAX_ACQUISITION_BOARDS * NUM_MAX_CHANNELS_PER_BOARD * NUM_MAX_SAMPLES_PER_CHANNEL                                )
 #define NUM_MAX_BYTES_BUFFER            (uint16_t) ( ( NUM_MAX_ACQUISITION_BOARDS * NUM_MAX_CHANNELS_PER_BOARD * NUM_MAX_SAMPLES_PER_CHANNEL * NUM_MAX_BITS_PER_SAMPLE) / 8 )
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv7/tools/compiler/ti-cgt-arm_20.2.1.LTS
+CG_TOOL_ROOT := C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.3.LTS
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -21,7 +21,6 @@ ORDERED_OBJS += \
 "C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/ccs/Debug/driverlib.lib" \
 "../tm4c123gh6pm.cmd" \
 $(GEN_CMDS__FLAG) \
--llibc.a \
 -llibc.a \
 
 -include ../makefile.init
@@ -143,19 +142,19 @@ BIN_OUTPUTS__QUOTED += \
 
 # All Target
 all: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
-	@$(MAKE) --no-print-directory -Onone "EMG2.out" secondary-outputs
+	@$(MAKE) --no-print-directory -Onone "EMG2.out"
 
 # Tool invocations
 EMG2.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_20.2.1.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --define=ccs="ccs" --define=PART_TM4C123GH6PM -g --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi -z -m"EMG2.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_20.2.1.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_20.2.1.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="EMG2_linkInfo.xml" --rom_model -o "EMG2.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.3.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me -O2 --define=ccs="ccs" --define=PART_TM4C123GH6PM --gcc --diag_warning=225 --diag_wrap=off --display_error_number --abi=eabi -z -m"EMG2.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.3.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.3.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="EMG2_linkInfo.xml" --rom_model -o "EMG2.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 EMG2.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: ARM Hex Utility'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_20.2.1.LTS/bin/armhex"  -o "EMG2.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccsv7/tools/compiler/ti-cgt-arm_16.9.3.LTS/bin/armhex"  -o "EMG2.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 
@@ -166,8 +165,6 @@ clean:
 	-$(RM) "comunication_protocol.d" "debug.d" "function_gen.d" "main.d" "streaming_protocol.d" "string_comun_prot.d" "tiva_HAL.d" "tm4c123gh6pm_startup_ccs.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
-
-secondary-outputs: $(BIN_OUTPUTS)
 
 .PHONY: all clean dependents
 .SECONDARY:
