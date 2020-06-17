@@ -11,6 +11,8 @@ class UiStresstest:
         self.win_stress_test = win_stress_test
         # window name
         self.win_stress_test.setWindowTitle(WIN_TITLE)
+        # how make this window modal?
+        #self.win_stress_test.setWindowModality(Qt.WindowModal)
         # main widget
         self.central_widget = PyQt5.QtWidgets.QWidget()
         self.win_stress_test.setCentralWidget(self.central_widget)
@@ -38,13 +40,13 @@ class UiStresstest:
         self.label_drop = PyQt5.QtWidgets.QLabel()
         self.label_drop.setText('Drop rate (%):')
         
-    def createTextBoxes(self):
-        # create frequency text box
-        self.text_freq = PyQt5.QtWidgets.QLabel()
-        self.text_freq.setFixedWidth(100)
+    def createTextBoxes(self):        
         # create time text box
         self.text_time = PyQt5.QtWidgets.QLabel()
         self.text_time.setFixedWidth(100)
+        # create frequency text box
+        self.text_freq = PyQt5.QtWidgets.QLabel()
+        self.text_freq.setFixedWidth(100)
         # create expected samples text box
         self.text_ex_samp = PyQt5.QtWidgets.QLabel()
         self.text_ex_samp.setFixedWidth(100)
@@ -87,8 +89,8 @@ class UiStresstest:
         self.grid_widget.addWidget(self.label_drop, 6, col_labels)
         # text boxes postion
         col_boxes = 1
-        self.grid_widget.addWidget(self.text_freq, 1, col_boxes)
-        self.grid_widget.addWidget(self.text_time, 2, col_boxes)
+        self.grid_widget.addWidget(self.text_time, 1, col_boxes)
+        self.grid_widget.addWidget(self.text_freq, 2, col_boxes)
         self.grid_widget.addWidget(self.text_ex_samp, 3, col_boxes)
         self.grid_widget.addWidget(self.text_re_samp, 4, col_boxes)
         self.grid_widget.addWidget(self.text_dr_samp, 5, col_boxes)

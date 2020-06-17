@@ -45,8 +45,10 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
     def recvData(self):
         try:
             self.received = self.win_main.textfile.getLogLength()
+            print('loglength catch: '+str(self.win_main.textfile.getLogLength()))
         except:
             self.received = 0
+            print('loglength excpt: '+str(self.win_main.textfile.getLogLength()))
 
     # progressBar
     def resetBar(self):
@@ -55,7 +57,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
     def cancelTest(self):
         self.timer.stop()
-        self.win_main.stopCapture(False)
+        self.win_main.stopCapture()
         self.close()
         
     def startProgress(self):
@@ -67,6 +69,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         else:
             self.timer.start((1000*self.time)/100, self)
             self.btnStart.setText('Stop/Reset')
+            self.btnStart.setEnabled(False)
             # start capture
             self.win_main.startCapture()
 
@@ -77,7 +80,7 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
             self.btnStart.setEnabled(False)
             # stop capture
             self.logTestData()
-            self.win_main.stopCapture(True)
+            self.win_main.stopCapture()
             return
 
         self.step +=1
