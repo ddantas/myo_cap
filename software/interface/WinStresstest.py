@@ -24,10 +24,10 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
             # progressBar        
         self.progressBar = self.ui_stress_test.progressBar
             # buttons
-        self.btnStart = self.ui_stress_test.button_stop
+##        self.btnStart = self.ui_stress_test.button_stop
         self.btnCancel = self.ui_stress_test.button_cancel
             # connect ui buttons to modules
-        self.btnStart.clicked.connect(self.startProgress)
+##        self.btnStart.clicked.connect(self.startProgress)
         self.btnCancel.clicked.connect(self.cancelTest)
         
         # load settings
@@ -63,21 +63,21 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
     def startProgress(self):
         if self.timer.isActive():
             self.timer.stop()
-            self.btnStart.setText('Start')
+##            self.btnStart.setText('Start')
             # reset test midway
             self.resetBar()
         else:
             self.timer.start((1000*self.time)/100, self)
-            self.btnStart.setText('Stop/Reset')
-            self.btnStart.setEnabled(False)
+##            self.btnStart.setText('Stop/Reset')
+##            self.btnStart.setEnabled(False)
             # start capture
             self.win_main.startCapture()
 
     def timerEvent(self, event):
         if self.step >= 100:
             self.timer.stop()
-            self.btnStart.setText('Done')
-            self.btnStart.setEnabled(False)
+##            self.btnStart.setText('Done')
+##            self.btnStart.setEnabled(False)
             # stop capture
             self.logTestData()
             self.win_main.stopCapture()
@@ -116,8 +116,12 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
         #read and load received samples
         self.ui_stress_test.text_re_samp.setText(str(self.received))
         #calculate and load dropped samples
-        self.dr_samp = self.ex_samp-self.received
-        self.ui_stress_test.text_dr_samp.setText(str(self.dr_samp))
+        exp_perc = self.ex_samp*(self.progressBar.value())/100
+        self.dr_samp = (exp_perc-self.received)
+        print('expected drop '+str(exp_perc))
+        print('drop '+str(self.dr_samp) )       
+##        self.dr_samp = self.ex_samp-self.received
+##        self.ui_stress_test.text_dr_samp.setText(str(self.dr_samp))
         #calculate and load drop rate
         self.drop = 100*self.dr_samp/self.ex_samp
         self.ui_stress_test.text_drop.setText(str(self.drop))
