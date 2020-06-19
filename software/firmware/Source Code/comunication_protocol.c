@@ -54,6 +54,8 @@ uint32_t get_maximum_fucgen_freq(tiva_status*  tiva_actual_status );
 uint32_t get_maximum_bytes_in_pkt(tiva_status*  tiva_actual_status);
 uint32_t get_minimum_bytes_in_pkt(tiva_status*  tiva_actual_status);
 
+uint32_t msg_generator( uint32_t value, char* default_msg, uint32_t start_range, uint32_t end_range, char* out_msg  );
+int itoa(int value,char *ptr);
 
 
 void command_handler(comunication_packet *pkt_received, tiva_status *tiva_actual_state){
@@ -210,8 +212,10 @@ void not_acknowledgment(){
 
 void set_func_gen_frequency( tiva_status* tiva_actual_status, uint32_t frequency ){
 
+    uint8_t  min_func_gen_freq = 1;
+    uint32_t max_func_gen_freq = get_maximum_fucgen_freq(tiva_actual_status);
 
-    if( ( frequency <= get_maximum_fucgen_freq(tiva_actual_status) ) && ( frequency > 0 ) ){
+    if( ( frequency >= min_func_gen_freq  ) && ( frequency <= max_func_gen_freq ) ){
 
         (*tiva_actual_status).func_gen_frequency  =  frequency                   ;
         (*tiva_actual_status).period_Func_Gen     =  SysCtlClockGet() / frequency;            // Calculates the Period of the Function Generator in terms of multiples of the System Period.
@@ -227,12 +231,14 @@ void set_func_gen_frequency( tiva_status* tiva_actual_status, uint32_t frequency
 
         comunication_packet pkt_send;
         pkt_send.uint32_param_pkt.command        = ERROR_MSG;
-        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_OOR_FUNC_GEN_FREQUENCY);
+        char msg[250];
+        uint32_t msg_len = msg_generator( frequency, MSG_OOR_FUNC_GEN_FREQUENCY, min_func_gen_freq, max_func_gen_freq, msg );
+        pkt_send.uint32_param_pkt.uint32_operand = msg_len;
         send_packet(&pkt_send);
 
         // Transmit the Samples
         uint32_t byte_index;
-        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_OOR_FUNC_GEN_FREQUENCY[byte_index]);
+        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, msg[byte_index]);
 
 
     }
@@ -241,8 +247,9 @@ void set_func_gen_frequency( tiva_status* tiva_actual_status, uint32_t frequency
 
 void set_transmission_mode (tiva_status*  tiva_actual_status, uint32_t mode ){
 
-    // Checks if the new Sample Rate is Achievable
-    if( mode < 2 ){
+    // Checks if the mode received it is valid
+    // Do this in the Future: Check if the the packet size setted up it is compatible with the current settings.
+    if (mode < 2 ){
 
        (*tiva_actual_status).type_of_transmission  =  mode;
 
@@ -263,7 +270,6 @@ void set_transmission_mode (tiva_status*  tiva_actual_status, uint32_t mode ){
         uint32_t byte_index;
         for(byte_index = 0; byte_index < pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_UKN_TRANSMISSION_MODE[byte_index]);
 
-
     }
 }
 
@@ -275,7 +281,7 @@ void set_sample_rate (tiva_status*  tiva_actual_status, uint32_t sample_rate ){
     uint32_t samplerate_mux = ( sample_rate * ( (*tiva_actual_status).nums_of_acquis_boards * (*tiva_actual_status).num_channels_per_board )  );
 
     // Checks if the new Sample Rate is Achievable
-    if( samplerate_mux <  ADC_MAX_SAMPLING_RATE  ){
+    if( ( samplerate_mux >= ADC_MIN_SAMPLING_RATE ) && (samplerate_mux <=  ADC_MAX_SAMPLING_RATE) ){
 
        (*tiva_actual_status).samplerate =  sample_rate;
 
@@ -292,14 +298,18 @@ void set_sample_rate (tiva_status*  tiva_actual_status, uint32_t sample_rate ){
     // Sends a Error Message
     else{
 
+        // Calculate the maximum Sampling Rate allowed in the current configuration.
+        uint32_t max_sample_rate  = ( ADC_MAX_SAMPLING_RATE / ( (*tiva_actual_status).nums_of_acquis_boards * (*tiva_actual_status).num_channels_per_board ) );
         comunication_packet pkt_send;
         pkt_send.uint32_param_pkt.command        = ERROR_MSG;
-        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_OOR_SAMPLE_RATE);
+        char msg[250];
+        uint32_t msg_len = msg_generator( sample_rate, MSG_OOR_SAMPLE_RATE, ADC_MIN_SAMPLING_RATE, max_sample_rate, msg );
+        pkt_send.uint32_param_pkt.uint32_operand = msg_len;
         send_packet(&pkt_send);
 
         // Transmit the Samples
         uint32_t byte_index;
-        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_OOR_SAMPLE_RATE[byte_index]);
+        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, msg[byte_index]);
 
 
     }
@@ -326,12 +336,14 @@ void set_number_of_channels (tiva_status*  tiva_actual_status, uint32_t num_chan
 
         comunication_packet pkt_send;
         pkt_send.uint32_param_pkt.command        = ERROR_MSG;
-        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_OOR_NUMBER_CHANNELS);
+        char msg[250];
+        uint32_t msg_len = msg_generator( num_channels, MSG_OOR_NUMBER_CHANNELS, NUM_MIN_CHANNELS_PER_BOARD, NUM_MAX_CHANNELS_PER_BOARD, msg );
+        pkt_send.uint32_param_pkt.uint32_operand = msg_len;
         send_packet(&pkt_send);
 
         // Transmit the Samples
         uint32_t byte_index;
-        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_OOR_NUMBER_CHANNELS[byte_index]);
+        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, msg[byte_index]);
 
 
     }
@@ -359,12 +371,14 @@ void set_number_of_acquis_boards (tiva_status*  tiva_actual_status, uint32_t num
 
         comunication_packet pkt_send;
         pkt_send.uint32_param_pkt.command        = ERROR_MSG;
-        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_OOR_NUMBER_BOARDS);
+        char msg[250];
+        uint32_t msg_len = msg_generator( num_acquis_boards, MSG_OOR_NUMBER_BOARDS, NUM_MIN_ACQUISITION_BOARDS, NUM_MAX_ACQUISITION_BOARDS, msg );
+        pkt_send.uint32_param_pkt.uint32_operand = msg_len;
         send_packet(&pkt_send);
 
         // Transmit the Samples
         uint32_t byte_index;
-        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_OOR_NUMBER_BOARDS[byte_index]);
+        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, msg[byte_index]);
 
     }
 
@@ -395,12 +409,14 @@ void set_number_of_bytes_in_packet (tiva_status*  tiva_actual_status, uint32_t n
 
         comunication_packet pkt_send;
         pkt_send.uint32_param_pkt.command        = ERROR_MSG;
-        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_OOR_BYTES_IN_PACKET);
+        char msg[250];
+        uint32_t msg_len = msg_generator( num_bytes_in_pkt, MSG_OOR_BYTES_IN_PACKET, num_min_bytes_in_pkt, num_max_bytes_in_pkt, msg );
+        pkt_send.uint32_param_pkt.uint32_operand = msg_len;
         send_packet(&pkt_send);
 
         // Transmit the Samples
         uint32_t byte_index;
-        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_OOR_BYTES_IN_PACKET[byte_index]);
+        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, msg[byte_index]);
 
     }
 
@@ -409,7 +425,6 @@ void set_number_of_bytes_in_packet (tiva_status*  tiva_actual_status, uint32_t n
 
 
 void set_bits_per_sample (tiva_status*  tiva_actual_status, uint32_t bits_per_sample ){
-
 
 
     if(  (bits_per_sample >= NUM_MIN_BITS_PER_SAMPLE)  &&  (bits_per_sample <= NUM_MAX_BITS_PER_SAMPLE)  ){
@@ -428,16 +443,18 @@ void set_bits_per_sample (tiva_status*  tiva_actual_status, uint32_t bits_per_sa
 
         comunication_packet pkt_send;
         pkt_send.uint32_param_pkt.command        = ERROR_MSG;
-        pkt_send.uint32_param_pkt.uint32_operand = sizeof(MSG_OOR_BITS_PER_SAMPLE);
+        //Tiva have problems to use malloc. It always return a NULL Pointer.
+        //char* msg = (char*) malloc( 10 * sizeof(char) );
+        char msg[250];
+        uint32_t msg_len = msg_generator( bits_per_sample, MSG_OOR_BITS_PER_SAMPLE, NUM_MIN_BITS_PER_SAMPLE, NUM_MAX_BITS_PER_SAMPLE, msg );
+        pkt_send.uint32_param_pkt.uint32_operand = msg_len;
         send_packet(&pkt_send);
 
         // Transmit the Samples
         uint32_t byte_index;
-        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, MSG_OOR_BITS_PER_SAMPLE[byte_index]);
+        for(byte_index = 0; byte_index <  pkt_send.uint32_param_pkt.uint32_operand ; byte_index++)      UARTCharPut(UART0_BASE, msg[byte_index]);
 
     }
-
-
 
 }
 
@@ -530,15 +547,90 @@ uint32_t get_maximum_fucgen_freq(tiva_status*  tiva_actual_status ){
 
 uint32_t get_maximum_bytes_in_pkt(tiva_status*  tiva_actual_status ){
 
-    return (uint32_t)(  ( NUM_MAX_SAMPLES_PER_CHANNEL * ( (*tiva_actual_status).bits_per_sample ) * ( (*tiva_actual_status).nums_of_acquis_boards ) * ( (*tiva_actual_status).num_channels_per_board )  ) / 8   );
+     uint32_t max_bytes_in_pkt = (uint32_t) (  ( NUM_MAX_SAMPLES_PER_CHANNEL * ( (*tiva_actual_status).bits_per_sample ) * ( (*tiva_actual_status).nums_of_acquis_boards ) * ( (*tiva_actual_status).num_channels_per_board )  ) / 8   );
 
+     if (  ( NUM_MAX_SAMPLES_PER_CHANNEL * ( (*tiva_actual_status).bits_per_sample ) * ( (*tiva_actual_status).nums_of_acquis_boards ) * ( (*tiva_actual_status).num_channels_per_board )  ) / 8   ){
+
+         max_bytes_in_pkt++;
+     }
+
+     return max_bytes_in_pkt;
 }
 
 
 uint32_t get_minimum_bytes_in_pkt(tiva_status*  tiva_actual_status ){
 
-    return (uint32_t)(  (   ( (*tiva_actual_status).bits_per_sample )  *  ( (*tiva_actual_status).nums_of_acquis_boards )  *  ( (*tiva_actual_status).num_channels_per_board )  ) / 8   );
+    uint32_t min_bytes_in_pkt =  (uint32_t)(  (   ( (*tiva_actual_status).bits_per_sample )  *  ( (*tiva_actual_status).nums_of_acquis_boards )  *  ( (*tiva_actual_status).num_channels_per_board )  ) / 8   );
+
+    // Checks if a Decimal number of Bytes it is necessary to store a instant. If it is, than a whole new byte it is necessary.
+    if( (   ( (*tiva_actual_status).bits_per_sample )  *  ( (*tiva_actual_status).nums_of_acquis_boards )  *  ( (*tiva_actual_status).num_channels_per_board )  ) % 8 ){
+
+        min_bytes_in_pkt++;
+    }
+    return min_bytes_in_pkt;
+}
+
+
+uint32_t msg_generator( uint32_t value, char* default_msg, uint32_t start_range, uint32_t end_range, char* out_msg ){
+
+    char aux_str[10];
+
+    // Concatenate the Strings and Calculate the number of Chars in the output String
+
+    // Convert Value Received from uint32_t to String.
+    itoa(value, out_msg);
+
+    // Concatenate the two Strings
+    strcat(out_msg, default_msg);
+
+    // Convert the Start of the Range from uint32_t to String.
+    itoa(start_range, aux_str);
+
+    // Concatenate the two Strings
+    strcat(out_msg, aux_str);
+
+    // Put a separator in the String.
+    strcat(out_msg, " - ");
+
+    // Convert the End of the Range from uint32_t to String.
+    itoa(end_range, aux_str);
+
+    // Concatenate the two Strings
+    strcat(out_msg, aux_str);
+
+    // Put a End Point in the String.
+    strcat(out_msg, ".");
+
+
+    return strlen(out_msg) ;
 
 }
 
 
+int itoa(int value,char *ptr)
+     {
+        int count=0,temp;
+        if(ptr==NULL)
+            return 0;
+        if(value==0)
+        {
+            *ptr='0';
+            *(ptr + 1) = '\0';
+            return 1;
+        }
+
+        if(value<0)
+        {
+            value*=(-1);
+            *ptr++='-';
+            count++;
+        }
+        for(temp=value;temp>0;temp/=10,ptr++);
+        *ptr='\0';
+        for(temp=value;temp>0;temp/=10)
+        {
+            *--ptr=temp%10+'0';
+            count++;
+        }
+        return count;
+     }

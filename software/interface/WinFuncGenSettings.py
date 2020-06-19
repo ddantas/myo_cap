@@ -30,9 +30,9 @@ class WinFuncGenSettings(PyQt5.QtWidgets.QMainWindow):
     # set new values at settings object and board
     def applyChanges(self):        
         # set frequency
-        if self.board.setFucGenFreq(self.ui_funcgen_settings.text_freq.text()) == 'ok': 
-            self.settings.setFuncGenFreq(self.ui_funcgen_settings.text_freq.text())
+        if self.board.setFucGenFreq( int(self.ui_funcgen_settings.text_freq.text()) ) == 'ok': 
+            self.settings.setFuncGenFreq( int(self.ui_funcgen_settings.text_freq.text()) )
         # set stress time
-        self.settings.setStressTime(self.ui_funcgen_settings.text_time.text())
+        self.settings.setStressTime( int(self.ui_funcgen_settings.text_time.text()) )
         # close window
         self.close()

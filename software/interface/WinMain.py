@@ -202,17 +202,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def mainLoop(self):
         if self.source == 'Serial':
             
-            # receive samples from board and save to log
+            # receive samples from board 
             
-            if ( int( self.settings.getPktComp() ) == UNPACKED ):
-            #if self.type_transmission == UNPACKED:               
+            # Unpacked Transmission 
+            if ( int( self.settings.getPktComp() ) == UNPACKED ):                         
                 pkt_samples = self.board.receiveStrPkt()
-                #print('Pkt: ' + str( pkt_samples ))
-            if ( int( self.settings.getPktComp() ) == PACKED ):
-            #if self.type_transmission == PACKED:              
-                pkt_samples = self.board.receive()
-            
-            self.textfile.saveLog(self.log_id, pkt_samples)
+            # Packed Transmission    
+            else:                         
+                pkt_samples = self.board.receive()         
             
         elif self.source == 'Log':
             # receive samples from log
@@ -232,53 +229,37 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.timer_capture.stop()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
-        
-        #self.stopCapture()
-        
+                        
+
         if len(pkt_samples):
             
             print( "List of Samples: " + str(pkt_samples) )
-            # send samples from packet to graph
-            for instant_index in range(self.board.unpacker.num_instants):
+            
+            if (  ( int( self.settings.getPktComp() ) == PACKED ) and (self.source == 'Serial')  ):
                 
-                # Plot a instant of Samples
-                instant_offset = self.settings.getTotChannels() * instant_index
-                self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
-  
+                # send samples from packet to graph
+                for instant_index in range(self.board.unpacker.num_instants):
+                    
+                    # calculate the offset of the instant.
+                    instant_offset = self.settings.getTotChannels() * instant_index
+                    
+                    # save to log
+                    self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
+                    
+                    # plot a instant of Samples                    
+                    self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
+                    
+            # When reading from a File or a Log, the Samples are ploted in a batch with (total number of channels) long.
+            else:
+                    if self.source == 'Serial':
+                        # save to log
+                        self.textfile.saveLog(self.log_id, pkt_samples)
+                    
+                    # Plot a instant of Sample
+                    self.graph.plotSamples( np.array( pkt_samples)  )
+                
 
-
-    '''
-    def sync_board_settings(self):
-            
-         if self.board.getCommStatus() == False:
-            self.board.openComm(self.ui_main.combo_port.currentText())
-            
-            self.board.stop()
-            
-            if   self.ui_main.action_sine.isChecked():      self.board.setSineWaveMode()
-            elif self.ui_main.action_square.isChecked():    self.board.setSquareWaveMode()
-            elif self.ui_main.action_sawtooth.isChecked():  self.board.setSawtoothWaveMode()
-            else:                                           self.board.setAdcMode()
-            
-            self.board.setFucGenFreq( int( self.settings.getFuncGenFreq() ) )
-            self.board.setBitsPerSample( int( self.settings.getBitsPerSample() ) )
-            print('----------' + str( self.settings.getBitsPerSample() ) )
-            print( '# Bits per Sample: ' + str( self.board.getBitsPerSample() ) )
-            self.board.setChannelsperBoard( int( self.settings.getChannelsPerBoard() ) )
-            print( '# Number of Channels per Board: ' + str( self.board.getChannelsperBoard() ) )
-            self.board.setNumAcquisBoards( int( self.settings.getNBoards() ) )
-            print( '# Number of Acquisition Boards: ' + str( self.board.getNumAcquisBoards() ) )
-            self.board.setPacketSize( int( self.settings.getPktSize() ) )
-            print( '# Packet Size: ' + str( self.board.getPacketSize() ) )
-            
-            self.board.setSampleRate( int( self.settings.getSampleRate() ) )
-            print( 'Sample Rate per Channel: ' + str( self.board.getSampleRate() ) )
-            
-            self.board.setTransmissionMode( int( self.settings.getPktComp() ) )
-            
-            
-            AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized' )
-    '''    
+ 
     def syncBoard(self):      
         
         if self.board.getCommStatus() == True:

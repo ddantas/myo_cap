@@ -18,7 +18,7 @@ class Board:
         self.settings = settings
         self.serial = serial.Serial()
         self.serial.baudrate = self.settings.getBaudrate()
-        self.serial.timeout = 0.01
+        self.serial.timeout = 0.1
         self.unpacker = Unpacker.Unpacker(settings)       
 
     def testPort(self, port):
@@ -96,8 +96,12 @@ class Board:
                     return operand1
                 
                 elif (instruction == 'me') or (instruction == 'mw'):
+
                     operand2 = self.serial.read(operand1)
-                    return     operand2.decode()
+                    
+                    if( instruction == 'me' ): AuxFunc.showMessage( 'Error!'  , operand2.decode() )
+                    else:                      AuxFunc.showMessage( 'Warning!', operand2.decode() )
+                    return 0     
                 
                 elif instruction == 'ms':
                     

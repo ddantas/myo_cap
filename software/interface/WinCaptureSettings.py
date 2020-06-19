@@ -53,7 +53,7 @@ class WinCaptureSettings(PyQt5.QtWidgets.QMainWindow):
             # set sample number of boards
             self.settings.setNBoards(int(self.ui_capture_settings.text_num_boards.text()) )
             
-            
+          
             print( '# Number of Acquisition Boards: ' + str( self.board.getNumAcquisBoards() ) )
             
             

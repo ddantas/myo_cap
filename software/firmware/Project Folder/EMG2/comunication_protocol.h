@@ -3,6 +3,7 @@
 
 
 #include <stdint.h>
+#include <string.h>
 #include "tiva_HAL.h"
 
 //// Structs ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,12 +126,12 @@ typedef union{
 
 // Out of Range
 
-#define MSG_OOR_FUNC_GEN_FREQUENCY   "The Frequency of the Function Generator it's out of the Available Range.\nTry something bigger than 0 and less than SampleRate divided by 2."
-#define MSG_OOR_SAMPLE_RATE          "The Sample Rate by Channel it's above the Maximum Achievable.\nTry a Value less or equal than 1MHZ/ (Total Number of Channels)."
-#define MSG_OOR_NUMBER_CHANNELS      "The Number of Channels is Higher than the Maximum Value."
-#define MSG_OOR_NUMBER_BOARDS        "The Number of Acquisition Boards is Higher than the Maximum Value."
-#define MSG_OOR_BYTES_IN_PACKET      "The Number of Bytes in a Packet is Higher than the Maximum Value."
-#define MSG_OOR_BITS_PER_SAMPLE      "The Number of bits per Sample is Higher than the Maximum Value."
+#define MSG_OOR_FUNC_GEN_FREQUENCY   " Hz it is Outside the Range Accepted by the Function Generator.\nTry a Value bigger than 0 and less than SampleRate / 2.\nFor the Current Configuration, Please use a value between: \0"
+#define MSG_OOR_SAMPLE_RATE          " Hz of Sample Rate it is Outside the Range Accepted by the Board.\nTry a Value bigger than 0 and less or equal than 1MHZ / (Total Number of Channels).\nFor the Current Configuration, Please use a value between: \0"
+#define MSG_OOR_NUMBER_CHANNELS      " Channel(s) it out of the Outside the Range Accepted by the Board.\nPlease use a value between: \0"
+#define MSG_OOR_NUMBER_BOARDS        " Acquisition Board(s) it is Outside the Range Accepted by the Board.\nPlease use a value between: \0"
+#define MSG_OOR_BYTES_IN_PACKET      " Byte(s) in a Packet it is Outside the Range Accepted by the Board.\nFor the current settings. Please use a value between: \0"
+#define MSG_OOR_BITS_PER_SAMPLE      " bits per Sample it is Outside the Range Accepted by the Board.\nPlease use a value between: \0"
 
 // Types of Acquisition
 
@@ -163,3 +164,9 @@ void command_handler (comunication_packet *pkt_received, tiva_status *tiva_actua
 void send_packet     (comunication_packet *pkt_to_send                                  );
 void recieve_packet  (comunication_packet *pkt_to_be_received                           );
 void stop_trasmission(                                                                  );
+
+uint32_t msg_generator( uint32_t value, char* default_msg, uint32_t start_range, uint32_t end_range, char* out_msg );
+// Macros
+
+//# define MSG_OOR_BITS_PER_SAMPLE ()
+

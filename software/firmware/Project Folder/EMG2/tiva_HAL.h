@@ -52,7 +52,7 @@
 
 
 #define NUM_MAX_ACQUISITION_BOARDS            4
-#define NUM_MAX_CHANNELS_PER_BOARD            8
+#define NUM_MAX_CHANNELS_PER_BOARD            4
 #define NUM_MAX_SAMPLES_PER_CHANNEL         128  // Maximum Number of Instants. Considering the Use of:  4 Acquisitions Boards; 4 Channels per Board; 12 bits per Sample.
 #define NUM_MAX_BITS_PER_SAMPLE              12
 #define NUM_MAX_NUM_BYTES_IN_PACKET        3072  // Considering the Use of:  4 Acquisitions Boards; 4 Channels per Board; 12 bits per Sample. Less will be available if conditions different of the case 2 are used.
@@ -83,6 +83,7 @@
 #define NUM_MIN_CHANNELS_PER_BOARD            1
 #define NUM_MIN_SAMPLES_PER_CHANNEL           1
 #define NUM_MIN_BITS_PER_SAMPLE               1
+#define ADC_MIN_SAMPLING_RATE                 1
 
 //------------------------------------------------------
 
