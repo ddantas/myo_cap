@@ -326,6 +326,13 @@ void set_number_of_channels (tiva_status*  tiva_actual_status, uint32_t num_chan
        // Recalculate and set the Number of Instants of Capture that will be transmitted in a packet.
        (*tiva_actual_status).num_samples_per_chn_buf = ( 8 * (*tiva_actual_status).num_bytes_in_packet ) / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
 
+       // Calculates the new Sampling Rate of the ADC => (Sample Rate by Channel) * (Number of Channels to be Sampled)
+       uint32_t samplerate_mux = ( (*tiva_actual_status).samplerate *  (*tiva_actual_status).nums_of_acquis_boards * (*tiva_actual_status).num_channels_per_board  );
+
+       // Load the New Period in the Timer
+       int period = SysCtlClockGet() / samplerate_mux;
+       TimerLoadSet(TIMER0_BASE, TIMER_A, period - 1);
+
        // Sends a Message of Success
        acknowledgment();
 
@@ -360,6 +367,12 @@ void set_number_of_acquis_boards (tiva_status*  tiva_actual_status, uint32_t num
        // Recalculate and set the Number of Instants of Capture that will be transmitted in a packet.
        (*tiva_actual_status).num_samples_per_chn_buf = ( 8 * (*tiva_actual_status).num_bytes_in_packet ) / ( tiva_actual_status->nums_of_acquis_boards * tiva_actual_status->num_channels_per_board * tiva_actual_status->bits_per_sample );
 
+       // Calculates the new Sampling Rate of the ADC => (Sample Rate by Channel) * (Number of Channels to be Sampled)
+       uint32_t samplerate_mux = ( (*tiva_actual_status).samplerate *  (*tiva_actual_status).nums_of_acquis_boards * (*tiva_actual_status).num_channels_per_board  );
+
+       // Load the New Period in the Timer
+       int period = SysCtlClockGet() / samplerate_mux;
+       TimerLoadSet(TIMER0_BASE, TIMER_A, period - 1);
 
        // Sends a Message of Success
        acknowledgment();
