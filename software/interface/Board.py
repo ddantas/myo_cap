@@ -136,7 +136,8 @@ class Board:
         packet = struct.pack('>2sI', command, int(op))
         self.write(packet)
         
-        print('Start Command!↓')
+        if(const.DEBUG):
+            print('Start Command!↓')
         
         return self.receive()
 
@@ -146,7 +147,8 @@ class Board:
         packet  = struct.pack('>2sI', command, int(op))
         self.write(packet)
         
-        print('Stop Command!↓')
+        if(const.DEBUG):
+            print('Stop Command!↓')
         
         return self.receive()
     
@@ -184,7 +186,8 @@ class Board:
         packet  = struct.pack('>2sI', command, int(op))
         self.write(packet)
         
-        print('Set Bits per Sample!↓')
+        if(const.DEBUG):
+            print('Set Bits per Sample!↓')
         
         return self.receive()
     

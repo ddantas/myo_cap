@@ -2,6 +2,7 @@
 
 import PyQt5
 import UiStresstest
+import Constants as const 
 
 class WinStresstest(PyQt5.QtWidgets.QMainWindow):
 
@@ -44,10 +45,12 @@ class WinStresstest(PyQt5.QtWidgets.QMainWindow):
     def recvData(self):
         try:
             self.received = self.win_main.textfile.getLogLength()
-            print('loglength catch: '+str(self.win_main.textfile.getLogLength()))
+            if(const.DEBUG):
+                print('loglength catch: '+str(self.win_main.textfile.getLogLength()))
         except:
             self.received = 0
-            print('loglength excpt: '+str(self.win_main.textfile.getLogLength()))
+            if(const.DEBUG):
+                print('loglength excpt: '+str(self.win_main.textfile.getLogLength()))
 
     # progressBar
     def resetBar(self):

@@ -2,7 +2,7 @@
 
 import PyQt5
 import UiCaptureSettings
-
+import Constants as const
 
 class WinCaptureSettings(PyQt5.QtWidgets.QMainWindow):
 
@@ -39,29 +39,30 @@ class WinCaptureSettings(PyQt5.QtWidgets.QMainWindow):
             # set sample rate
             self.settings.setSampleRate(int(self.ui_capture_settings.text_sample_rate.text()))
             
-             
-            print( '# Sample Rate per Channel: ' + str( self.board.getSampleRate() ) )
+            if(const.DEBUG): 
+                print( '# Sample Rate per Channel: ' + str( self.board.getSampleRate() ) )
         
         if self.board.setChannelsperBoard( int(self.ui_capture_settings.text_ch_board.text()) ):
             # set sample channels per board
             self.settings.setChannelsPerBoard(int( self.ui_capture_settings.text_ch_board.text() ) )
             
-            
-            print( '# Number of Channels per Board: ' + str( self.board.getChannelsperBoard() ) )
+            if(const.DEBUG):
+                print( '# Number of Channels per Board: ' + str( self.board.getChannelsperBoard() ) )
             
         if self.board.setNumAcquisBoards( int(self.ui_capture_settings.text_num_boards.text()) ):    
             # set sample number of boards
             self.settings.setNBoards(int(self.ui_capture_settings.text_num_boards.text()) )
             
-          
-            print( '# Number of Acquisition Boards: ' + str( self.board.getNumAcquisBoards() ) )
+            if(const.DEBUG):
+                print( '# Number of Acquisition Boards: ' + str( self.board.getNumAcquisBoards() ) )
             
             
         if self.board.setBitsPerSample(int(self.ui_capture_settings.text_bits_sample.text())):    
             # set bits per sample
             self.settings.setBitsPerSample(int(self.ui_capture_settings.text_bits_sample.text()))
             
-            print( '# Bits per Sample: ' + str( self.board.getBitsPerSample() ) )
+            if(const.DEBUG):
+                print( '# Bits per Sample: ' + str( self.board.getBitsPerSample() ) )
             
         # update graph
         self.graph.configureGraph()

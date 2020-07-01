@@ -6,7 +6,7 @@ Created on Wed Jul  1 13:09:27 2020
 """
 
 # Activate ou Deactivate the DEBUG
-DEBUG = 1
+DEBUG = 0
 
 # Used to Resolve the Transmission Mode
 UNPACKED = 0
