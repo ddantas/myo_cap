@@ -15,9 +15,8 @@ import WinDisplaySettings
 import WinCommSettings
 import WinFuncGenSettings
 import WinStresstest 
+import Constants as const
 
-UNPACKED = 0
-PACKED   = 1
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
@@ -59,6 +58,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.action_sine.triggered.connect(self.setSine)
         self.ui_main.action_square.triggered.connect(self.setSquare)
         self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
+        self.ui_main.action_load_capture.triggered.connect(self.showWinSelectFile)
+        self.ui_main.action_save_capture.triggered.connect(self.saveCapture)
         # setup buttons
         self.ui_main.button_select_file.clicked.connect(self.showWinSelectFile)
         self.ui_main.button_display_settings.clicked.connect(self.showWinDisplaySettings)
@@ -66,6 +67,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.button_start_capture.clicked.connect(self.startCapture)
         self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
         self.ui_main.button_show_capture.clicked.connect(self.showCapture)
+        self.ui_main.button_save_capture.clicked.connect(self.saveCapture)
                 
         # setup combo box for serial ports
         for port in self.board.listPorts():
@@ -134,7 +136,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
             self.openCSV(self.file_name)
         else:
-            AuxFunc.showMessage('Error!', 'Select FILE option at the first combo box.')                
+            AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
 
     def showCapture(self):
         self.source = 'Log'
@@ -143,23 +145,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
 
     def startCapture(self):
-        
-        
-        
-        #self.settings.setBitsPerSample(5) 
-        print( 'Bits per Sample    : ' + str(self.settings.getBitsPerSample()) )
-        print( 'Number of Boards   : ' + str(self.settings.getNBoards()) )
-        print( 'Number of  Channels: ' + str(self.settings.getChannelsPerBoard()) )
-        
-        
-        
+           
         self.source = self.ui_main.combo_data_source.currentText()
         self.graph.createPlots()
         if self.source == 'Serial':
             self.board.openComm(self.ui_main.combo_port.currentText())
-            if self.board.test():
-                self.file_name = self.configFile()
+            if self.board.test():               
                 if self.board.start() == 'ok':
+                    self.logIdGenerator()
                     self.timer_capture.start(0)
                 else:
                     AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')
@@ -174,38 +167,46 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.action_start_capture.setEnabled(False)
         self.ui_main.action_show_capture.setEnabled(False)
         self.ui_main.button_show_capture.setEnabled(False)
-
-        print( 'Bits per Sample: ' + str( self.settings.getBitsPerSample() ) )
         
         
     def stopCapture(self):
         
+        # Stop the Timer
         self.timer_capture.stop()
         
+        # Check if the Serial Port is open
         if self.board.getCommStatus():
             self.board.stop()
-            if self.board.stop() == 'ok':                            
-                
-                # Checks if a Stop Capture was alredy executed
-                if( hasattr(self, 'file_name') ):
-                    self.textfile.saveFile(self.file_name)
-                    AuxFunc.showMessage('Capture saved!', self.file_name)
-                    del self.file_name
-
+            if self.board.stop() == 'ok':   
+                                         
                 self.ui_main.button_start_capture.setEnabled(True)
                 self.ui_main.action_start_capture.setEnabled(True)
                 self.ui_main.action_show_capture.setEnabled(True)
-                self.ui_main.button_show_capture.setEnabled(True)                                            
+                self.ui_main.button_show_capture.setEnabled(True)   
+                                         
             else:
                 AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
 
+    def saveCapture(self):
+        
+        # Checks if a Start Capture was alredy executed
+        if( hasattr(self, 'log_id') ):
+            self.stopCapture()
+            self.file_name = self.writeHeader()
+            self.textfile.saveFile(self.file_name)
+            AuxFunc.showMessage('Capture saved!', self.file_name)
+        
+        else:
+            AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
+     
+    
     def mainLoop(self):
+        
         if self.source == 'Serial':
             
-            # receive samples from board 
-            
+        # receive samples from board          
             # Unpacked Transmission 
-            if ( int( self.settings.getPktComp() ) == UNPACKED ):                         
+            if ( int( self.settings.getPktComp() ) == const.UNPACKED ):                         
                 pkt_samples = self.board.receiveStrPkt()
             # Packed Transmission    
             else:                         
@@ -229,13 +230,18 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.timer_capture.stop()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
+                self.ui_main.button_start_capture.setEnabled(True)
+                self.ui_main.action_start_capture.setEnabled(True)
+                self.ui_main.action_show_capture.setEnabled(True)
+                self.ui_main.button_show_capture.setEnabled(True)
                         
-
+        # Check if some Sample was Acquired        
         if len(pkt_samples):
             
-            print( "List of Samples: " + str(pkt_samples) )
+            if(const.DEBUG):
+                print( "List of Samples: " + str(pkt_samples) )
             
-            if (  ( int( self.settings.getPktComp() ) == PACKED ) and (self.source == 'Serial')  ):
+            if (  ( int( self.settings.getPktComp() ) == const.PACKED ) and (self.source == 'Serial')  ):
                 
                 # send samples from packet to graph
                 for instant_index in range(self.board.unpacker.num_instants):
@@ -259,7 +265,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                     self.graph.plotSamples( np.array( pkt_samples)  )
                 
 
- 
     def syncBoard(self):      
         
         if self.board.getCommStatus() == True:
@@ -325,6 +330,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
 
     def setSawtooth(self):
+        
         self.stopCapture()
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
@@ -339,11 +345,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.setAdcMode()
             self.ui_main.button_start_capture.setEnabled(True)
             
-
-    def configFile(self):
+            
+    def logIdGenerator(self):
+        
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
         self.log_id = self.textfile.initFile(format, name_cols)
+                
+
+    def writeHeader(self):
+        
         date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         self.textfile.writeHeaderLine('File generated by myo_cap software')
         self.textfile.writeHeaderLine('Available from github.com/ddantas/myo_cap')
@@ -378,6 +389,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.graph.configureGraph()
         except:
             AuxFunc.showMessage('Error!', 'Insert an CSV capture file.')
+
 
 if __name__ == '__main__':
     app = PyQt5.QtWidgets.QApplication([])    

@@ -2,7 +2,8 @@ import PyQt5
 
 def showMessage(title, body):
     PyQt5.QtWidgets.QMessageBox.about(PyQt5.QtWidgets.QMainWindow(),title, body)
-
+    
+    
 def patternStr(pattern, num_it, add_it):
     str_out = ''
     for i in range(num_it):

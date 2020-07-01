@@ -7,10 +7,7 @@ import struct
 import time
 import AuxFunctions as AuxFunc
 import Unpacker
-
-BITS_PER_BYTE = 8
-MAX_CODE = 64
-SHIFT    = 60
+import Constants as const
 
 class Board:
 
@@ -70,7 +67,7 @@ class Board:
 
     def strToInt(self, word):
         if len(word) > 1:
-            return int(((ord(word[0]) - SHIFT) * MAX_CODE) + (ord(word[1]) - SHIFT))
+            return int(((ord(word[0]) - const.SHIFT) * const.MAX_CODE) + (ord(word[1]) - const.SHIFT))
         else:
             return 0
 
@@ -82,13 +79,14 @@ class Board:
         
             ## Convertes the 2 firsts bytes in op1 into a uint32
             instruction = (pkt_header[0:2]).decode()
-            
-            print("--------------------------------------------------------------------------------------------------------")
-            print("Instruction Reply   : " + str(instruction) )
+            if(const.DEBUG):
+                print("--------------------------------------------------------------------------------------------------------")
+                print("Instruction Reply   : " + str(instruction) )
             
             ## Convertes the 4 bytes in op1 into a uint32
             operand1 =  (struct.unpack('>I', pkt_header[2:6]))[0]
-            print( "Content of Operand 1: " + str(operand1) )
+            if(const.DEBUG):
+                print( "Content of Operand 1: " + str(operand1) )
             
             if (instruction == 'vu') or (instruction == 'me') or (instruction == 'mw') or (instruction == 'ms'):            
                 
@@ -108,8 +106,9 @@ class Board:
                     self.operand2 = self.serial.read(operand1)
                     
                     #print( "Content of Operand 2: " + format( hex(self.operand2),'#0' + str( 2 * operand1 + 2) + 'x') )
-                    print( "Content of Operand 2: " + str(self.operand2) )
-                    print("--------------------------------------------------------------------------------------------------------")
+                    if(const.DEBUG):
+                        print( "Content of Operand 2: " + str(self.operand2) )
+                        print("--------------------------------------------------------------------------------------------------------")
                     
                     return  self.unpacker.unpack_pkt( self.operand2) 
 

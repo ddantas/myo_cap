@@ -11,7 +11,7 @@ class UiMain:
         self.win_main = win_main
         #window size
         self.win_main.showMaximized()
-        self.win_main.setMinimumWidth(1366)
+        self.win_main.setMinimumWidth(1368)
         self.win_main.setMinimumHeight(768)
         #window name
         self.win_main.setWindowTitle(WIN_TITLE)
@@ -128,7 +128,7 @@ class UiMain:
         self.combo_data_source.setEditable(False)
         self.combo_data_source.addItem('Serial')
         self.combo_data_source.addItem('File')
-        self.combo_data_source.setFixedWidth(75)
+        self.combo_data_source.setFixedWidth(60)
         # create port combo box
         self.combo_port = PyQt5.QtWidgets.QComboBox()        
         self.combo_port.setEditable(False)
@@ -153,13 +153,16 @@ class UiMain:
         # create show capture button
         self.button_show_capture = PyQt5.QtWidgets.QPushButton()
         self.button_show_capture.setText('Show capture')
+        # create save button
+        self.button_save_capture = PyQt5.QtWidgets.QPushButton()
+        self.button_save_capture.setText('Save Capture')
 
     def createTaskBarInfoGraph(self):
         # create label to show graphic informations
         self.info_graph = PyQt5.QtWidgets.QLabel()
         self.info_graph.setText('Graphic informations')
         self.info_graph.setAlignment(PyQt5.QtCore.Qt.AlignCenter)
-        self.info_graph.setFixedWidth(500)
+        self.info_graph.setFixedWidth(400)
 
     def posWidgets(self):
         # menu bar position
@@ -174,8 +177,11 @@ class UiMain:
         self.grid_widget.addWidget(self.info_graph, taskbar_row, 5)
         self.grid_widget.addWidget(self.button_start_capture, taskbar_row, 6)
         self.grid_widget.addWidget(self.button_stop_capture, taskbar_row, 7)
-        self.grid_widget.addWidget(self.button_show_capture, taskbar_row, 8)
+        self.grid_widget.addWidget(self.button_save_capture, taskbar_row, 8)
+        self.grid_widget.addWidget(self.button_show_capture, taskbar_row, 9)
+        
+        
         # graph position
         graph_row = 1
-        graph_colspan = 9 # number of taskbar widgets
+        graph_colspan = 10 # number of taskbar widgets
         self.grid_widget.addWidget(self.graph, graph_row, 0, 1, graph_colspan)
