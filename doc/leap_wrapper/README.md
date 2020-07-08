@@ -1,8 +1,8 @@
 # Leap Motion setup to python 3.7 #
 
 Download the files:
-- LeapDeveloperKit_2.3.1+31549_linux.tgz
-- LeapDeveloperKit_linux-hotfix_2.3.1+33747_linux.tgz
+- LeapDeveloperKit_2.3.1+31549_linux.tgz (at https://drive.google.com/file/d/1hoI6lLrYuk5U4TdiEWrbKYNq9NrEPoBq/view?usp=sharing)
+- LeapDeveloperKit_linux-hotfix_2.3.1+33747_linux.tgz (at https://drive.google.com/file/d/1m9wo-nC4tkubOtHWYDED7r9XGPjnPyqr/view?usp=sharing)
 - Leap.i.diff
 
 ## 1. Dependencies ##
