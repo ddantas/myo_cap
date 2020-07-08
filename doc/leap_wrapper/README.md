@@ -1,4 +1,4 @@
-# Leap Motion setup to python 3.7#
+# Leap Motion setup to python 3.7 #
 
 Download the files:
 - LeapDeveloperKit_2.3.1+31549_linux.tgz
