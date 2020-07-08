@@ -57,7 +57,7 @@ cd LeapDeveloperKit*33747*
 sudo dpkg -i Leap*x64.deb
 ```
 
--  Create Leap Motion SDK
+-  Create Leap Motion wrapper
 
 ```
 cd ../LeapDeveloperKit*31549*/LeapSDK
