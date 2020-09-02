@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#import time
+import time
 import datetime as dt
 import numpy as np
 import PyQt5
@@ -16,6 +16,11 @@ import WinCommSettings
 import WinFuncGenSettings
 import WinStresstest 
 import Constants as const
+
+import threading
+import concurrent.futures
+import queue
+import multiprocessing
 
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
@@ -40,6 +45,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         # setup timer
         self.timer_capture = PyQt5.QtCore.QTimer()
         self.timer_capture.timeout.connect(self.mainLoop)
+
         
 
     def setupWidgets(self):
@@ -144,6 +150,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.graph.createPlots()
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
 
+    
+        
     def startCapture(self):
            
         self.source = self.ui_main.combo_data_source.currentText()
@@ -163,6 +171,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())
         
+                
         self.ui_main.button_start_capture.setEnabled(False)
         self.ui_main.action_start_capture.setEnabled(False)
         self.ui_main.action_show_capture.setEnabled(False)
@@ -199,71 +208,102 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:
             AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
      
-    
     def mainLoop(self):
         
-        if self.source == 'Serial':
+        def captureThread():
             
-        # receive samples from board          
-            # Unpacked Transmission 
-            if ( int( self.settings.getPktComp() ) == const.UNPACKED ):                         
-                pkt_samples = self.board.receiveStrPkt()
-            # Packed Transmission    
-            else:                         
-                pkt_samples = self.board.receive()         
-            
-        elif self.source == 'Log':
-            # receive samples from log
-            if self.log_pos < self.textfile.getLogLength():
-                pkt_samples = self.textfile.getLog(self.log_pos)
-                self.log_pos += 1
-            else:
-                self.timer_capture.stop()
-                AuxFunc.showMessage('Finish!', 'All data was plotted.')
-                pkt_samples = []
-        else:
-            # receive samples csv file
-            if self.log_pos < len(self.log):
-                pkt_samples = self.log[self.log_pos]
-                self.log_pos += 1
-            else:
-                self.timer_capture.stop()
-                AuxFunc.showMessage('Finish!', 'All data was plotted.')
-                pkt_samples = []
-                self.ui_main.button_start_capture.setEnabled(True)
-                self.ui_main.action_start_capture.setEnabled(True)
-                self.ui_main.action_show_capture.setEnabled(True)
-                self.ui_main.button_show_capture.setEnabled(True)
-                        
-        # Check if some Sample was Acquired        
-        if len(pkt_samples):
-            
-            if(const.DEBUG):
-                print( "List of Samples: " + str(pkt_samples) )
-            
-            if (  ( int( self.settings.getPktComp() ) == const.PACKED ) and (self.source == 'Serial')  ):
+            if self.source == 'Serial':
                 
-                # send samples from packet to graph
-                for instant_index in range(self.board.unpacker.num_instants):
-                    
-                    # calculate the offset of the instant.
-                    instant_offset = self.settings.getTotChannels() * instant_index
-                    
-                    # save to log
-                    self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
-                    
-                    # plot a instant of Samples                    
-                    self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
-                    
-            # When reading from a File or a Log, the Samples are ploted in a batch with (total number of channels) long.
+            # receive samples from board          
+                # Unpacked Transmission 
+                if ( int( self.settings.getPktComp() ) == const.UNPACKED ):                         
+                    self.pkt_samples = self.board.receiveStrPkt()
+                # Packed Transmission    
+                else:                         
+                    self.pkt_samples = self.board.receive()
+                
+            elif self.source == 'Log':
+                # receive samples from log
+                if self.log_pos < self.textfile.getLogLength():
+                    self.pkt_samples = self.textfile.getLog(self.log_pos)
+                    self.log_pos += 1
+                else:
+                    self.timer_capture.stop()
+                    AuxFunc.showMessage('Finish!', 'All data was plotted.')
+                    self.pkt_samples = []
             else:
+                # receive samples csv file
+                if self.log_pos < len(self.log):
+                    self.pkt_samples = self.log[self.log_pos]
+                    self.log_pos += 1
+                else:
+                    self.timer_capture.stop()
+                    AuxFunc.showMessage('Finish!', 'All data was plotted.')
+                    self.pkt_samples = []
+                    self.ui_main.button_start_capture.setEnabled(True)
+                    self.ui_main.action_start_capture.setEnabled(True)
+                    self.ui_main.action_show_capture.setEnabled(True)
+                    self.ui_main.button_show_capture.setEnabled(True)
+                    
+        def printThread():
+            if len(self.pkt_samples):
+                print( "List of Samples: " + str(self.pkt_samples) )
+        
+            
+        def plotThread():                   
+            # Check if some Sample was Acquired
+            if len(self.pkt_samples):
+                #thread executor for ploting logging and printing debug
+                executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+                def listSamples(pkt_samples):
+                    print( "List of Samples: " + str(self.pkt_samples) )
+                              
+                def saveLog1(pkt_samples):
+                    for instant_index in range(self.board.unpacker.num_instants):
+                        
+                        # calculate the offset of the instant.
+                        instant_offset = self.settings.getTotChannels() * instant_index
+                        self.textfile.saveLog( self.log_id, self.pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )
+                    
+                def plotSamples1(pkt_samples):
+                    for instant_index in range(self.board.unpacker.num_instants):
+                        
+                        # calculate the offset of the instant.
+                        instant_offset = self.settings.getTotChannels() * instant_index
+                        self.graph.plotSamples( np.array(  self.pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
+                        
+                def saveLog2(pkt_samples):
+                    self.textfile.saveLog(self.log_id, self.pkt_samples)
+                    
+                def plotSamples2(pkt_samples):
+                    self.graph.plotSamples( np.array( self.pkt_samples)  )
+                    
+                if(const.DEBUG):
+##                    t0 = executor.submit(listSamples, self.pkt_samples)
+                    print( "List of Samples: " + str(self.pkt_samples) )
+                    
+                if (  ( int( self.settings.getPktComp() ) == const.PACKED ) and (self.source == 'Serial')  ):          
+                    for instant_index in range(self.board.unpacker.num_instants):
+                        instant_offset = self.settings.getTotChannels() * instant_index
+                        # save to log
+                        self.textfile.saveLog( self.log_id, self.pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )
+##                    t1 = executor.submit(saveLog1, self.pkt_samples)
+                        # plot a instant of Samples
+                        self.graph.plotSamples( np.array(  self.pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
+##                    t2 = executor.submit(plotSamples1, self.pkt_samples)
+                # When reading from a File or a Log, the Samples are ploted in a batch with (total number of channels) long.
+                else:
                     if self.source == 'Serial':
                         # save to log
-                        self.textfile.saveLog(self.log_id, pkt_samples)
-                    
+##                        t1 = executor.submit(saveLog2, self.pkt_samples)
+                        self.textfile.saveLog(self.log_id, self.pkt_samples) 
                     # Plot a instant of Sample
-                    self.graph.plotSamples( np.array( pkt_samples)  )
-                
+##                    t2 = executor.submit(plotSamples2, self.pkt_samples)
+                    self.graph.plotSamples( np.array( self.pkt_samples)  )
+        # run capture and data plot in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            f1 = executor.submit(captureThread,)                    
+            f2 = executor.submit(plotThread,) 
 
     def syncBoard(self):      
         
