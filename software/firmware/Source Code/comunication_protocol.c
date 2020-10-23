@@ -66,24 +66,24 @@ void command_handler(comunication_packet *pkt_received, tiva_status *tiva_actual
 
         // Flow Control Commands
 
-        case START_TRANSMISSION         :    start_trasmission();                                                                             acknowledgment();      break;
+        case START_TRANSMISSION         :    start_trasmission();                                                                              acknowledgment();      break;
 
-        case STOP_TRANSMISSION          :    stop_trasmission();                                                                              acknowledgment();      break;
+        case STOP_TRANSMISSION          :    stop_trasmission();                                                                               acknowledgment();      break;
 
 
         // Set Parameters of the Capture and Transmission
 
-        case SET_TRANSMISSION_MODE     :    set_transmission_mode (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand );                               break;
+        case SET_TRANSMISSION_MODE     :    set_transmission_mode (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand );                                break;
 
-        case SET_SAMPLE_RATE           :    set_sample_rate (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                                      break;
+        case SET_SAMPLE_RATE           :    set_sample_rate (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                                       break;
 
-        case SET_NUMBER_CHANNELS       :    set_number_of_channels (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                               break;
+        case SET_NUMBER_CHANNELS       :    set_number_of_channels (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                                break;
 
-        case SET_NUMBER_BOARDS         :    set_number_of_acquis_boards (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                          break;
+        case SET_NUMBER_BOARDS         :    set_number_of_acquis_boards (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                           break;
 
-        case SET_NUMBER_BYTES_IN_PACKET:    set_number_of_bytes_in_packet (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                        break;
+        case SET_NUMBER_BYTES_IN_PACKET:    set_number_of_bytes_in_packet (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                         break;
 
-        case SET_BITS_PER_SAMPLE       :    set_bits_per_sample (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                                  break;
+        case SET_BITS_PER_SAMPLE       :    set_bits_per_sample (tiva_actual_state, pkt_received->uint32_param_pkt.uint32_operand);                                   break;
 
 
         // Get Parameters of the Capture and Transmission
@@ -119,9 +119,9 @@ void command_handler(comunication_packet *pkt_received, tiva_status *tiva_actual
         case GET_FUNC_GEN_FREQUENCY    :    get_func_gen_frequency ( tiva_actual_state );                                                      acknowledgment();      break;
 
 
-        // Not Recognised Command
+        // Not Recognized Command
 
-        default                        :    not_acknowledgment();
+        default                        :    not_acknowledgment();                                                                                                     break;
 
     }
 
@@ -185,7 +185,8 @@ void stop_trasmission(){
 
     TimerDisable(TIMER0_BASE, TIMER_A);
     IntDisable(INT_TIMER0A);
-    GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2, 0);
+    set_mux_channel(MUX_CHANNEL_0);
+    adc_set_acq_board(ACQUISITION_BOARD_0);
 
 }
 

@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -llibc.a -llibc.a
+LIBS := -llibc.a
 

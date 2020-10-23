@@ -72,7 +72,6 @@ volatile streaming_buffer*   transmit_buffer    = &stream_pigpong_buf_0 ;
 
 // Indexes for Streaming Streaming Transmission
 
-volatile uint16_t   board_index            = 0;
 volatile uint16_t   channel_index          = 0;
 volatile uint16_t   sample_index           = 0;
 
@@ -87,9 +86,13 @@ volatile uint8_t    state_of_processing  = PROCESSED  ;        // [  PROCESSED  
 
 // Multiplexer Variables
 
-volatile uint8_t    mux_channel_index    = MUX_CHANNEL_0;
-volatile uint8_t    mux_channel[NUM_MAX_CHANNELS_PER_BOARD];
+volatile uint8_t    mux_channel_index    = 0;
+volatile uint8_t    mux_channels [] = {MUX_CHANNEL_0, MUX_CHANNEL_1, MUX_CHANNEL_2, MUX_CHANNEL_3};
 
+// Board Variables
+
+volatile uint8_t    board_index          = 0;
+volatile uint8_t    acq_boards   [] = {ACQUISITION_BOARD_0, ACQUISITION_BOARD_1, ACQUISITION_BOARD_2, ACQUISITION_BOARD_3};
 
 int count = 0;
 
@@ -143,7 +146,7 @@ void timer0AInterrupt(void)
         mux_channel_index++;
 
         if(mux_channel_index == tiva_actual_state.num_channels_per_board) { mux_channel_index = MUX_CHANNEL_0; board_index++; }             // Checks if all Channels of one board was Sampled.
-        set_mux_channel(mux_channel_index);                                                                                                 // Change the value of the Mux Selection Pins.
+
 
         if(board_index == tiva_actual_state.nums_of_acquis_boards)
         {
@@ -152,6 +155,11 @@ void timer0AInterrupt(void)
             uartSend(string_streaming_buffer, ((tiva_actual_state.num_channels_per_board * tiva_actual_state.nums_of_acquis_boards) * 2 + 1) );   // Transmit the Samples
 
         }
+
+        set_mux_channel( mux_channels[mux_channel_index] );                                                                                       // Change the value of the Mux Selection Pins.
+        adc_set_acq_board( acq_boards[board_index] );
+
+
 
     }
 
@@ -168,9 +176,10 @@ void timer0AInterrupt(void)
 
         if(mux_channel_index == tiva_actual_state.num_channels_per_board)    { mux_channel_index = 0;   board_index++;                }     // Checks if all Channels of one board was Sampled.
 
-        set_mux_channel(mux_channel_index);                                                                                                 // Change the value of the Multiplexer Selection Pins.
-
         if(board_index   == tiva_actual_state.nums_of_acquis_boards)         { board_index = 0;        sample_index++;                }     // Checks if all Boards was Sampled.
+
+        set_mux_channel( mux_channels[mux_channel_index] );                                                                                 // Change the value of the Mux Selection Pins.
+        adc_set_acq_board( acq_boards[board_index] );
 
         if(sample_index  == tiva_actual_state.num_samples_per_chn_buf  )     {                                                              // Checks if all Samples of all board was Sampled.
 
@@ -275,9 +284,12 @@ void reset_acquisition(void)
     // Indexes for Streaming Streaming Transmission
 
     board_index            = 0;
-    channel_index          = 0;
+    mux_channel_index      = 0;
     sample_index           = 0;
 
+    //
+    set_mux_channel( mux_channels[mux_channel_index] );                                                                                       // Change the value of the Mux Selection Pins.
+    adc_set_acq_board( acq_boards[board_index] );
 
     // Transmission Variables
 
@@ -286,10 +298,6 @@ void reset_acquisition(void)
     // Processing Variables
 
     state_of_processing  = PROCESSED  ;          // [  PROCESSED   |  PENDING   |  PROCESSING  ]
-
-    // Multiplexer Variables
-
-    mux_channel_index      = 0;
 
 
 

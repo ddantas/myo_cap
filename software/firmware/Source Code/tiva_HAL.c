@@ -39,9 +39,8 @@ void tiva_actual_state_init( tiva_status* tiva_actual_status )
 
         tiva_actual_status->period_Func_Gen          = SysCtlClockGet() / Default_Func_Gen_Freq;  // Calculates the Period of the Function Generator in terms of multiples of the System Period;   // change always that a set frequency is received.
         tiva_actual_status->func_gen_frequency       = Default_Func_Gen_Freq                   ;  // Starts with the Default Function Generator Frequency.
-        tiva_actual_status->timestamp                = 0                                       ;  // Starts from the Begining of the Wave Form.
+        tiva_actual_status->timestamp                = 0                                       ;  // Starts from the Beginning of the Wave Form.
         tiva_actual_status->wave_form                = ADC_Acquisition                         ;  // Starts Transmitting from the ADC.
-        //tiva_actual_status->wave_form                = Square_Wave                         ;  // Starts Transmitting from the ADC.
 
 
         tiva_actual_status->bits_per_sample          = DEFAULT_BITS_PER_SAMPLE                 ;  // Sets the Default bits per Sample.
@@ -59,28 +58,52 @@ void tiva_actual_state_init( tiva_status* tiva_actual_status )
 
 void configureADC(void)
 {
+    // Enable the peripherals
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
     SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
 
-    GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_0);
+    // Configures the GPIO pins used in the ADC
+    GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_3);
+    GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_1);
 
+    // Regular ADC tiva pins for A0 and A1.
+    #ifndef USE_ADC_ALTERNATIVE_PINS
+    GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_2);
+    GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_3);
+    #endif
+
+    // Alternative ADC tiva pins for A0 and A1.
+    #ifdef USE_ADC_ALTERNATIVE_PINS
+    GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_1);    // Alternative ADC tiva pin PD1
+    GPIOPinTypeADC(GPIO_PORTD_BASE, GPIO_PIN_2);    // Alternative ADC tiva pin PD2
+    #endif
+
+    // Choose the reference voltage for the ADC
     ADCReferenceSet(ADC0_BASE, ADC_REF_INT);
 
+    // Configures the Sample Sequencer 3 of the ADC0
     ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0);
-    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH7 | ADC_CTL_END | ADC_CTL_IE);
+
+    // Sets the channel for the Sample Sequencer 3 of the ADC0 of the Tiva
+    adc_set_acq_board(ACQUISITION_BOARD_0);
+
+    // Enables the Sample Sequencer 3 of the ADC0
     ADCSequenceEnable(ADC0_BASE, 3);
 
+    // Clear the interruption flag
     ADCIntClear(ADC0_BASE, 3);
 }
 
 
 void configureSelectPins()
 {
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-    GPIOPinTypeGPIOOutput(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2);
-    GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_OD);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+    //                        Myocap Bus Pins: ENABLE       S0           S1
+    GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_5 | GPIO_PIN_0 | GPIO_PIN_1);
+    GPIOPadConfigSet(GPIO_PORTB_BASE,  GPIO_PIN_5 | GPIO_PIN_0 | GPIO_PIN_1, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_OD);
 
-    GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2, 0);
+    GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_5 | GPIO_PIN_0 | GPIO_PIN_1, 0);
 }
 
 
@@ -137,6 +160,50 @@ uint16_t adc_sample_acquisition(){
 
 }
 
+void adc_set_acq_board(uint8_t acquisition_board){
 
+
+    switch(acquisition_board){
+
+
+        // Sets the ADC0 channel for the Sample Sequencer 3 in the Tiva
+
+        case ACQUISITION_BOARD_0       :    //  Myocap  Pin: A0 . Tiva Pin: PE3 . ADC Channel 0
+                                            #ifndef USE_ADC_ALTERNATIVE_PINS
+                                            ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH0 | ADC_CTL_END | ADC_CTL_IE);          break;
+                                            #endif
+
+                                            //  Myocap  Pin: jumper . Tiva Pin: PD2 . ADC Channel 5. A0 -> PD2
+                                            #ifdef USE_ADC_ALTERNATIVE_PINS
+                                            ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH5 | ADC_CTL_END | ADC_CTL_IE);          break;  // Alternative ADC tiva pin PD2
+                                            #endif
+
+
+        case ACQUISITION_BOARD_1       :    //  Myocap  Pin: A1 . Tiva Pin: PE2 . ADC Channel 1
+                                            #ifndef USE_ADC_ALTERNATIVE_PINS
+                                            ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH1 | ADC_CTL_END | ADC_CTL_IE);          break;
+                                            #endif
+
+                                            //  Myocap  Pin: jumper . Tiva Pin: PD1 . ADC Channel 6. A1 -> PD1
+                                            #ifdef USE_ADC_ALTERNATIVE_PINS
+                                            ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH6 | ADC_CTL_END | ADC_CTL_IE);          break;  // Alternative ADC tiva pin PD1
+                                            #endif
+
+
+        case ACQUISITION_BOARD_2       :    //  Myocap  Pin: A2 . Tiva Pin: PE1 . ADC Channel 2
+                                            ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH2 | ADC_CTL_END | ADC_CTL_IE);          break;
+
+
+        case ACQUISITION_BOARD_3       :    //  Myocap  Pin: A3 . Tiva Pin: PD3 . ADC Channel 4
+                                            ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH4 | ADC_CTL_END | ADC_CTL_IE);          break;
+
+
+        default                        :    //  Board not Recognized
+                                                                                                                                        break;
+
+    }
+
+
+}
 
 

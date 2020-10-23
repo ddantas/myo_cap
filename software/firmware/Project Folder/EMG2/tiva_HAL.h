@@ -11,13 +11,26 @@
 
 // Constants ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Preprocessor
+
+// Uncomment the next line to use alternative ADC pins
+// #define USE_ADC_ALTERNATIVE_PINS                // Uses PD1, PD2, PD3 and PE1 rather than PD3, PE1, PE2 and PE3 for ADC pins.
 
 // Multiplexer Channels
 
-#define MUX_CHANNEL_0                         0  // GPIO_PIN_2 = 0 ; GPIO_PIN_1 = 0
-#define MUX_CHANNEL_1                         2  // GPIO_PIN_2 = 0 ; GPIO_PIN_1 = 1
-#define MUX_CHANNEL_2                         4  // GPIO_PIN_2 = 1 ; GPIO_PIN_1 = 0
-#define MUX_CHANNEL_3                         6  // GPIO_PIN_2 = 1 ; GPIO_PIN_1 = 1
+#define MUX_CHANNEL_0                         0  // GPIO_PIN_0 = 0 ; GPIO_PIN_5 = 0
+#define MUX_CHANNEL_1                GPIO_PIN_5  // GPIO_PIN_0 = 0 ; GPIO_PIN_5 = 1
+#define MUX_CHANNEL_2                GPIO_PIN_0  // GPIO_PIN_0 = 1 ; GPIO_PIN_5 = 0
+#define MUX_CHANNEL_3   GPIO_PIN_5 | GPIO_PIN_0  // GPIO_PIN_0 = 1 ; GPIO_PIN_5 = 1
+
+
+// Acquisition Boards
+
+#define ACQUISITION_BOARD_0                   0  // Myocap  Pin: A0 . Tiva Pin: PE3 . ADC Channel 0
+#define ACQUISITION_BOARD_1                   1  // Myocap  Pin: A1 . Tiva Pin: PE2 . ADC Channel 1
+#define ACQUISITION_BOARD_2                   2  // Myocap  Pin: A2 . Tiva Pin: PE1 . ADC Channel 2
+#define ACQUISITION_BOARD_3                   3  // Myocap  Pin: A3 . Tiva Pin: PD3 . ADC Channel 4
+
 
 
 // Wave Forms Modes
@@ -52,7 +65,7 @@
 
 
 #define NUM_MAX_ACQUISITION_BOARDS            4
-#define NUM_MAX_CHANNELS_PER_BOARD            4
+#define NUM_MAX_CHANNELS_PER_BOARD            6
 #define NUM_MAX_SAMPLES_PER_CHANNEL         128  // Maximum Number of Instants. Considering the Use of:  4 Acquisitions Boards; 4 Channels per Board; 12 bits per Sample.
 #define NUM_MAX_BITS_PER_SAMPLE              12
 #define NUM_MAX_NUM_BYTES_IN_PACKET        3072  // Considering the Use of:  4 Acquisitions Boards; 4 Channels per Board; 12 bits per Sample. Less will be available if conditions different of the case 2 are used.
@@ -122,13 +135,15 @@ void     configureADC(void);
 void     configureSelectPins();
 void     configureUART(int baudrate);
 void     configureTimer(tiva_status* tiva_actual_status);
+void     adc_set_acq_board(uint8_t acquisition_board);
 uint16_t adc_sample_acquisition();
-
 
 // Macros ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define set_mux_channel(index_channel)  GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2, mux_channel[index_channel])                                                    // Change the value of the Mux Selection Pins.
+                                                   // Change the value of the Mux Selection Pins.
+// Change the value of the Mux Selection Pins.
+#define set_mux_channel(channel)  GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_5, channel)
 
 #define NUM_MAX_SAMPLES_BUFFER          (uint16_t) (   NUM_MAX_ACQUISITION_BOARDS * NUM_MAX_CHANNELS_PER_BOARD * NUM_MAX_SAMPLES_PER_CHANNEL                                )
 #define NUM_MAX_BYTES_BUFFER            (uint16_t) ( ( NUM_MAX_ACQUISITION_BOARDS * NUM_MAX_CHANNELS_PER_BOARD * NUM_MAX_SAMPLES_PER_CHANNEL * NUM_MAX_BITS_PER_SAMPLE) / 8 )
