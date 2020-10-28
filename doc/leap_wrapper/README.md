@@ -11,6 +11,24 @@ Download the files:
 
 ```
 sudo apt-get install libgl1-mesa-dri libgl1-mesa-glx
+sudo apt-get install swig g++ libpython3.7-dev
+```
+
+## 2. Installation ##
+
+- Extract files:
+
+```
+tar -xaf LeapDeveloperKit*31549*.tgz
+tar -xaf LeapDeveloperKit*33747*.tgz
+```
+
+- Install client software:
+
+``` 
+cd LeapDeveloperKit*33747*
+sudo dpkg -i Leap*x64.deb
+sudo leapd
 ```
 
 - If you don't have the file /etc/init.d/leapd, create it:
@@ -37,24 +55,7 @@ WantedBy=multi-user.target
 - Then:
 ```
 sudo ln -s /lib/systemd/system/leapd.service /etc/systemd/system/leapd.service
-sudo systemctl daemon-reload
-sudo dpkg --install Leap-2.3.1+31549-x64.deb
-```
-
-## 2. Installation ##
-
-- Extract files:
-
-```
-tar -xaf LeapDeveloperKit*31549*.tgz
-tar -xaf LeapDeveloperKit*33747*.tgz
-```
-
-- Install client software:
-
-``` 
-cd LeapDeveloperKit*33747*
-sudo dpkg -i Leap*x64.deb
+sudo systemctl daemon-reload or sudo service leapd restart
 ```
 
 -  Create Leap Motion wrapper
@@ -63,7 +64,6 @@ sudo dpkg -i Leap*x64.deb
 cd ../LeapDeveloperKit*31549*/LeapSDK
 mkdir python3.7_project
 cp -a lib/x64/libLeap.so lib/Leap.py samples/Sample.py python3.7_project/
-sudo apt-get install swig g++ libpython3.7-dev
 2to3-3.7 -nw python3.7_project/Sample.py
 patch -p0 < Leap.i.diff
 swig -c++ -python -o /tmp/LeapPython.cpp -interface LeapPython include/Leap.i
