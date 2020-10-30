@@ -1,4 +1,4 @@
-# Leap Motion setup to python 3.7 #
+# Leap Motion SDK 2.3.1 setup to python 3.7 #
 
 Download the files:
 - LeapDeveloperKit_2.3.1+31549_linux.tgz (at https://drive.google.com/file/d/1hoI6lLrYuk5U4TdiEWrbKYNq9NrEPoBq/view?usp=sharing)
@@ -71,3 +71,7 @@ g++ -fPIC -I/usr/include/python3.7m -I./include /tmp/LeapPython.cpp lib/x64/libL
 cd python3.7_project/
 LD_PRELOAD=./libLeap.so python3.7 Sample.py
 ```
+# Leap Motion SDK 2.3.1 for Windows #
+
+Download the file:
+- Leap_Motion_SDK_Windows_2.3.1 (https://drive.google.com/file/d/1y5BmwmOZeAhrRCbbuTK28OVA80gQvlsQ/view?usp=sharing)
