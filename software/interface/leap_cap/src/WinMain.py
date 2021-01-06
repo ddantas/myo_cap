@@ -4,7 +4,6 @@ import os
 import sys
 # obtain the myograph path
 myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
-print(myograph_import_path)
 # adds the myograph path for future inclusions 
 sys.path.append(myograph_import_path)
 
@@ -13,9 +12,13 @@ import PyQt5
 import UiMain
 import Settings
 import Tiva
+import WinSubject
 import WinCaptureSettings
 import WinDisplaySettings
 import WinCommSettings
+import WinGestureCapSettings
+import WinFuncGenSettings
+import WinStresstest
 import AuxFunctions as AuxFunc
 
 
@@ -50,6 +53,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.action_load_emg_signal.triggered.connect(self.loadEMGSignal)
         
         #menu capture
+        self.ui_main.action_subject_window.triggered.connect(self.showSubjectWindow)
+        
         self.ui_main.action_start_capture.triggered.connect(self.startCapture)
         self.ui_main.action_stop_capture.triggered.connect(self.stopCapture)
         self.ui_main.action_show_capture.triggered.connect(self.showCapture)
@@ -64,12 +69,17 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.action_emg_emulation.triggered.connect(self.showEMGEmulation)
   
         self.ui_main.action_gesture_capture_settings.triggered.connect(self.showGestureCaptureSettings)
+        
+        # menu function generator
+        self.ui_main.action_funcgen_settings.triggered.connect(self.showWinFuncGenSettings)
+        self.ui_main.action_sine.triggered.connect(self.setSine)
+        self.ui_main.action_square.triggered.connect(self.setSquare)
+        self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
+        self.ui_main.action_stresstest.triggered.connect(self.showWinStresstest)
+        
                 
         # setup buttons
-        self.ui_main.button_select_file.clicked.connect(self.showWinSelectFile)
-        self.ui_main.button_capture_settings.clicked.connect(self.showEMGWinCaptureSettings)
-        self.ui_main.button_display_settings.clicked.connect(self.showEMGWinDisplaySettings)
-
+        self.ui_main.button_subject_window.clicked.connect(self.showSubjectWindow)
         self.ui_main.button_start_capture.clicked.connect(self.startCapture)
         self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
         self.ui_main.button_show_capture.clicked.connect(self.showCapture)
@@ -108,11 +118,22 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     # to implement                
     def loadEMGSignal(self):
-        AuxFunc.showMessage('warning!', 'Will be implemented!')
+        options = PyQt5.QtWidgets.QFileDialog.Options()
+        options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
+        self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select EMG capture file', '', 'CSV files (*.csv)', options=options)
+        self.openCSVEMG(self.file_name)        
+        
+    def openCSVEMG(file_name):
+        AuxFunc.showMessage('warning!', 'Function in development!')
+    
+    def showSubjectWindow(self):
+        self.win_subject = WinSubject.WinSubject()
+        self.win_subject.show()        
 
     # to check  
-    def startCapture(self):
-           
+    def startCapture(self):      
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''   
         self.source = self.ui_main.combo_data_source.currentText()
         #self.graph.createPlots()
         if self.source == 'Serial':
@@ -129,15 +150,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         elif self.source == 'File':
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())
-        
+        '''
         self.ui_main.button_start_capture.setEnabled(False)
         self.ui_main.action_start_capture.setEnabled(False)
         self.ui_main.action_show_capture.setEnabled(False)
         self.ui_main.button_show_capture.setEnabled(False)
         
     # to check    
-    def stopCapture(self):
-        
+    def stopCapture(self):        
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
         # Stop the Timer
         self.timer_capture.stop()
         
@@ -145,21 +167,25 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         if self.board.getCommStatus():
             self.board.stop()
             if self.board.stop() == 'ok':   
-                                         
-                self.ui_main.button_start_capture.setEnabled(True)
-                self.ui_main.action_start_capture.setEnabled(True)
-                self.ui_main.action_show_capture.setEnabled(True)
-                self.ui_main.button_show_capture.setEnabled(True)   
-                                         
+        '''                                         
+        self.ui_main.button_start_capture.setEnabled(True)
+        self.ui_main.action_start_capture.setEnabled(True)
+        self.ui_main.action_show_capture.setEnabled(True)
+        self.ui_main.button_show_capture.setEnabled(True)   
+        '''                                 
             else:
                 AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
-
+        '''
     # to check
-    def showCapture(self):
+    def showCapture(self):        
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        
+        '''
         self.source = 'Log'
         self.log_pos = 0
-        #self.graph.createPlots()
+        self.graph.createPlots()
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
+        '''
            
     # to implement    
     def loadSettings(self):
@@ -171,29 +197,107 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     # to check if it is possible do not pass graph as a parammeter to WinCaptureSettings
     def showEMGWinCaptureSettings(self):
-        self.stopCapture()
+        #self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
         self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
         self.win_capture_settings.show()  
-
+        '''
     # to check if it is possible do not pass graph as a parammeter to WinDisplaySettings
     def showEMGWinDisplaySettings(self):
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
         self.win_display_settings = WinDisplaySettings.WinDisplaySettings(self, self.settings, self.graph)
         self.win_display_settings.show()
-
+        '''
     def showEMGWinCommSettings(self):
-        self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        #self.stopCapture()       
+        '''
         self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
         self.win_comm_settings.show()        
-        
-    # to implement        
+        '''       
     def showEMGEmulation(self):
         AuxFunc.showMessage('warning!', 'Please load EMG signal by acessing menu File > Load EMG signal')
-        AuxFunc.showMessage('warning!', 'Will be implemented!')
+        AuxFunc.showMessage('warning!', 'Function in development!')
         
-    # to implement
     def showGestureCaptureSettings(self):
-        AuxFunc.showMessage('warning!', 'Will be implemented!')
+        #self.stopCapture()
+        self.win_gesture_cap_settings = WinGestureCapSettings.WinGestureCapSettings()
+        self.win_gesture_cap_settings.show()
+        
+    def showWinFuncGenSettings(self):
+        #self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
+        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board)
+        self.win_funcgen_settings.show()
+        '''
+    def setSine(self):
+        #self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
+        if self.board.getCommStatus() == False:
+            self.board.openComm(self.ui_main.combo_port.currentText())
+            
+        if self.ui_main.action_sine.isChecked() == True:
+            self.ui_main.action_square.setChecked(False)
+            self.ui_main.action_sawtooth.setChecked(False)
+            self.ui_main.button_start_capture.setEnabled(True)          
+            # sets the wave form to sine
+            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
+               self.board.setFucGenFreq(self.settings.getFuncGenFreq()) 
+            self.board.setSineWaveMode()
+        else:   
+                self.board.setAdcMode()
+                self.ui_main.button_start_capture.setEnabled(True)      
+        '''
+
+    def setSquare(self):
+        #self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
+        if self.board.getCommStatus() == False:
+                self.board.openComm(self.ui_main.combo_port.currentText())
+        if  self.ui_main.action_square.isChecked() == True:
+            self.ui_main.action_sine.setChecked(False)
+            self.ui_main.action_sawtooth.setChecked(False)
+            # sets the wave form to square
+            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
+               self.board.setFucGenFreq(self.settings.getFuncGenFreq())
+            self.board.setSquareWaveMode()
+        else: 
+            self.board.setAdcMode()
+            self.ui_main.button_start_capture.setEnabled(True)
+        '''
+
+    def setSawtooth(self):
+        
+        #self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
+        if self.board.getCommStatus() == False:
+            self.board.openComm(self.ui_main.combo_port.currentText())
+        if self.ui_main.action_sawtooth.isChecked() == True:
+            self.ui_main.action_square.setChecked(False)
+            self.ui_main.action_sine.setChecked(False) 
+            # sets the wave form to sawtooth
+            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
+               self.board.setFucGenFreq(self.settings.getFuncGenFreq())
+            self.board.setSawtoothWaveMode()
+        else: 
+            self.board.setAdcMode()
+            self.ui_main.button_start_capture.setEnabled(True)
+        '''
  
+    def showWinStresstest(self):
+        #self.stopCapture()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        '''
+        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
+        self.win_stress_test.show()
+        '''
+        
     def syncBoard(self):      
         
         if self.board.getCommStatus() == True:

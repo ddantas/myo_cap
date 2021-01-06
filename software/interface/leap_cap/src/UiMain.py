@@ -11,8 +11,8 @@ class UiMain:
         self.win_main = win_main
         #window size
         self.win_main.showMaximized()
-        self.win_main.setMinimumWidth(1368)
-        self.win_main.setMinimumHeight(768)
+        self.win_main.setMinimumWidth(992)
+        self.win_main.setMinimumHeight(558)
         #window name
         self.win_main.setWindowTitle(WIN_TITLE)
         #main widget
@@ -35,10 +35,12 @@ class UiMain:
         self.createMenuFile()
         self.createMenuCapture()
         self.createMenuSettings()
+        self.createMenuFuncGen()
         # add sessions to menubar
         self.menu_bar.addAction(self.menu_file.menuAction())
         self.menu_bar.addAction(self.menu_capture.menuAction())
         self.menu_bar.addAction(self.menu_settings.menuAction())
+        self.menu_bar.addAction(self.menu_funcgen.menuAction())
         # set window menubar
         self.win_main.setMenuBar(self.menu_bar)
 
@@ -63,10 +65,13 @@ class UiMain:
         self.menu_capture = PyQt5.QtWidgets.QMenu(self.menu_bar)
         self.menu_capture.setTitle('Capture')
         # create options for menu capture
+        self.action_subject_window = PyQt5.QtWidgets.QAction('Subject window')
         self.action_start_capture = PyQt5.QtWidgets.QAction('Start capture')
         self.action_stop_capture = PyQt5.QtWidgets.QAction('Stop capture')
         self.action_show_capture = PyQt5.QtWidgets.QAction('Show capture')
         # add options to menu capture
+        self.menu_capture.addAction(self.action_subject_window)
+        self.menu_capture.addSeparator()
         self.menu_capture.addAction(self.action_start_capture)
         self.menu_capture.addAction(self.action_stop_capture)
         self.menu_capture.addAction(self.action_show_capture)
@@ -95,6 +100,29 @@ class UiMain:
         self.menu_settings.addAction(self.action_gesture_capture_settings)
         # set EMG emulation as checkable
         self.action_emg_emulation.setCheckable(True)
+        
+    def createMenuFuncGen(self):
+        # create menu function generator
+        self.menu_funcgen = PyQt5.QtWidgets.QMenu(self.menu_bar)
+        self.menu_funcgen.setTitle('Function generator')
+        # create options for menu function generator
+        self.action_funcgen_settings = PyQt5.QtWidgets.QAction('Settings')
+        self.action_sine = PyQt5.QtWidgets.QAction('Sine')
+        self.action_square = PyQt5.QtWidgets.QAction('Square')
+        self.action_sawtooth = PyQt5.QtWidgets.QAction('Sawtooth')
+        self.action_stresstest = PyQt5.QtWidgets.QAction('Start stress test')
+        # add options to menu function generator
+        self.menu_funcgen.addAction(self.action_funcgen_settings)
+        self.menu_funcgen.addSeparator()
+        self.menu_funcgen.addAction(self.action_sine)
+        self.menu_funcgen.addAction(self.action_square)
+        self.menu_funcgen.addAction(self.action_sawtooth)
+        self.menu_funcgen.addSeparator()
+        self.menu_funcgen.addAction(self.action_stresstest)
+        # set some options as checkable
+        self.action_sine.setCheckable(True)
+        self.action_square.setCheckable(True)
+        self.action_sawtooth.setCheckable(True)    
 
     def createTaskBar(self):
         # create combo boxes for task bar
@@ -117,15 +145,9 @@ class UiMain:
         self.combo_port.setFixedWidth(150)
 
     def createTaskBarButtons(self):
-        # create select file button
-        self.button_select_file = PyQt5.QtWidgets.QPushButton()
-        self.button_select_file.setText('Select file')
-        # create display settings button
-        self.button_display_settings = PyQt5.QtWidgets.QPushButton()
-        self.button_display_settings.setText('Display settings')
-        # create capture settings button
-        self.button_capture_settings = PyQt5.QtWidgets.QPushButton()
-        self.button_capture_settings.setText('Capture settings')
+        # create subject window button
+        self.button_subject_window = PyQt5.QtWidgets.QPushButton()
+        self.button_subject_window.setText('Subject window')
         # create start capture button
         self.button_start_capture = PyQt5.QtWidgets.QPushButton()
         self.button_start_capture.setText('Start capture')
@@ -153,14 +175,12 @@ class UiMain:
         taskbar_row = 0
         self.grid_widget.addWidget(self.combo_data_source, taskbar_row, 0)
         self.grid_widget.addWidget(self.combo_port, taskbar_row, 1,)
-        self.grid_widget.addWidget(self.button_select_file, taskbar_row, 2)
-        self.grid_widget.addWidget(self.button_display_settings, taskbar_row, 3)
-        self.grid_widget.addWidget(self.button_capture_settings, taskbar_row, 4)
-        self.grid_widget.addWidget(self.info_graph, taskbar_row, 5)
-        self.grid_widget.addWidget(self.button_start_capture, taskbar_row, 6)
-        self.grid_widget.addWidget(self.button_stop_capture, taskbar_row, 7)
-        self.grid_widget.addWidget(self.button_save_capture, taskbar_row, 8)
-        self.grid_widget.addWidget(self.button_show_capture, taskbar_row, 9)
+        self.grid_widget.addWidget(self.info_graph, taskbar_row, 2)
+        self.grid_widget.addWidget(self.button_subject_window, taskbar_row, 3)
+        self.grid_widget.addWidget(self.button_start_capture, taskbar_row, 4)
+        self.grid_widget.addWidget(self.button_stop_capture, taskbar_row, 5)
+        self.grid_widget.addWidget(self.button_save_capture, taskbar_row, 6)
+        self.grid_widget.addWidget(self.button_show_capture, taskbar_row, 7)
         
         # create temp label 
         self.fill_later = PyQt5.QtWidgets.QLabel()
