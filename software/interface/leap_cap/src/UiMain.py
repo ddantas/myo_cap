@@ -6,18 +6,20 @@ WIN_TITLE = 'LeapCap'
 
 class UiMain:
 
-    def __init__(self, win_main):
+    def __init__(self, win_main, graph):
         # window to design ui
         self.win_main = win_main
         #window size
         self.win_main.showMaximized()
-        self.win_main.setMinimumWidth(992)
-        self.win_main.setMinimumHeight(558)
+        self.win_main.setMinimumWidth(1366)
+        self.win_main.setMinimumHeight(768)
         #window name
         self.win_main.setWindowTitle(WIN_TITLE)
         #main widget
         self.central_widget = PyQt5.QtWidgets.QWidget()
         self.win_main.setCentralWidget(self.central_widget)
+        #graph
+        self.graph = graph
         #layout inicialization
         self.grid_widget = PyQt5.QtWidgets.QGridLayout()
         self.central_widget.setLayout(self.grid_widget)
@@ -182,10 +184,7 @@ class UiMain:
         self.grid_widget.addWidget(self.button_save_capture, taskbar_row, 6)
         self.grid_widget.addWidget(self.button_show_capture, taskbar_row, 7)
         
-        # create temp label 
-        self.fill_later = PyQt5.QtWidgets.QLabel()
-        self.fill_later.setText('Fill later')
-        self.fill_later.setAlignment(PyQt5.QtCore.Qt.AlignCenter)
-        fill_later_row = 1
-        fill_later_colspan = 10 # number of taskbar widgets
-        self.grid_widget.addWidget(self.fill_later, fill_later_row, 0, 1, fill_later_colspan)
+        # graph position
+        graph_row = 1
+        graph_colspan = 10 # number of taskbar widgets
+        self.grid_widget.addWidget(self.graph, graph_row, 0, 1, graph_colspan)

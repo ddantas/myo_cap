@@ -21,11 +21,9 @@ class WinCommSettings(PyQt5.QtWidgets.QMainWindow):
 
     # load settings to text boxes
     def loadSettings(self):
-        # load packet size
+        # load packet size        
         self.ui_comm_settings.text_pkt_size.setText(str(self.settings.getPktSize()))
         # load packet compression
-        print( self.settings.getPktComp() )
-        
         if self.settings.getPktComp():
             self.ui_comm_settings.check_pkt_compression.setChecked( True )
 
@@ -38,8 +36,7 @@ class WinCommSettings(PyQt5.QtWidgets.QMainWindow):
             self.settings.setPktSize(int(self.ui_comm_settings.text_pkt_size.text() ) )
             
         
-        # set packet compression
-        print( int(self.ui_comm_settings.check_pkt_compression.isChecked() ) )
+        # set packet compression        
         if self.board.setTransmissionMode( int(self.ui_comm_settings.check_pkt_compression.isChecked()) ):
         
             self.settings.setPktComp(int(self.ui_comm_settings.check_pkt_compression.isChecked()))

@@ -10,9 +10,10 @@ sys.path.append(myograph_import_path)
 
 import PyQt5
 import UiMain
-import Settings
+import LeapCapSettings
 import Tiva
 import WinSubject
+import WidgetGraph
 import WinCaptureSettings
 import WinDisplaySettings
 import WinCommSettings
@@ -25,17 +26,18 @@ import AuxFunctions as AuxFunc
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self):
-        
+    def __init__(self):        
         # supeclass constructor
         super(WinMain, self).__init__()
-        # setup settings 
-        self.settings = Settings.Settings()
-        self.settings.load()
+        # setup LeapCap settings 
+        self.leap_cap_settings = LeapCapSettings.LeapCapSettings()
+        self.leap_cap_settings.load()
+        # setup graph widget
+        self.graph = WidgetGraph.WidgetGraph(self.leap_cap_settings)
         # setup main user interface
-        self.ui_main = UiMain.UiMain(self)
+        self.ui_main = UiMain.UiMain(self, self.graph)
         # setup board
-        self.board = Tiva.Tiva(self.settings)
+        self.board = Tiva.Tiva(self.leap_cap_settings)
         # setup widgets
         self.setupWidgets()
         # setup timer
@@ -85,6 +87,11 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.button_show_capture.clicked.connect(self.showCapture)
         self.ui_main.button_save_capture.clicked.connect(self.saveCapture)
         
+        
+        # setup graph configurations
+        self.updateInfoGraph()
+        
+        
         # setup combo box for serial ports
         for port in self.board.listPorts():
             self.ui_main.combo_port.addItem(port)
@@ -93,7 +100,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.combo_port.setCurrentIndex(-1)
         self.ui_main.combo_port.currentIndexChanged.connect( self.syncBoard )            
 
-
+    def updateInfoGraph(self):
+        self.ui_main.info_graph.setText(
+            'Swipe: ' + str(self.leap_cap_settings.getSwipe()) + ' | Vmin: ' + str(self.leap_cap_settings.getVMin()) +
+            ' | Vmax: ' + str(self.leap_cap_settings.getVMax()) + ' | Vtick: ' + str(self.leap_cap_settings.getVTick()) +
+            ' | Htick: ' + str(self.leap_cap_settings.getHTick()) + ' | Show channels: ' + str(self.leap_cap_settings.getTotChannels()))
+        
     # To implement    
     def mainLoop(self):
         pass
@@ -198,25 +210,18 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     # to check if it is possible do not pass graph as a parammeter to WinCaptureSettings
     def showEMGWinCaptureSettings(self):
         #self.stopCapture()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
-        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
-        self.win_capture_settings.show()  
-        '''
-    # to check if it is possible do not pass graph as a parammeter to WinDisplaySettings
+        self.win_emg_capture_settings = WinCaptureSettings.WinCaptureSettings(self.leap_cap_settings, self.graph, self.board)
+        self.win_emg_capture_settings.show()  
+        
     def showEMGWinDisplaySettings(self):
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
-        self.win_display_settings = WinDisplaySettings.WinDisplaySettings(self, self.settings, self.graph)
-        self.win_display_settings.show()
-        '''
+        self.win_emg_display_settings = WinDisplaySettings.WinDisplaySettings(self, self.leap_cap_settings, self.graph)
+        self.win_emg_display_settings.show()
+
     def showEMGWinCommSettings(self):
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        #self.stopCapture()       
-        '''
-        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
-        self.win_comm_settings.show()        
-        '''       
+        #self.stopCapture()
+        self.win_emg_comm_settings = WinCommSettings.WinCommSettings(self.leap_cap_settings, self.board)
+        self.win_emg_comm_settings.show()        
+        
     def showEMGEmulation(self):
         AuxFunc.showMessage('warning!', 'Please load EMG signal by acessing menu File > Load EMG signal')
         AuxFunc.showMessage('warning!', 'Function in development!')
@@ -228,15 +233,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
     def showWinFuncGenSettings(self):
         #self.stopCapture()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
-        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board)
+        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.leap_cap_settings, self.board)
         self.win_funcgen_settings.show()
-        '''
+        
     def setSine(self):
         #self.stopCapture()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
+        #uxFunc.showMessage('warning!', 'Function in development!')        
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
             
@@ -251,12 +253,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:   
                 self.board.setAdcMode()
                 self.ui_main.button_start_capture.setEnabled(True)      
-        '''
 
     def setSquare(self):
         #self.stopCapture()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
         if self.board.getCommStatus() == False:
                 self.board.openComm(self.ui_main.combo_port.currentText())
         if  self.ui_main.action_square.isChecked() == True:
@@ -269,13 +268,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else: 
             self.board.setAdcMode()
             self.ui_main.button_start_capture.setEnabled(True)
-        '''
 
     def setSawtooth(self):
         
-        #self.stopCapture()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
         if self.ui_main.action_sawtooth.isChecked() == True:
@@ -288,15 +283,13 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else: 
             self.board.setAdcMode()
             self.ui_main.button_start_capture.setEnabled(True)
-        '''
+
  
     def showWinStresstest(self):
         #self.stopCapture()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
-        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
+        self.win_stress_test = WinStresstest.WinStresstest(self.leap_cap_settings, self.board, self)
         self.win_stress_test.show()
-        '''
+
         
     def syncBoard(self):      
         

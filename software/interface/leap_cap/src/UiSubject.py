@@ -21,6 +21,6 @@ class UiSubject:
         self.win_subject.setCentralWidget(self.central_widget)
         #window size
         #self.win_main.showMaximized()
-        self.win_subject.setMinimumWidth(992)
-        self.win_subject.setMinimumHeight(558)
+        self.win_subject.setMinimumWidth(1366)
+        self.win_subject.setMinimumHeight(768)
 
