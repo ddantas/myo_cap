@@ -1,5 +1,5 @@
 
 # Link para requisitos de software #
 
-https://www.dropbox.com/s/z635f89p6a7jl0g/myo_cap_gui_requisitos_2020.pdf?dl=0
+https://www.dropbox.com/s/pmltx1t9zvk2afu/myo_cap_gui_requisitos_2021.pdf?dl=0
 
