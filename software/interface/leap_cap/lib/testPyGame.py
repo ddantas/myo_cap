@@ -1,12 +1,12 @@
 import pygame
 
 pygame.init()
-pygame.display.set_mode()
+pygame.display.set_mode(size=(800,600))
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit(); #sys.exit() if sys is imported
+            pygame.quit() #sys.exit() if sys is imported
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
                 print("Mínimo esquerdo")

@@ -20,6 +20,7 @@ import WinGestureCapSettings
 import WinFuncGenSettings
 import WinStresstest
 import AuxFunctions as AuxFunc
+import Constants    as const
 
 
 
@@ -41,7 +42,10 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.setupWidgets()
         # setup timer
         self.timer_capture = PyQt5.QtCore.QTimer()
-        self.timer_capture.timeout.connect(self.mainLoop)        
+        self.timer_capture.timeout.connect(self.mainLoop)    
+        
+        # 
+                
         
     def setupWidgets(self):
         # setup menu
@@ -105,8 +109,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             ' | Htick: ' + str(self.leap_cap_settings.getHTick()) + ' | Show channels: ' + str(self.leap_cap_settings.getTotChannels()))
         
     # To implement    
-    def mainLoop(self):
-        pass
+    def mainLoop(self):        
+        print('Here')
+        key_pressed = self.win_subject.getKey() 
+        print(key_pressed)
+        if(key_pressed == const.CLOSE_SUBJECT_WIN):
+            self.win_subject.close()
+            
+        #if(key_pressed != const.NO_KEY_PRESSED):
+        #print('The key pressed was %s!' % key_pressed)
+        
 
     def showWinSelectFile(self):
         self.source = self.ui_main.combo_data_source.currentText()
@@ -136,12 +148,13 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def openCSVEMG(file_name):
         AuxFunc.showMessage('warning!', 'Function in development!')
     
-    def showSubjectWindow(self):
+    def showSubjectWindow(self):        
         self.win_subject = WinSubject.WinSubject()
-        self.win_subject.show()        
+        self.win_subject.show()
 
     # to check  
     def startCapture(self):      
+        self.timer_capture.start()
         AuxFunc.showMessage('warning!', 'Function in development!')
         '''   
         self.source = self.ui_main.combo_data_source.currentText()
@@ -168,6 +181,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
     # to check    
     def stopCapture(self):        
+        self.timer_capture.start()
         AuxFunc.showMessage('warning!', 'Function in development!')
         '''
         # Stop the Timer
