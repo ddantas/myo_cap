@@ -5,6 +5,8 @@ import os
 myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
 # adds the myograph path for future inclusions 
 sys.path.append(myograph_import_path)
+images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'leap_cap') , 'images') , '')    
+
 
 import pygame as pg
 import Constants as const
@@ -19,6 +21,14 @@ class WinSubject:
         self.win = None
         self.close = False
         self.win_title = 'Subject'
+        
+        # Load the static images
+        self.image_name = '1th_flex.png'
+        self.image_1 = pg.image.load(images_path + self.image_name)
+        self.image_name = '1th_flex_curl.png'
+        self.image_2 = pg.image.load(images_path + self.image_name)
+        self.image_name = '1th_flex_curl.png'
+
 
     def show(self):
         pg.init()
@@ -33,6 +43,13 @@ class WinSubject:
     def getKey(self):
         
         if not(self.close):
+            
+            # draw the images
+            self.win.blit(self.image_1, (0, 0)) 
+            self.win.blit(self.image_2, (350, 0)) 
+            
+            pg.display.update()
+            
             for event in pg.event.get():
                     if event.type == pg.QUIT:
                         pg.display.quit(); #sys.exit() if sys is imported
@@ -76,6 +93,7 @@ class WinSubject:
                         
             else:   
                     return const.NO_KEY_PRESSED
+                           
                 
         return const.CLOSE_SUBJECT_WIN            
                     
