@@ -40,11 +40,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.board = Tiva.Tiva(self.leap_cap_settings)
         # setup widgets
         self.setupWidgets()
-        # setup timer
-        self.timer_capture = PyQt5.QtCore.QTimer()
-        self.timer_capture.timeout.connect(self.mainLoop)    
-        
-        # 
+        # setup main loop timer
+        self.timer_main_loop = PyQt5.QtCore.QTimer()
+        self.timer_main_loop.timeout.connect(self.mainLoop)
+        self.timer_main_loop.start()  
+        # subject windows is open
+        self.subj_win_is_open = 0
                 
         
     def setupWidgets(self):
@@ -108,17 +109,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             ' | Vmax: ' + str(self.leap_cap_settings.getVMax()) + ' | Vtick: ' + str(self.leap_cap_settings.getVTick()) +
             ' | Htick: ' + str(self.leap_cap_settings.getHTick()) + ' | Show channels: ' + str(self.leap_cap_settings.getTotChannels()))
         
-    # To implement    
+    # In development    
     def mainLoop(self):        
-        print('Here')
-        key_pressed = self.win_subject.getKey() 
-        print(key_pressed)
-        if(key_pressed == const.CLOSE_SUBJECT_WIN):
-            self.win_subject.close()
-            
-        #if(key_pressed != const.NO_KEY_PRESSED):
-        #print('The key pressed was %s!' % key_pressed)
-        
+        # Get the key pressed and handle actions on the subject window
+        if(self.subj_win_is_open):
+            key_pressed = self.win_subject.getKey() 
+            if((key_pressed == const.CLOSE_SUBJECT_WIN)):
+                self.subj_win_is_open = 0
+                del self.win_subject
+            if( (key_pressed != const.NO_KEY_PRESSED) and (key_pressed != const.CLOSE_SUBJECT_WIN) ):
+                 print('The key pressed was %s' % key_pressed)       
 
     def showWinSelectFile(self):
         self.source = self.ui_main.combo_data_source.currentText()
@@ -151,11 +151,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def showSubjectWindow(self):        
         self.win_subject = WinSubject.WinSubject()
         self.win_subject.show()
+        self.subj_win_is_open = 1
 
     # to check  
     def startCapture(self):      
-        self.timer_capture.start()
-        AuxFunc.showMessage('warning!', 'Function in development!')
+
+        #AuxFunc.showMessage('warning!', 'Function in development!')
         '''   
         self.source = self.ui_main.combo_data_source.currentText()
         #self.graph.createPlots()
@@ -181,8 +182,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
     # to check    
     def stopCapture(self):        
-        self.timer_capture.start()
-        AuxFunc.showMessage('warning!', 'Function in development!')
+
+        #AuxFunc.showMessage('warning!', 'Function in development!')
         '''
         # Stop the Timer
         self.timer_capture.stop()

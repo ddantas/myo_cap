@@ -18,55 +18,68 @@ class WinSubject:
         self.win_size = (800, 600)
         self.win = None
         self.close = False
+        self.win_title = 'Subject'
 
     def show(self):
         pg.init()
         self.win = pg.display.set_mode(size=self.win_size)                
         self.win.fill(self.white)  
+        pg.display.set_caption(self.win_title)
         pg.display.update()
 
     def close(self):
-        pg.quit()
+        pg.display.quit()
 
     def getKey(self):
-        for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit(); #sys.exit() if sys is imported
-                    self.close = True
+        
+        if not(self.close):
+            for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        pg.display.quit(); #sys.exit() if sys is imported
+                        self.close = True
+                        
+                    if event.type == pg.KEYDOWN:                                      
+                        # left hand
+                        if event.key == pg.K_1:
+                            #return const.PINKY
+                            return 'PINKY'
+                        if event.key == pg.K_2:
+                            #return const.RING
+                            return 'RING'
+                        if event.key == pg.K_3:
+                            #return const.MIDDLE
+                            return 'MIDDLE'
+                        if event.key == pg.K_4:
+                            #return const.INDICATOR
+                            return 'INDICATOR'
+                        if event.key == pg.K_SPACE:
+                            #return const.THUMB
+                            return 'THUMB'
+                        
+                        # right hand
+                        if event.key == pg.K_SPACE:
+                            #return const.THUMB 
+                            return 'THUMB'
+                        if event.key == pg.K_7:
+                            #return const.INDICATOR
+                            return 'INDICATOR'
+                        if event.key == pg.K_8:
+                            #return const.MIDDLE
+                            return 'MIDDLE'
+                        if event.key == pg.K_9:
+                            #return const.RING
+                            return 'RING'
+                        if event.key == pg.K_0:
+                            #return const.PINKY        
+                            return 'PINKY'
+                        
+                        
+            else:   
+                    return const.NO_KEY_PRESSED
+                
+        return const.CLOSE_SUBJECT_WIN            
                     
-                if event.type == pg.KEYDOWN:                                      
-                    # left hand
-                    if event.key == pg.K_1:
-                        return const.PINKY
-                    if event.key == pg.K_2:
-                        return const.RING
-                    if event.key == pg.K_3:
-                        return const.MIDDLE
-                    if event.key == pg.K_4:
-                        return const.INDICATOR
-                    if event.key == pg.K_SPACE:
-                        return const.THUMB
-                    
-                    # right hand
-                    if event.key == pg.K_SPACE:
-                        return const.THUMB 
-                    if event.key == pg.K_7:
-                        return const.INDICATOR
-                    if event.key == pg.K_8:
-                        return const.MIDDLE
-                    if event.key == pg.K_9:
-                        return const.RING
-                    if event.key == pg.K_0:
-                        return const.PINKY        
-                    
-                    # Close Window
-                    if event.key == pg.K_ESCAPE:
-                        return const.CLOSE_SUBJECT_WIN
-                    
-                    else:
-                        return const.NO_KEY_PRESSED
-                    
-                    
+    
 """
 
 while True:
