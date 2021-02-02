@@ -19,18 +19,23 @@ class WinSubject:
     def __init__(self):
         # Number of images on screen
         self.num_images = 4
-        # Colors
-        self.white = (255, 255, 255)
+        # Colors        
         self.black = (0, 0, 0)
+        self.red  = (255, 0, 0)
+        self.green  = (0, 255, 0)
+        self.blue  = (0, 0, 255)
+        self.white = (255, 255, 255)
+        
         # Margin in parts of width and high of the screen
         self.x_margin = 0.02
-        self.y_margin = 0.02
+        self.y_margin = 0.03
         # Elements resolution        
         self.win_size = DEFAULT_WIN_SIZE
         self.img_panel_size = ( self.win_size[0], int( 0.5 * self.win_size[1]) )
         self.orig_images_res = (310, 370)          
         # Current images resolution. It will be updated in every redraw.            
         self.current_img_res = self.orig_images_res
+        self.image_margin_px = (0, 0)
         # Elements position. It will be updated in every redraw.
         self.images_position = [(0, 0), (0, 0), (0, 0), (0, 0)]
         # List with four images
@@ -42,19 +47,84 @@ class WinSubject:
         self.win = None
         # State Variables
         self.close = False      
-
+        
+        # Time bar painel
+        self.time_bars_pn_scree_perc  = 0.2
+        ## Time panel vertical screen percentage
+        self.time_bars_pn_size = ( self.win_size[0], int( self.time_bars_pn_scree_perc * self.win_size[1]) )
+        self.time_bars_pn_pos  = ( 0, self.img_panel_size[1])
+        
+        # Picture time bar. That bar that stay under the first image. 
+        self.time_pic_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.image_margin_px[1])
+        self.time_pic_bar_size     = (self.current_img_res[0], 14)
+        self.time_pic_bar_border_color = self.black
+        self.time_pic_bar_color    = self.blue
+        self.time_pic_bar_perc     = 0.2
+        
+        # Experiment time bar.
+        self.exper_time_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.time_pic_bar_size[1] + self.image_margin_px[1])
+        self.exper_time_bar_size     = (self.win_size[0] - 2 * self.image_margin_px[0], 14)
+        self.exper_time_bar_border_color = self.black
+        self.exper_time_bar_color    = self.blue
+        self.exper_time_bar_perc     = 0.3
+        
+        
+    def UpdatePanelsSize(self):
+        self.UpdateImagesPanel()
+        self.UpdateTimeBarsPanel()
+        
+    def UpdateImagesPanel(self):
+        self.img_panel_size = ( self.win_size[0], int( 0.5 * self.win_size[1]) )
+    
+    def UpdateTimeBarsPanel(self):
+        self.time_bars_pn_size = ( self.win_size[0], int( self.time_bars_pn_scree_perc * self.win_size[1]) )
+        self.time_bars_pn_pos  = ( 0, self.img_panel_size[1])        
+        
+    def updateTimeBarsPos(self):
+        self.updateImgPos()
+        # update the picture time bar 
+        self.time_pic_bar_pos      = (self.image_margin_px[0] , self.images_position[0][1] + self.current_img_res[1] + self.image_margin_px[1])
+        self.time_pic_bar_size     = (self.current_img_res[0], 14)
+        # update the experiment time bar
+        self.exper_time_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.time_pic_bar_size[1] + self.image_margin_px[1])
+        self.exper_time_bar_size     = (self.win_size[0] - 2 * self.image_margin_px[0], 14)
+    
+    def drawTimeBars(self):
+        self.updateTimeBarsPos()
+        # Draw time picture bar
+        self.DrawHorBar(self.time_pic_bar_pos, self.time_pic_bar_size, self.time_pic_bar_border_color, self.time_pic_bar_color, self.time_pic_bar_perc)
+        # Draw experiment time bar
+        self.DrawHorBar(self.exper_time_bar_pos, self.exper_time_bar_size, self.exper_time_bar_border_color, self.exper_time_bar_color, self.exper_time_bar_perc)        
+                
+        #self.DrawVertBar( (200,500), self.time_pic_bar_size, self.time_pic_bar_border_color, self.time_pic_bar_color, 0.7)
+        
+    def SetTimeBarsProgress(self, time_pic_bar_perc, exper_time_bar_perc):
+        self.time_pic_bar_perc   = time_pic_bar_perc 
+        self.exper_time_bar_perc = exper_time_bar_perc
+        
+    def DrawHorBar(self, pos, size, border_color, bar_color, progress):
+        pg.draw.rect(self.win, border_color, (*pos, *size), 1)
+        innerPos  = (pos[0]+3, pos[1]+3)
+        innerSize = ((size[0]-6) * progress, size[1]-6)
+        pg.draw.rect(self.win, bar_color, (*innerPos, *innerSize))    
+        
+    def DrawVertBar(self, pos, size, border_color, bar_color, progress):
+        pg.draw.rect(self.win, border_color, (*pos, *size), 1)
+        innerPos  = (pos[0]+3, pos[1]+ 3 + ( (size[1]-6) -(size[1]-6) * progress ) )
+        innerSize = (size[0]-6, (size[1]-6) * progress )
+        pg.draw.rect(self.win, bar_color, (*innerPos, *innerSize))    
 
     def updateImgMargPx(self):
         self.image_margin_px = ( (self.x_margin) * self.img_panel_size[0] , (self.y_margin) * self.img_panel_size[1] )
-        print('x margin in px: %d' % self.image_margin_px[0])
-        print('y margin in px: %d' % self.image_margin_px[1])
+        #print('x margin in px: %d' % self.image_margin_px[0])
+        #print('y margin in px: %d' % self.image_margin_px[1])
         
     def updateImgRes(self):
         self.updateImgMargPx()
         image_hor_res    = ( self.img_panel_size[0] - (2 + (self.num_images - 1) ) * self.image_margin_px[0] ) / self.num_images 
         image_vert_res   =   self.img_panel_size[1] - ( 2 * self.image_margin_px[1] )
         self.current_img_res = int(image_hor_res) , int(image_vert_res)        
-        print( 'Image Resolution: %d,%d' % (image_hor_res, image_vert_res) )        
+        #print( 'Image Resolution: %d,%d' % (image_hor_res, image_vert_res) )        
     
     def updateImgPos(self):
         self.updateImgRes()
@@ -63,8 +133,8 @@ class WinSubject:
                                  ( (3 * self.image_margin_px[0] + 2 * self.current_img_res[0]), self.image_margin_px[1]),
                                  ( (4 * self.image_margin_px[0] + 3 * self.current_img_res[0]), self.image_margin_px[1])  ]
         
-        for img_pos in range(4):            
-            print( 'Image %d Position : %d,%d' % ( img_pos, self.images_position[img_pos][0], self.images_position[img_pos][1] ) ) 
+        #for img_pos in range(4):            
+        #    print( 'Image %d Position : %d,%d' % ( img_pos, self.images_position[img_pos][0], self.images_position[img_pos][1] ) ) 
 
     # image_names it's a list of 4 strings with the image names. 
     def loadImages(self, image_names):     
@@ -83,8 +153,7 @@ class WinSubject:
         self.rescaleImages()
         # draw the images
         for num_img in range(4):
-            self.win.blit(self.images[num_img], self.images_position[num_img]) 
-        pg.display.flip()    
+            self.win.blit(self.images[num_img], self.images_position[num_img])          
                 
     def show(self):
         pg.init()
@@ -92,6 +161,9 @@ class WinSubject:
         self.win.fill(self.white)  
         pg.display.set_caption(self.win_title)
         self.drawImages()
+        self.SetTimeBarsProgress(0.5, 0.75)
+        self.drawTimeBars()
+        pg.display.flip()
         
     def close(self):
         pg.display.quit()
@@ -144,13 +216,14 @@ class WinSubject:
                             return 'PINKY'
                         
                     if(event.type == pg.VIDEORESIZE):
-                        print('Window resized')
-                        print( 'New resolution: (%d, %d)' % pg.display.get_window_size() )
+                        #print('Window resized')
+                        #print( 'New resolution: (%d, %d)' % pg.display.get_window_size() )
                         self.win_size = pg.display.get_window_size()
-                        self.img_panel_size = ( self.win_size[0], int( 0.5 * self.win_size[1]) )
+                        self.UpdatePanelsSize()
                         self.win.fill(self.white)
                         self.drawImages()
-                        
+                        self.drawTimeBars()
+                        pg.display.flip()
                         
             else:   
                     return const.NO_KEY_PRESSED
