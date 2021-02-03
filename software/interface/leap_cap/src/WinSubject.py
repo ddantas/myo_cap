@@ -17,8 +17,6 @@ DEFAULT_IMG_NAMES = ['1th_flex.png', '1th_flex_curlEC.png', '2in_flexEC.png', '2
 class WinSubject:
     
     def __init__(self):
-        # Number of images on screen
-        self.num_images = 4
         # Colors        
         self.black = (0, 0, 0)
         self.red  = (255, 0, 0)
@@ -26,12 +24,25 @@ class WinSubject:
         self.blue  = (0, 0, 255)
         self.white = (255, 255, 255)
         
+        # Win title
+        self.win_title = 'Subject'
+        self.win = None
+        # Elements resolution        
+        self.win_size = DEFAULT_WIN_SIZE
+        # State Variables
+        self.close = False      
+        
         # Margin in parts of width and high of the screen
         self.x_margin = 0.02
         self.y_margin = 0.03
-        # Elements resolution        
-        self.win_size = DEFAULT_WIN_SIZE
-        self.img_panel_size = ( self.win_size[0], int( 0.5 * self.win_size[1]) )
+        
+        # Images panel
+        ## Images panel screen percentage
+        self.images_pn_screen_perc = 0.5
+        self.img_panel_size = ( self.win_size[0], int( self.images_pn_screen_perc * self.win_size[1]) )
+        self.img_panel_pos  = (0, 0)
+        # Number of images on screen
+        self.num_images = 4
         self.orig_images_res = (310, 370)          
         # Current images resolution. It will be updated in every redraw.            
         self.current_img_res = self.orig_images_res
@@ -42,39 +53,46 @@ class WinSubject:
         self.images = [0, 0, 0, 0]
         # Load the four imagens. A list with 4 image names it's passed.
         self.loadImages(DEFAULT_IMG_NAMES) 
-        # Win title
-        self.win_title = 'Subject'
-        self.win = None
-        # State Variables
-        self.close = False      
-        
+                
         # Time bar painel
-        self.time_bars_pn_scree_perc  = 0.2
-        ## Time panel vertical screen percentage
+        ## Time panel vertical screen percentage        
+        self.time_bars_pn_scree_perc  = 0.09        
         self.time_bars_pn_size = ( self.win_size[0], int( self.time_bars_pn_scree_perc * self.win_size[1]) )
         self.time_bars_pn_pos  = ( 0, self.img_panel_size[1])
         
         # Picture time bar. That bar that stay under the first image. 
         self.time_pic_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.image_margin_px[1])
-        self.time_pic_bar_size     = (self.current_img_res[0], 14)
+        ## 14 px for bars have a good look in a window with vertical resolutions around 600 px
+        self.time_pic_bar_size     = (self.current_img_res[0], (14 * self.win_size[1]) / 600 )
         self.time_pic_bar_border_color = self.black
         self.time_pic_bar_color    = self.blue
         self.time_pic_bar_perc     = 0.2
         
         # Experiment time bar.
-        self.exper_time_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.time_pic_bar_size[1] + self.image_margin_px[1])
-        self.exper_time_bar_size     = (self.win_size[0] - 2 * self.image_margin_px[0], 14)
+        self.exper_time_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.time_pic_bar_size[1] + 2 * self.image_margin_px[1])
+        ## 14 px for bars have a good look in a window with vertical resolutions around 600 px
+        self.exper_time_bar_size     = (self.win_size[0] - 2 * self.image_margin_px[0], (14 * self.win_size[1]) / 600)
         self.exper_time_bar_border_color = self.black
         self.exper_time_bar_color    = self.blue
         self.exper_time_bar_perc     = 0.3
         
+        # Joint angles painel
+        ## Joint panel vertical screen percentage        
+        self.joint_angles_pn_scree_perc  = 0.2        
+        self.joint_angles_pn_size = ( self.current_img_res[0], int( self.joint_angles_pn_scree_perc * self.win_size[1]) )
+        self.joint_angles_pn_pos  = ( self.image_margin_px[0], self.img_panel_size[1] + self.time_bars_pn_size[1] )
         
     def UpdatePanelsSize(self):
         self.UpdateImagesPanel()
         self.UpdateTimeBarsPanel()
+        self.UpdateJointAnglesPanel()
+        
+    def UpdateJointAnglesPanel(self):
+        self.joint_angles_pn_size = ( self.current_img_res[0], int( self.joint_angles_pn_scree_perc * self.win_size[1]) )
+        self.joint_angles_pn_pos  = ( self.image_margin_px[0], self.img_panel_size[1] + self.time_bars_pn_size[1] )
         
     def UpdateImagesPanel(self):
-        self.img_panel_size = ( self.win_size[0], int( 0.5 * self.win_size[1]) )
+        self.img_panel_size = ( self.win_size[0], int( self.images_pn_screen_perc * self.win_size[1]) )
     
     def UpdateTimeBarsPanel(self):
         self.time_bars_pn_size = ( self.win_size[0], int( self.time_bars_pn_scree_perc * self.win_size[1]) )
@@ -83,11 +101,13 @@ class WinSubject:
     def updateTimeBarsPos(self):
         self.updateImgPos()
         # update the picture time bar 
-        self.time_pic_bar_pos      = (self.image_margin_px[0] , self.images_position[0][1] + self.current_img_res[1] + self.image_margin_px[1])
-        self.time_pic_bar_size     = (self.current_img_res[0], 14)
+        self.time_pic_bar_pos      = (self.image_margin_px[0] , self.time_bars_pn_pos[1] + self.image_margin_px[1])
+        ## 14 px for bars have a good look in a window with vertical resolutions around 600 px
+        self.time_pic_bar_size     = (self.current_img_res[0], (14 * self.win_size[1]) / 600 )
         # update the experiment time bar
-        self.exper_time_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.time_pic_bar_size[1] + self.image_margin_px[1])
-        self.exper_time_bar_size     = (self.win_size[0] - 2 * self.image_margin_px[0], 14)
+        self.exper_time_bar_pos      = (self.image_margin_px[0], self.time_bars_pn_pos[1] + self.time_pic_bar_size[1] + 2 * self.image_margin_px[1])
+        ## 14 px for bars have a good look in a window with vertical resolutions around 600 px
+        self.exper_time_bar_size     = (self.win_size[0] - 2 * self.image_margin_px[0], (14 * self.win_size[1]) / 600)
     
     def drawTimeBars(self):
         self.updateTimeBarsPos()
@@ -153,7 +173,14 @@ class WinSubject:
         self.rescaleImages()
         # draw the images
         for num_img in range(4):
-            self.win.blit(self.images[num_img], self.images_position[num_img])          
+            self.win.blit(self.images[num_img], self.images_position[num_img])       
+    
+    # Method used to check the panels position
+    def PrintPanelPerimeters(self):          
+        self.UpdatePanelsSize()
+        pg.draw.rect(self.win, self.green,( *self.img_panel_pos, *self.img_panel_size), 1)
+        pg.draw.rect(self.win, self.red,( *self.time_bars_pn_pos, *self.time_bars_pn_size), 1)
+        pg.draw.rect(self.win, self.green,( *self.joint_angles_pn_pos, *self.joint_angles_pn_size), 1)
                 
     def show(self):
         pg.init()
@@ -163,6 +190,8 @@ class WinSubject:
         self.drawImages()
         self.SetTimeBarsProgress(0.5, 0.75)
         self.drawTimeBars()
+        # Uncoment the next line to show the panel perimeters
+        self.PrintPanelPerimeters()
         pg.display.flip()
         
     def close(self):
@@ -219,10 +248,12 @@ class WinSubject:
                         #print('Window resized')
                         #print( 'New resolution: (%d, %d)' % pg.display.get_window_size() )
                         self.win_size = pg.display.get_window_size()
-                        self.UpdatePanelsSize()
+                        self.UpdatePanelsSize()                        
                         self.win.fill(self.white)
                         self.drawImages()
                         self.drawTimeBars()
+                        # Uncoment the next line to show the panel perimeters
+                        self.PrintPanelPerimeters()
                         pg.display.flip()
                         
             else:   
