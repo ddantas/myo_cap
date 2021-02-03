@@ -15,12 +15,10 @@ class TextFile():
         self.data = []
         self.id = 0
         self.line = []
-        self.line.append('')
 
     def initFile(self, format, name_cols):
-        self.initVariables()
         if len(self.data_header):
-            self.data_header = self.data_header + '/' + name_cols
+            self.data_header = self.data_header + ';' + name_cols
         else:
             self.data_header = '# ' + name_cols
         self.line[self.id] = []        
