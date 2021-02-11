@@ -149,7 +149,7 @@ class Layout:
     def AtachElements(self, num_lines, num_colums, list_of_elements):
         for line in range(num_lines):
             for colum in range(num_colums):
-                self.elements[line][colum] = list_of_elements[ line + colum ]
+                self.elements[line][colum] = list_of_elements[ line * num_colums + colum ]
     
     def SetSizeElements(self, num_lines, num_colums, elements, spacer):
         width  = int( ( self.GetSize()[0] - self.CalcNumVertSpacers(num_lines, num_colums) * spacer.size[0] ) / num_colums )
@@ -190,8 +190,6 @@ class Layout:
         list_draw_param = []
         for line in range(self.num_lines):
             for colum in range(self.num_colums):
-                #print(self.num_lines)
-                #print( '(' + str(line) + str(colum) + ')' )
                 # It is a Image or a Progress Bar.
                 if( (self.elements[line][colum].type_of_elem == IMAGE) or (self.elements[line][colum].type_of_elem == PROGRESS_BAR) ):
                     # Append the draw parameters of the visual element into the lists of visual elements to be draw
@@ -200,8 +198,8 @@ class Layout:
                 elif( (self.elements[line][colum].type_of_elem == PANEL) or (self.elements[line][colum].type_of_elem == PANEL) ):
                     # Join the current list with the lists of the element 
                     list_draw_param = list_draw_param + self.elements[line][colum].GetDrawParam()
-            # Returns a list with all draw parameters of all elements inside the layout concatenated     
-            return list_draw_param
+        # Returns a list with all draw parameters of all elements inside the layout concatenated     
+        return list_draw_param
 
 ### Panel Class #################################################################################################################
 class Panel:
