@@ -84,10 +84,11 @@ class ProgressBar:
     def GetLocalPos(self):        
         return self.outer_local_pos  
         
-    def GetDrawParam(self):
-        return ([ self.type_of_elem, self.outer_size   , self.outer_local_pos,
-                                     self.inner_size   , self.inner_local_pos,
-                                     self.border_color , self.bar_color        ])        
+    def GetDrawParam(self, pos_offset):
+       
+        return ([ self.type_of_elem, self.outer_size   , ( pos_offset[0] + self.outer_local_pos[0], pos_offset[1] + self.outer_local_pos[1]  ),
+                                     self.inner_size   , ( pos_offset[0] + self.inner_local_pos[0], pos_offset[1] + self.inner_local_pos[1]  ),
+                                     self.border_color , self.bar_color  ])        
         
 ## Spacer Class #################################################################################################################        
 class Spacer:
@@ -110,7 +111,7 @@ class Layout:
     
     # Method: Constructor for the class.      
     #
-    # Input : size             -> Tuple(size in horizontal, size in vertical). Size of this Layout.
+    # Input : size             -> Tuple(size in horizontal, size in vertical). Size of this Layout. Size in Pixels.
     #         local_pos        -> Tuple(position in horizontal, position in vertical). Local position of this layout inside
     #                             a Window, Panel or another Layout.    
     #         num_lines        -> Number of lines for the the Layout.      
@@ -140,7 +141,7 @@ class Layout:
         for line in range(self.num_lines):
             self.elements[line] = [None] * self.num_colums
         # Atach the Elements in the grid    
-        self.AtachElements( num_lines, num_colums, list_of_elements)            
+        self.AttachElements( num_lines, num_colums, list_of_elements)            
         # Set the size of the Elements in the grid    
         self.SetSizeElements  ( self.num_lines, self.num_colums, self.elements, self.spacer)
         # Set the local position of the Elements in the grid    
@@ -151,7 +152,7 @@ class Layout:
     #
     # Input : None
     #
-    # Output: Integer. Number of horizontal spacers inside the Layout  
+    # Output: Integer. Number of vertical spacers inside the Layout  
     def CalcNumVertSpacers(self, num_lines, num_colums):        
         # Have zero colums
         if not num_colums:
@@ -239,7 +240,7 @@ class Layout:
     
     # Method: Sets the size of this Layout.
     #
-    # Input : size             -> Tuple(size in horizontal, size in vertical). New values to the layout size. 
+    # Input : size             -> Tuple(size in horizontal, size in vertical). New values to the layout size. Size in Pixels.
     #
     # Output: None
     def SetSize(self, size):       
@@ -269,7 +270,7 @@ class Layout:
     #
     # Input : None
     #
-    # Output: size             -> Tuple(size in horizontal, size in vertical)
+    # Output: size             -> Tuple(size in horizontal, size in vertical). Size in Pixels.
     def GetLocalPos(self):        
         return self.local_pos    
 
@@ -278,51 +279,216 @@ class Layout:
     #         Each position in the returned list it's a list of draw parameters for the element attached in this layout.
     #         Example: list_returned[0] -> It's a list containing the draw parameters for the element attached in the 
     #                  higher and left position of the layout.
-    #         Note: If a element attached to this layout is a [Panel|Layout] than the list returned will be the result of
-    #               the concatenation between the list of elements draw parameters of all other elements inside the this layout
-    #               with the list of elements draw parameters of the element of the type [Panel|Layout] also attached to
-    #               this Layout.       
+    #         Note 1: If a element attached to this layout is a [Panel|Layout] than the list returned will be the result of
+    #                 the concatenation between the list of elements draw parameters of all other elements inside the this layout
+    #                 with the list of elements draw parameters of the element of the type [Panel|Layout] also attached to
+    #                 this Layout.       
+    #         Note 2: The global position of one element it's the result of the sum of the local position of 
+    #                 this element with the position of the element that contais it(pos_offset). 
+    #                 global position = pos_offset + local_pos.
     #         The list returned can be passed to the "Draw" method inside this Lib. 
-    # Input : None
-    #
+    # Input : pos_offset       -> Position Offset in pixels. It's used to calculate the global(in the window) position of the 
+    #                             elements. It accumulates the offsets up to this Layout.
+    #                             Note: The global position of one element it's the result of the sum of the local position of 
+    #                                   this element with the position of the element that contais it(pos_offset). 
+    #                                   global position = pos_offset + local_pos.       
     # Output: list             -> List of elements draw parameters. Example: list_returned[0] -> It's a list containing the     
     #                             draw parameters for the element attached in the higher and left position of the layout.
-    def GetDrawParam(self):
+    def GetDrawParam(self, pos_offset):
+        # Update the position offset with the local position of this Layout.
+        pos_offset      = ( pos_offset[0] + self.local_pos[0], pos_offset[1] + self.local_pos[1]  )
         list_draw_param = []
         for line in range(self.num_lines):
             for colum in range(self.num_colums):
                 # It is a Image or a Progress Bar.
                 if( (self.elements[line][colum].type_of_elem == IMAGE) or (self.elements[line][colum].type_of_elem == PROGRESS_BAR) ):
                     # Append the draw parameters of the visual element into the lists of visual elements to be draw
-                    list_draw_param.append( self.elements[line][colum].GetDrawParam() )
+                    list_draw_param.append( self.elements[line][colum].GetDrawParam(pos_offset) )
                 # It is a Panel or a Layout    
-                elif( (self.elements[line][colum].type_of_elem == PANEL) or (self.elements[line][colum].type_of_elem == PANEL) ):
+                elif( (self.elements[line][colum].type_of_elem == PANEL) or (self.elements[line][colum].type_of_elem == LAYOUT) ):
                     # Join the current list with the lists of the element 
-                    list_draw_param = list_draw_param + self.elements[line][colum].GetDrawParam()
+                    list_draw_param = list_draw_param + self.elements[line][colum].GetDrawParam(pos_offset)
         # Returns a list with all draw parameters of all elements inside the layout concatenated     
         return list_draw_param
 
 ### Panel Class #################################################################################################################
+## That Class represents a panel inside a Window, Panel or even another Panel. 
+## A panel it's a structure that mananges the size and position of elements attached to it.
+## Elements that can be included are of the type: Image, Progress Bar, Panel, and Layout.  
+## A list of elements contain pointers to each element(objects) included in the panel. 
 class Panel:
     
-    def __init__(self, type_of_panel, size, local_pos):
-        self.type_of_elem  = PANEL
-        self.is_main_panel = type_of_panel
-        self.size          = size
-        self.local_pos     = local_pos
-        
-    #def DrawVisElements(self):
-        #if (leaf):
-        #    return "draw parameters from the visual element"
-        #else:
-    #        for element in lement:
-    #            append(element)
-    #        return ()
+    # Method: Constructor for the class.
+    #
+    # Input : type_of_panel    -> Type of the panel. The options are: MAIN_PANEL (panel included in a window) or
+    #                             SUB_PANEL (panel inside a [Panel|Layout]).  
+    #         size             -> Tuple(size in horizontal, size in vertical). Size for the Panel. 
+    #                             Note: If this panel it's a MAIN_PANEL, than size probably will be the same of the window
+    #                                   that contain this Panel.
+    #         local_pos        -> Tuple(position in horizontal, position in vertical). Local position for this 
+    #                             Panel inside a [Panel|Layout].
+    #                             Note: If this panel it's a MAIN_PANEL, than local_pos probably will be (0, 0).
+    #         num_elem         -> Number of elements inside the Panel.
+    #         list_of_elements -> List of elements to be inserted in this Panel.    
+    #         list_sizes       -> List of the Tuples for each element in Panel. Tuple(size in horizontal, size in vertical).
+    #                             Ex: list_sizes[0] have a size tuple for the first element in the list of 
+    #                             elements(list_of_elements[0]). Size in Pixels.
+    #         list_local_pos   -> List of the Tuples for each element in Panel. Tuple(local position in horizontal, 
+    #                             local position in vertical).
+    #                             Ex: list_local_pos[0] have a local position tuple for the first element in the list of 
+    #                             elements(list_of_elements[0]).  
+    #
+    # Output: Object of the type Layout constructed.
+    def __init__(self, type_of_panel, size, local_pos, num_elem, list_of_elements, list_sizes, list_local_pos):
+        self.type_of_elem   = PANEL
+        # Scale of fator it's used to deduce the new sizes e positions for the elements included in panel.
+        self.scale_factor = (1, 1)
+        self.is_main_panel  = type_of_panel
+        self.original_size  = size
+        self.size           = size
+        self.local_pos      = local_pos
+        self.num_elem       = num_elem
+        # List of pointers to the visual elements(objects) conteined in this panel.
+        self.elements       = list_of_elements[:num_elem]            
+        self.list_sizes     = list_sizes
+        # Set the size of the Elements contained in the panel
+        self.SetSizeElements  (self.num_elem, self.elements, self.list_sizes)
+        self.list_local_pos = list_local_pos
+        # Set the local position of the Elements contained in the panel
+        self.SetLocalPosElements(self.num_elem, self.elements, self.list_local_pos)
+               
+    # Method: Sets the width and hight for each element inside the Panel.
+    #         This values are written inside each object contained in the Panel.
+    #         This method accounts for the own panel size.  
+    #         Important: After call this method, the method SetLocalPosElements must be called to update the position
+    #                    of the elements inside this Panel.    
+    # Input : num_elem         -> Number of elements inside the Panel.
+    #         list_of_elements -> List of elements contained in this Panel.    
+    #         list_sizes       -> List of the Tuples for each element in Panel. Tuple(size in horizontal, size in vertical).
+    #                             Ex: list_sizes[0] have a size tuple for the first element in the list of 
+    #                             elements(list_of_elements[0]). Size in Pixels. 
+    #
+    # Output: None
+    def SetSizeElements(self, num_elem, list_of_elements, list_sizes):
+        for elem_order in range(num_elem):
+            list_of_elements[elem_order].SetSize( list_sizes[elem_order] )
+                
+    # Method: Sets the local position(position inside the Panel) for each element contained in the Panel.
+    #         This values are written inside each object contained in the Panel.
+    #         This method accounts for the own panel size.  
+    #
+    # Input : num_elem         -> Number of elements inside the Panel.
+    #         list_of_elements -> List of elements contained in this Panel.    
+    #         list_local_pos   -> List of the Tuples for each element in Panel. Tuple(local position in horizontal, 
+    #                             local position in vertical).
+    #                             Ex: list_local_pos[0] have a local position tuple for the first element in the list of 
+    #                             elements(list_of_elements[0]).  
+    #
+    # Output: None    
+    def SetLocalPosElements(self, num_elem, list_of_elements, list_local_pos):        
+        for elem_order in range(num_elem):
+            list_of_elements[elem_order].SetLocalPos( list_local_pos[elem_order] )
+    
+    # Method: Sets the size of this Panel. This method also calls SetSizeElements to update the size of the elements contained
+    #         in this panel. After call SetSize it's necessary call the function SetLocalPos to update the position of this panel. 
+    #
+    # Input : size             -> Tuple(size in horizontal, size in vertical). Values for the panel size. Size in Pixels.
+    #
+    # Output: None
+    def SetSize(self, size):       
+        self.size = size        
+        # Update the scale factors
+        self.scale_factor = (size[0]/self.original_size[0] , size[1]/self.original_size[1])
+        # Update the elements size        
+        #self.SetSizeElements(self.num_elem, self.list_of_elements, self.list_sizes)
+    
+    # Method: Sets the local position of this panel inside a [Panel|Layout]. After call this method also sets the new list_pos 
+    #         and calls SetLocalPosElements 
+    #         to update the position of the elements contained in this panel.
+    #
+    # Input : local_pos        -> Tuple(position in horizontal, position in vertical). New values for the panel local position. 
+    #
+    # Output: None    
+    def SetLocalPos(self, local_pos):        
+        self.local_pos = local_pos  
+        # Update the elements local position
+        self.SetLocalPosElements(self.num_elem, self.list_of_elements, self.list_local_pos)
+    
+    # Method: Returns the current size of this Panel. 
+    #
+    # Input : None
+    #
+    # Output: size             -> Tuple(size in horizontal, size in vertical)
+    def GetSize(self):       
+        return self.size
+    
+    # Method: Returns the current local position of this Panel inside a [Panel|Layout|Window]. 
+    #
+    # Input : None
+    #
+    # Output: size             -> Tuple(size in horizontal, size in vertical)
+    def GetLocalPos(self):        
+        return self.local_pos    
 
-    def AddVisElement(self, vis_element):
-        self.vis_elements.append(vis_element)
-        self.num_vis_elem = self.num_vis_elem + 1
+    # Method: Returns a list of elements draw parameters.
+    #         The size of the list returned is (num_elem). 
+    #         Each position in the returned list it's a list of draw parameters for the element contained in this panel.
+    #         Example: list_returned[0] -> It's a list containing the draw parameters for the first included element in this panel.
+    #         Note 1: If a element contained in this panel is a [Panel|Layout] than the list returned will be the result of
+    #                 the concatenation between the list of elements draw parameters of all other elements inside the this panel
+    #                 with the list of elements draw parameters of the element of the type [Panel|Layout] also contained in
+    #                 this Layout.       
+    #         Note 2: The global position of one element it's the result of the sum of the local position of 
+    #                 this element with the position of the element that contais it(pos_offset). 
+    #                 global position = pos_offset + local_pos.
+    #         The list returned can be passed to the "Draw" method inside this Lib. 
+    # Input : pos_offset       -> Position Offset in pixels. It's used to calculate the global(in the window) position of the 
+    #                             elements. It accumulates the offsets up to this Panel.
+    #                             Note: The global position of one element it's the result of the sum of the local position of 
+    #                                   this element with the position of the element that contais it(pos_offset). 
+    #                                   global position = pos_offset + local_pos.       
+    # Output: list             -> List of elements draw parameters. Example: list_returned[0] -> It's a list containing the     
+    #                             draw parameters for the first included element in this Panel.
+    def GetDrawParam(self, pos_offset):
+        # Update the position offset with the local position of this Panel.
+        pos_offset      = ( pos_offset[0] + self.local_pos[0], pos_offset[1] + self.local_pos[1]  )
+        list_draw_param = []
+        for elem_order in range(self.num_elem):
+            # It is a Image or a Progress Bar.
+            if( (self.elements[elem_order].type_of_elem == IMAGE) or (self.elements[elem_order].type_of_elem == PROGRESS_BAR) ):
+                # Append the draw parameters of the visual element into the lists of visual elements to be draw
+                list_draw_param.append( self.elements[elem_order].GetDrawParam(pos_offset) )
+            # It is a Panel or a Layout    
+            elif( (self.elements[elem_order].type_of_elem == PANEL) or (self.elements[elem_order].type_of_elem == LAYOUT) ):
+                # Join the current list with the lists of the element 
+                list_draw_param = list_draw_param + self.elements[elem_order].GetDrawParam(pos_offset)
+        # Returns a list with all draw parameters of all elements inside the panel concatenated     
+        return list_draw_param
+   
+    # Method: Calculates new values for the list of sizes for the elements contained in the Panel.
+    #         The new sizes will be based in the change of the original size of the panel.
+    #
+    # Input : new_panel_size      -> New size for the panel 
+    #         new_panel_local_pos -> New local position for this Panel.    
+    #
+    # Output: None        
+    def CalcSizeElements(self, scale_factor):        
+        pass
+        #for elem_order in range(num_elem):
+        #    list_of_elements[elem_order].SetLocalPos( list_local_pos[elem_order] )        
         
+    # Method: Calculates new values for the list of sizes and positions for the elements contained in the Panel.
+    #         The new sizes and positions will be based in the change of the original size and original local position 
+    #         of the panel.
+    #
+    # Input : new_panel_size      -> New size for the panel 
+    #         new_panel_local_pos -> New local position for this Panel.    
+    #
+    # Output: None    
+    def CalcLocalPosElements(self, scale_factor):        
+        pass
+        #for elem_order in range(num_elem):
+        #    list_of_elements[elem_order].SetLocalPos( list_local_pos[elem_order] )    
 
         
 ### Global Methods ##############################################################################################################    
