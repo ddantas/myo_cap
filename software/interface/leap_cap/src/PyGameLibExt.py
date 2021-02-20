@@ -188,7 +188,7 @@ class Layout:
     #         There are (number of lines * number of colums) spaces inside the layout.
     #         Just the (number of lines * number of colums) first elements in the list given are attached.  
     #         Each position have just a pointer to the real object. So no new space it is used.  
-    #         Don't atach the same objet to more than one position. Because of the reason above.       
+    #         Don't attach the same objet to more than one position. Because of the reason above.       
     #
     # Input : num_lines        -> Number of lines inside the Layout.
     #         num_colums       -> Number of colums inside the Layout.        
@@ -316,6 +316,9 @@ class Layout:
 ## A panel it's a structure that mananges the size and position of elements attached to it.
 ## Elements that can be included are of the type: Image, Progress Bar, Panel, and Layout.  
 ## A list of elements contain pointers to each element(objects) included in the panel. 
+## To resize this panel call the method Resize and after the SetLocalPos method to update the local position of this panel inside
+## another element. 
+## This class it's not intended to remove or add elements after the object creation.
 class Panel:
     
     # Method: Constructor for the class.
@@ -340,22 +343,85 @@ class Panel:
     #
     # Output: Object of the type Layout constructed.
     def __init__(self, type_of_panel, size, local_pos, num_elem, list_of_elements, list_sizes, list_local_pos):
-        self.type_of_elem   = PANEL
-        # Scale of fator it's used to deduce the new sizes e positions for the elements included in panel.
-        self.scale_factor = (1, 1)
-        self.is_main_panel  = type_of_panel
-        self.original_size  = size
-        self.size           = size
-        self.local_pos      = local_pos
-        self.num_elem       = num_elem
+        # Type of this element -> PANEL
+        self.type_of_elem       = PANEL
+        # Variable to check if this panel is the Main Panel         
+        self.is_main_panel      = type_of_panel
+        # Original size of this panel
+        self.original_size      = size
+        # Current size of this panel
+        self.size               = size
+        # Local position of this panel
+        self.local_pos          = local_pos
+        # Number of elements of this panel
+        self.num_elem           = num_elem
         # List of pointers to the visual elements(objects) conteined in this panel.
-        self.elements       = list_of_elements[:num_elem]            
-        self.list_sizes     = list_sizes
+        self.elements           = list_of_elements[:num_elem]            
+        # Stores the original list of sizes of the elements
+        self.lst_orig_sizes     = list_sizes
         # Set the size of the Elements contained in the panel
-        self.SetSizeElements  (self.num_elem, self.elements, self.list_sizes)
-        self.list_local_pos = list_local_pos
+        self.SetSizeElements  (self.num_elem, self.elements, self.lst_orig_sizes)
+        # Stores the original list of local positions of the elements
+        self.lst_orig_local_pos = list_local_pos
         # Set the local position of the Elements contained in the panel
-        self.SetLocalPosElements(self.num_elem, self.elements, self.list_local_pos)
+        self.SetLocalPosElements(self.num_elem, self.elements, self.lst_orig_local_pos)
+
+    # Method: Resizes this panel and all elements contained it.
+    #         If this panel has elements that contain other elements than the resizing will propagate until all 
+    #         elements inside this panel were resized. 
+    #         The changes in the panel size will be reflected in the scale factor.
+    #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
+    #         local position of this panel. 
+    #
+    # Input : new_size         -> The new size for the panel.
+    #
+    # Output: None        
+    def Resize(self, new_size):      
+        # Scale of fator it's used to deduce the new sizes e positions for the elements included in panel.
+        # scale_factor = (scale_factor_horizontal, scale_factor_vertical)
+        self.scale_factor = (new_size[0]/self.original_size[0] , new_size[1]/self.original_size[1])
+        # Calculate the new sizes for the elements inside this panel
+        lst_sizes         = self.CalcSizeElements(self.scale_factor)
+        # Calculate the new local positions for the elements inside this panel
+        lst_local_pos     = self.CalcLocalPosElements(self.scale_factor)
+        # Update the panel size
+        self.SetSize(new_size)
+        # Update the elements size        
+        self.SetSizeElements(self.num_elem, self.elements, lst_sizes)
+        # Update the elements local position                
+        self.SetLocalPosElements(self.num_elem, self.elements, lst_local_pos)    
+
+    # Method: Calculates new values for the list of sizes for the elements contained in the Panel.
+    #         The new sizes for the elements will be based in the ration of the current size of the panel by the original 
+    #         size of the panel.
+    #         The changes in the panel size will be reflected in the scale factor.
+    #  
+    # Input : scale_factor     -> Scale factor that will be aplied to the size of the elements contained in this panel.
+    #                              The scale factor it's the ratio of the current panel size by the original panel size. 
+    #
+    # Output: lst_sizes        -> List with new sizes for the elements inside the panel.
+    def CalcSizeElements(self, scale_factor):        
+        lst_sizes = []
+        for elem_order in range(self.num_elem):            
+            lst_sizes.append( ( int( scale_factor[0] * self.lst_orig_sizes[elem_order][0]), 
+                                int( scale_factor[1] * self.lst_orig_sizes[elem_order][1]) ) )       
+        return lst_sizes    
+        
+    # Method: Calculates new values for the list of positions for the elements contained in the Panel.
+    #         The new positions will be based in the ration of the current size of the panel by the original size of the
+    #         panel.
+    #         The changes in the panel size will be reflected in the scale factor.
+    #
+    # Input : scale_factor     -> Scale factor that will be aplied to the position of the elements contained in this panel.
+    #                              The scale factor it's the ratio of the current panel size by the original panel size. 
+    #
+    # Output: lst_local_pos    -> List with new local positions for the elements inside the panel.
+    def CalcLocalPosElements(self, scale_factor):        
+        lst_local_pos = []
+        for elem_order in range(self.num_elem):
+            lst_local_pos.append( ( int( scale_factor[0] * self.lst_orig_local_pos[elem_order][0] ),
+                                    int( scale_factor[1] * self.lst_orig_local_pos[elem_order][1] ) ) )
+        return lst_local_pos
                
     # Method: Sets the width and hight for each element inside the Panel.
     #         This values are written inside each object contained in the Panel.
@@ -375,7 +441,6 @@ class Panel:
                 
     # Method: Sets the local position(position inside the Panel) for each element contained in the Panel.
     #         This values are written inside each object contained in the Panel.
-    #         This method accounts for the own panel size.  
     #
     # Input : num_elem         -> Number of elements inside the Panel.
     #         list_of_elements -> List of elements contained in this Panel.    
@@ -397,22 +462,14 @@ class Panel:
     # Output: None
     def SetSize(self, size):       
         self.size = size        
-        # Update the scale factors
-        self.scale_factor = (size[0]/self.original_size[0] , size[1]/self.original_size[1])
-        # Update the elements size        
-        #self.SetSizeElements(self.num_elem, self.list_of_elements, self.list_sizes)
     
-    # Method: Sets the local position of this panel inside a [Panel|Layout]. After call this method also sets the new list_pos 
-    #         and calls SetLocalPosElements 
-    #         to update the position of the elements contained in this panel.
+    # Method: Sets the local position of this panel inside a [Panel|Layout].
     #
     # Input : local_pos        -> Tuple(position in horizontal, position in vertical). New values for the panel local position. 
     #
     # Output: None    
     def SetLocalPos(self, local_pos):        
         self.local_pos = local_pos  
-        # Update the elements local position
-        self.SetLocalPosElements(self.num_elem, self.list_of_elements, self.list_local_pos)
     
     # Method: Returns the current size of this Panel. 
     #
@@ -463,32 +520,7 @@ class Panel:
                 # Join the current list with the lists of the element 
                 list_draw_param = list_draw_param + self.elements[elem_order].GetDrawParam(pos_offset)
         # Returns a list with all draw parameters of all elements inside the panel concatenated     
-        return list_draw_param
-   
-    # Method: Calculates new values for the list of sizes for the elements contained in the Panel.
-    #         The new sizes will be based in the change of the original size of the panel.
-    #
-    # Input : new_panel_size      -> New size for the panel 
-    #         new_panel_local_pos -> New local position for this Panel.    
-    #
-    # Output: None        
-    def CalcSizeElements(self, scale_factor):        
-        pass
-        #for elem_order in range(num_elem):
-        #    list_of_elements[elem_order].SetLocalPos( list_local_pos[elem_order] )        
-        
-    # Method: Calculates new values for the list of sizes and positions for the elements contained in the Panel.
-    #         The new sizes and positions will be based in the change of the original size and original local position 
-    #         of the panel.
-    #
-    # Input : new_panel_size      -> New size for the panel 
-    #         new_panel_local_pos -> New local position for this Panel.    
-    #
-    # Output: None    
-    def CalcLocalPosElements(self, scale_factor):        
-        pass
-        #for elem_order in range(num_elem):
-        #    list_of_elements[elem_order].SetLocalPos( list_local_pos[elem_order] )    
+        return list_draw_param    
 
         
 ### Global Methods ##############################################################################################################    
@@ -497,8 +529,6 @@ def Draw(win, elem_draw_param):
     for num_elem in range(num_elem):        
         # Visual element it's a Progress Bar
         if( elem_draw_param[num_elem][0] == PROGRESS_BAR ):
-            #print(num_elem)
-            #print(elem_draw_param[num_elem])
             pg.draw.rect(win, elem_draw_param[num_elem][5], (*elem_draw_param[num_elem][2], *elem_draw_param[num_elem][1]), 1)
             pg.draw.rect(win, elem_draw_param[num_elem][6], (*elem_draw_param[num_elem][4], *elem_draw_param[num_elem][3])   )    
             
