@@ -42,21 +42,53 @@ class Image:
 ## It's progress can be setted calling the SetProgress method. And it's size can be choosed during the construction.
 class ProgressBar:
     
-    def __init__(self, orientation, size, local_pos, progress_perc, border_color, bar_color):        
+    # Method: Constructor for the class.
+    #
+    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation for the progress bar.
+    #         outter_size      -> Tuple(outter size in horizontal, outter size in vertical). Size for the progress bar in pixels. 
+    #         outter_local_pos -> Tuple(outter local position in horizontal, outter local position in vertical). Outter local position for this 
+    #                             progress bar inside a [Panel|Layout].                             
+    #         progress_perc    -> Float value [0.0 - 1.0]. The initial percentage of progress for the bar.  
+    #                             Can be changed after by calling the SetProgress method. 
+    #         border_color     -> Color used in the borders of the progress bar.
+    #         bar_color        -> Color used in the internal bar that indicates progress or level.
+    #
+    # Output: Object of the type ProgressBar constructed.
+    def __init__(self, orientation, outter_size, outter_local_pos, progress_perc, border_color, bar_color):        
         self.type_of_elem     = PROGRESS_BAR
         # Orientation of the progress bar
         self.orientation      = orientation
-        self.outter_size      = size
-        self.outter_local_pos = local_pos        
+        self.outter_size      = outter_size
+        self.outter_local_pos = outter_local_pos        
         self.progress_perc    = progress_perc
         self.border_color     = border_color
         self.bar_color        = bar_color
         self.inner_size       = self.CalcInnerSize(self.orientation, self.outter_size, self.progress_perc)
-        self.inner_local_pos  = self.CalcInnerPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)        
-        
+        self.inner_local_pos  = self.CalcInnerLocalPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)        
+    
+    # Method: Resizes this progress bar.
+    #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
+    #         local position of this progress bar. 
+    #         In that case it's just a method that standardize a resize method since other elements need a more complex action
+    #         in a resize situation than just call SetSize.  
+    #
+    # Input : new_size         -> The new size for the progress bar.
+    #
+    # Output: None    
     def Resize(self, new_outter_size):
         self.SetSize(new_outter_size)
 
+    # Method: Calculate the inner size of the progress bar. The inner size it's the size of the bar that indicates progress 
+    #         or level of a variable.
+    #         That size it's dependent of the progress or level. 
+    #         If the progress pecentage it's 1.0 (full bar), than this size will be the outter size of the progress bar minus
+    #         six pixels in the vertical and in the horizontal.
+    #
+    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
+    #         outter_size      -> Tuple(outter size in horizontal, outter size in vertical). Size of the progress bar in pixels.  
+    #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
+    #
+    # Output: inner_size      -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
     def CalcInnerSize(self, orientation, outter_size, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):
@@ -64,17 +96,30 @@ class ProgressBar:
             return inner_size
         # Orientação horizontal
         else:            
-            inner_size = ((outter_size[0] - 6) * progress_perc, outter_size[1] - 6)
+            inner_size = ( int( (outter_size[0] - 6) * progress_perc ), int( outter_size[1] - 6 ) )
             return inner_size
         
-    def CalcInnerPos(self, orientation, outter_size, outter_local_pos, progress_perc):
+    # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
+    #         or level of a variable.
+    #         That local position it's dependent of the progress or level.     
+    #         For different orientations the calculus it's different.
+    #
+    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
+    #         outter_size      -> Tuple(outter size in horizontal, outter size in vertical). Size of the progress bar in pixels.  
+    #         outter_local_pos -> Tuple(outter local position in horizontal, outter loca position in vertical). Outter local position for this 
+    #                             progress bar inside a [Panel|Layout].                             
+    #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
+    #
+    # Output: inner_local_pos  -> Tuple(inner local position in horizontal, inner local position in vertical). Inner local position for bar 
+    #                             inside the progress bar. Tuple of values in pixels.     
+    def CalcInnerLocalPos(self, orientation, outter_size, outter_local_pos, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):            
-            inner_local_pos = (outter_local_pos[0] + 3, outter_local_pos[1] + 3 + ( (outter_size[1] - 6) - (outter_size[1] - 6) * progress_perc) )
+            inner_local_pos = ( int( outter_local_pos[0] + 3 ), int( outter_local_pos[1] + 3 + ( (outter_size[1] - 6) - (outter_size[1] - 6) * progress_perc) ) )
             return inner_local_pos
         # Orientação horizontal
         else:            
-            inner_local_pos = (outter_local_pos[0] + 3, outter_local_pos[1] + 3)      
+            inner_local_pos = ( int( outter_local_pos[0] + 3 ), int( outter_local_pos[1] + 3 ) )      
             return inner_local_pos
                  
     def SetProgress(self, progress_perc):
@@ -90,7 +135,7 @@ class ProgressBar:
         # Sets the new outter local position for the progress bar 
         self.outter_local_pos = outter_local_pos
         # Calculates and sets the new inner local position for the progress bar 
-        self.inner_local_pos = self.CalcInnerPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)
+        self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)
         
     def GetSize(self):       
         return self.outter_size
@@ -168,12 +213,12 @@ class Layout:
         # Set the local position of the Elements in the grid    
         self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, self.spacer)
         
-    # Method: Calculate the number of vertical spacers inside the Layout
+    # Method: Calculate the number of vertical spacers inside the Layout.
     #         Note: A vertical spacer have vertical orientation and so spaces horizontally elements.
     #
     # Input : None
     #
-    # Output: Integer. Number of vertical spacers inside the Layout  
+    # Output: Integer. Number of vertical spacers inside the Layout.  
     def CalcNumVertSpacers(self, num_lines, num_colums):        
         # Have zero colums
         if not num_colums:
@@ -186,7 +231,7 @@ class Layout:
             
         return num_vert_spacers            
     
-    # Method: Calculate the number of horizontal spacers inside the Layout
+    # Method: Calculate the number of horizontal spacers inside the Layout.
     #         Note: A horizontal spacer have horizontal orientation and so spaces vertically elements.
     #
     # Input : None
@@ -340,7 +385,6 @@ class Layout:
 ## To resize this panel call the method Resize and after the SetLocalPos method to update the local position of this panel inside
 ## another element.
 ## The positioning of the elements inside this panel after the creation of the panel it's handled by the own panel. 
-## The only action required after a window resize it's to call the the Resize method with the new size in pixels for the panel.   
 ## This class it's not intended to remove or add elements after the object creation.
 class Panel:
     
