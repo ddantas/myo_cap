@@ -15,8 +15,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Constants for orientation
-ORIENT_VERTICAL   = 0
-ORIENT_HORIZONTAL = 1
+VERTICAL   = 0
+HORIZONTAL = 1
 
 # Type of elements
 IMAGE             = 0
@@ -25,10 +25,8 @@ SPACER            = 2
 LAYOUT            = 3
 PANEL             = 4
 
-## All "Visual Elements" have the methods: SetSize(size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
+## All elements but Spacers have the methods: Risize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
 
-## After, add parameter "visible" in the classes.
-## Use concat 
 
 ## Image Class ##################################################################################################################
 class Image:
@@ -39,64 +37,87 @@ class Image:
         self.local_pos     = local_pos        
 
 ## Progress Bar Class ###########################################################################################################
+## A Progress Bar it's a visual element used to express progress or level of variables.
+## It can have horizontal or vertical orientation. Also have a color used in it's border and other used in the bar. 
+## It's progress can be setted calling the SetProgress method. And it's size can be choosed during the construction.
 class ProgressBar:
     
-    def __init__(self, orient, dimension, local_pos, progress_perc, border_color, bar_color):        
-        self.type_of_elem    = PROGRESS_BAR
-        # Orientation of the bar
-        self.orient          = orient
-        self.outer_size = dimension
-        self.outer_local_pos = local_pos        
-        self.progress_perc   = progress_perc
-        self.border_color    = border_color
-        self.bar_color       = bar_color        
-        self.UpdateInnerSize()
-        self.UpdateInnerPos()
-
-    def UpdateInnerSize(self):
-        if(self.orient == ORIENT_VERTICAL):
-            self.inner_size = (self.outer_size[0]-6, (self.outer_size[1]-6) * self.progress_perc )
-        # ORIENTAÇÃO HORIZONTAL    
-        else:            
-            self.inner_size = ((self.outer_size[0] - 6) * self.progress_perc, self.outer_size[1] - 6)
+    def __init__(self, orientation, size, local_pos, progress_perc, border_color, bar_color):        
+        self.type_of_elem     = PROGRESS_BAR
+        # Orientation of the progress bar
+        self.orientation      = orientation
+        self.outter_size      = size
+        self.outter_local_pos = local_pos        
+        self.progress_perc    = progress_perc
+        self.border_color     = border_color
+        self.bar_color        = bar_color
+        self.inner_size       = self.CalcInnerSize(self.orientation, self.outter_size, self.progress_perc)
+        self.inner_local_pos  = self.CalcInnerPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)        
         
-    def UpdateInnerPos(self):
-        if(self.orient == ORIENT_VERTICAL):            
-            self.inner_local_pos = (self.outer_local_pos[0] + 3, self.outer_local_pos[1] + 3 + ( (self.outer_size[1] - 6) - (self.outer_size[1] - 6) * self.progress_perc) )
-        # ORIENTAÇÃO HORIZONTAL
+    def Resize(self, new_outter_size):
+        self.SetSize(new_outter_size)
+
+    def CalcInnerSize(self, orientation, outter_size, progress_perc):
+        # Orientação vertical
+        if(orientation == VERTICAL):
+            inner_size = (outter_size[0]-6, (outter_size[1]-6) * progress_perc )
+            return inner_size
+        # Orientação horizontal
         else:            
-            self.inner_local_pos = (self.outer_local_pos[0] + 3, self.outer_local_pos[1] + 3)      
+            inner_size = ((outter_size[0] - 6) * progress_perc, outter_size[1] - 6)
+            return inner_size
+        
+    def CalcInnerPos(self, orientation, outter_size, outter_local_pos, progress_perc):
+        # Orientação vertical
+        if(orientation == VERTICAL):            
+            inner_local_pos = (outter_local_pos[0] + 3, outter_local_pos[1] + 3 + ( (outter_size[1] - 6) - (outter_size[1] - 6) * progress_perc) )
+            return inner_local_pos
+        # Orientação horizontal
+        else:            
+            inner_local_pos = (outter_local_pos[0] + 3, outter_local_pos[1] + 3)      
+            return inner_local_pos
                  
     def SetProgress(self, progress_perc):
         self.progress_perc = progress_perc   
                 
-    def SetSize(self, size):       
-        self.outer_size = size
-        self.UpdateInnerSize()
+    def SetSize(self, outter_size):     
+        # Sets the new outter size for the progress bar 
+        self.outter_size      = outter_size
+        # Calculates and sets the new inner size for the progress bar 
+        self.inner_size      = self.CalcInnerSize(self.orientation, self.outter_size, self.progress_perc)
         
-    def SetLocalPos(self, local_pos):        
-        self.outer_local_pos = local_pos  
-        self.UpdateInnerPos()
+    def SetLocalPos(self, outter_local_pos):        
+        # Sets the new outter local position for the progress bar 
+        self.outter_local_pos = outter_local_pos
+        # Calculates and sets the new inner local position for the progress bar 
+        self.inner_local_pos = self.CalcInnerPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)
         
     def GetSize(self):       
-        return self.outer_size
+        return self.outter_size
         
     def GetLocalPos(self):        
-        return self.outer_local_pos  
+        return self.outter_local_pos  
         
     def GetDrawParam(self, pos_offset):
        
-        return ([ self.type_of_elem, self.outer_size   , ( pos_offset[0] + self.outer_local_pos[0], pos_offset[1] + self.outer_local_pos[1]  ),
-                                     self.inner_size   , ( pos_offset[0] + self.inner_local_pos[0], pos_offset[1] + self.inner_local_pos[1]  ),
+        return ([ self.type_of_elem, self.outter_size  , ( pos_offset[0] + self.outter_local_pos[0], pos_offset[1] + self.outter_local_pos[1]  ),
+                                     self.inner_size   , ( pos_offset[0] + self.inner_local_pos[0] , pos_offset[1] + self.inner_local_pos[1]   ),
                                      self.border_color , self.bar_color  ])        
         
 ## Spacer Class #################################################################################################################        
+## That class it's used to inform vertical and horizontal spancing between visual elements.
+## It's not used as a visual element. So it won't be included in panels or layouts. Just will be used as a reference. 
 class Spacer:
     
-    def __init__(self, size, local_pos):
+    # Method: Constructor for the class.      
+    #
+    # Input : size             -> Tuple(width of vertical spacers, height of horizontal spacers). Size in Pixels.
+    #                             Note: A vertical spacer have vertical orientation and so spaces horizontally elements.
+    #                                   A horizontal spacer have horizontal orientation and so spaces vertically elements.
+    # Output: Object of the type Spacer constructed.
+    def __init__(self, size):
         self.type_of_elem  = SPACER
-        self.size          = ( int(size[0])     , int(size[1])      )
-        self.local_pos     = ( int(local_pos[0]), int(local_pos[1]) )        
+        self.size          = ( int(size[0]) ,int(size[1]) )        
 
 ## Layout Class #################################################################################################################
 ## That Class represents a layout inside a Window, Panel or even another Layout. 
@@ -317,7 +338,9 @@ class Layout:
 ## Elements that can be included are of the type: Image, Progress Bar, Panel, and Layout.  
 ## A list of elements contain pointers to each element(objects) included in the panel. 
 ## To resize this panel call the method Resize and after the SetLocalPos method to update the local position of this panel inside
-## another element. 
+## another element.
+## The positioning of the elements inside this panel after the creation of the panel it's handled by the own panel. 
+## The only action required after a window resize it's to call the the Resize method with the new size in pixels for the panel.   
 ## This class it's not intended to remove or add elements after the object creation.
 class Panel:
     
