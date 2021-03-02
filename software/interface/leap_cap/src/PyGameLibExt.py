@@ -45,8 +45,8 @@ class ProgressBar:
     # Method: Constructor for the class.
     #
     # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation for the progress bar.
-    #         outter_size      -> Tuple(outter size in horizontal, outter size in vertical). Size for the progress bar in pixels. 
-    #         outter_local_pos -> Tuple(outter local position in horizontal, outter local position in vertical). Outter local position for this 
+    #         outer_size      -> Tuple(outer size in horizontal, outer size in vertical). Size for the progress bar in pixels. 
+    #         outer_local_pos -> Tuple(outer local position in horizontal, outer local position in vertical). outer local position for this 
     #                             progress bar inside a [Panel|Layout].                             
     #         progress_perc    -> Float value [0.0 - 1.0]. The initial percentage of progress for the bar.  
     #                             Can be changed after by calling the SetProgress method. 
@@ -54,17 +54,17 @@ class ProgressBar:
     #         bar_color        -> Color used in the internal bar that indicates progress or level.
     #
     # Output: Object of the type ProgressBar constructed.
-    def __init__(self, orientation, outter_size, outter_local_pos, progress_perc, border_color, bar_color):        
+    def __init__(self, orientation, outer_size, outer_local_pos, progress_perc, border_color, bar_color):        
         self.type_of_elem     = PROGRESS_BAR
         # Orientation of the progress bar
         self.orientation      = orientation
-        self.outter_size      = outter_size
-        self.outter_local_pos = outter_local_pos        
+        self.outer_size      = outer_size
+        self.outer_local_pos = outer_local_pos        
         self.progress_perc    = progress_perc
         self.border_color     = border_color
         self.bar_color        = bar_color
-        self.inner_size       = self.CalcInnerSize(self.orientation, self.outter_size, self.progress_perc)
-        self.inner_local_pos  = self.CalcInnerLocalPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)        
+        self.inner_size       = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
+        self.inner_local_pos  = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
     
     # Method: Resizes this progress bar.
     #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
@@ -75,28 +75,28 @@ class ProgressBar:
     # Input : new_size         -> The new size for the progress bar.
     #
     # Output: None    
-    def Resize(self, new_outter_size):
-        self.SetSize(new_outter_size)
+    def Resize(self, new_outer_size):
+        self.SetSize(new_outer_size)
 
     # Method: Calculate the inner size of the progress bar. The inner size it's the size of the bar that indicates progress 
     #         or level of a variable.
     #         That size it's dependent of the progress or level. 
-    #         If the progress pecentage it's 1.0 (full bar), than this size will be the outter size of the progress bar minus
+    #         If the progress pecentage it's 1.0 (full bar), than this size will be the outer size of the progress bar minus
     #         six pixels in the vertical and in the horizontal.
     #
     # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
-    #         outter_size      -> Tuple(outter size in horizontal, outter size in vertical). Size of the progress bar in pixels.  
+    #         outer_size      -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
     #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
     #
     # Output: inner_size      -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
-    def CalcInnerSize(self, orientation, outter_size, progress_perc):
+    def CalcInnerSize(self, orientation, outer_size, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):
-            inner_size = (outter_size[0]-6, (outter_size[1]-6) * progress_perc )
+            inner_size = (outer_size[0]-6, (outer_size[1]-6) * progress_perc )
             return inner_size
         # Orientação horizontal
         else:            
-            inner_size = ( int( (outter_size[0] - 6) * progress_perc ), int( outter_size[1] - 6 ) )
+            inner_size = ( int( (outer_size[0] - 6) * progress_perc ), int( outer_size[1] - 6 ) )
             return inner_size
         
     # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
@@ -105,47 +105,47 @@ class ProgressBar:
     #         For different orientations the calculus it's different.
     #
     # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
-    #         outter_size      -> Tuple(outter size in horizontal, outter size in vertical). Size of the progress bar in pixels.  
-    #         outter_local_pos -> Tuple(outter local position in horizontal, outter loca position in vertical). Outter local position for this 
+    #         outer_size      -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
+    #         outer_local_pos -> Tuple(outer local position in horizontal, outer loca position in vertical). outer local position for this 
     #                             progress bar inside a [Panel|Layout].                             
     #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
     #
     # Output: inner_local_pos  -> Tuple(inner local position in horizontal, inner local position in vertical). Inner local position for bar 
     #                             inside the progress bar. Tuple of values in pixels.     
-    def CalcInnerLocalPos(self, orientation, outter_size, outter_local_pos, progress_perc):
+    def CalcInnerLocalPos(self, orientation, outer_size, outer_local_pos, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):            
-            inner_local_pos = ( int( outter_local_pos[0] + 3 ), int( outter_local_pos[1] + 3 + ( (outter_size[1] - 6) - (outter_size[1] - 6) * progress_perc) ) )
+            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 + ( (outer_size[1] - 6) - (outer_size[1] - 6) * progress_perc) ) )
             return inner_local_pos
         # Orientação horizontal
         else:            
-            inner_local_pos = ( int( outter_local_pos[0] + 3 ), int( outter_local_pos[1] + 3 ) )      
+            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 ) )      
             return inner_local_pos
                  
     def SetProgress(self, progress_perc):
         self.progress_perc = progress_perc   
                 
-    def SetSize(self, outter_size):     
-        # Sets the new outter size for the progress bar 
-        self.outter_size      = outter_size
+    def SetSize(self, outer_size):     
+        # Sets the new outer size for the progress bar 
+        self.outer_size      = outer_size
         # Calculates and sets the new inner size for the progress bar 
-        self.inner_size      = self.CalcInnerSize(self.orientation, self.outter_size, self.progress_perc)
+        self.inner_size      = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
         
-    def SetLocalPos(self, outter_local_pos):        
-        # Sets the new outter local position for the progress bar 
-        self.outter_local_pos = outter_local_pos
+    def SetLocalPos(self, outer_local_pos):        
+        # Sets the new outer local position for the progress bar 
+        self.outer_local_pos = outer_local_pos
         # Calculates and sets the new inner local position for the progress bar 
-        self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outter_size, self.outter_local_pos, self.progress_perc)
+        self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)
         
     def GetSize(self):       
-        return self.outter_size
+        return self.outer_size
         
     def GetLocalPos(self):        
-        return self.outter_local_pos  
+        return self.outer_local_pos  
         
     def GetDrawParam(self, pos_offset):
        
-        return ([ self.type_of_elem, self.outter_size  , ( pos_offset[0] + self.outter_local_pos[0], pos_offset[1] + self.outter_local_pos[1]  ),
+        return ([ self.type_of_elem, self.outer_size  , ( pos_offset[0] + self.outer_local_pos[0], pos_offset[1] + self.outer_local_pos[1]  ),
                                      self.inner_size   , ( pos_offset[0] + self.inner_local_pos[0] , pos_offset[1] + self.inner_local_pos[1]   ),
                                      self.border_color , self.bar_color  ])        
         
