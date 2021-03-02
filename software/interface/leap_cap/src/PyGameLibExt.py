@@ -208,11 +208,37 @@ class Layout:
             self.elements[line] = [None] * self.num_colums
         # Atach the Elements in the grid    
         self.AttachElements( num_lines, num_colums, list_of_elements)            
+        # Calculates the size of the Elements in the grid    
+        elements_size = self.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer)
         # Set the size of the Elements in the grid    
-        self.SetSizeElements  ( self.num_lines, self.num_colums, self.elements, self.spacer)
+        self.SetSizeElements  (self.num_lines, self.num_colums, self.elements, elements_size)
+        # Cauculates the local positions of the Elements in the grid
+        lst_elements_local_pos = self.CalcLocalPosElements(elements_size, self.num_lines, self.num_colums, self.elements, self.spacer)     
         # Set the local position of the Elements in the grid    
-        self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, self.spacer)
-        
+        self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, lst_elements_local_pos)
+    
+    # Method: Resizes this Layout and all elements contained it.
+    #         If this layout has elements that contain other elements than the resizing will propagate until all 
+    #         elements inside this layout were resized. 
+    #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
+    #         local position of this layout.
+    #         This method will be tipically called when the window containing this layout is resized. 
+    #
+    # Input : new_size         -> The new size for the Layout.
+    #
+    # Output: None        
+    def Resize(self, new_size):              
+        # Update the Layout size
+        self.size          = new_size
+        # Calculate the new sizes for the elements inside this Layout
+        elements_size      = self.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer)
+        # Update the elements size        
+        self.SetSizeElements(self.num_lines, self.num_colums, self.elements, elements_size)
+        # Calculate the new local positions for the elements inside this Layout
+        elements_local_pos = self.CalcLocalPosElements(elements_size, self.num_lines, self.num_colums, self.elements, self.spacer)                        
+        # Update the elements local position                
+        self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, elements_local_pos)
+    
     # Method: Calculate the number of vertical spacers inside the Layout.
     #         Note: A vertical spacer have vertical orientation and so spaces horizontally elements.
     #
@@ -248,6 +274,33 @@ class Layout:
             num_hor_spacers = 1 + num_lines
             
         return num_hor_spacers
+    
+    def CalSizeElements(self, layout_size, num_lines, num_colums, spacer):
+        width  = int( ( layout_size[0] - self.CalcNumVertSpacers(num_lines, num_colums) * spacer.size[0] ) / num_colums )
+        height = int( ( layout_size[1] - self.CalcNumHorSpacers (num_lines, num_colums) * spacer.size[1] ) / num_lines  )
+        return (( width, height))
+    
+    def CalcLocalPosElements(self, elements_size, num_lines, num_colums, elements, spacer):                
+        list_local_pos = []
+        local_pos = [None] * 2        
+        for line in range(num_lines):
+            for colum in range(num_colums):                   
+                # Calculates the horizontal local position of the elements inside the Layout.
+                # The horizontal local position it's the sum of two horizontal spaces occupied. 
+                # The space of the vertical spacers at left of the current element. 
+                # And the space occupied by the elements at left of the current element.
+                # Reminder: If the are only one element in the horizontal, there will be one vertical spacer at left and other 
+                # at right of this element.
+                local_pos[0] = (colum + 1) * spacer.size[0] + colum * elements_size[0]
+                # Calculates the vertical local position of the elements inside the Layout.
+                # The vertical local position it's the sum of two vertical spaces occupied. 
+                # The space of the vertical spacers above the current element. 
+                # And the space occupied by the elements above the current element.
+                # Reminder: If the are only one element in the vertical, there will be one horizontal spacer above and other below 
+                # this element.
+                local_pos[1] = (line  + 1) * spacer.size[1] + line  * elements_size[1]
+                list_local_pos.append( ( local_pos[0] , local_pos[1]) )
+        return list_local_pos
         
     # Method: Attach elements in the spaces inside the layout.    
     #         Images, Progress bars, Panels or even Layouts can be attached in positions inside a Layout.
@@ -278,13 +331,11 @@ class Layout:
     #                             but your dimensions will serve to the elements size and position calculation.           
     #
     # Output: None
-    def SetSizeElements(self, num_lines, num_colums, elements, spacer):
-        width  = int( ( self.GetSize()[0] - self.CalcNumVertSpacers(num_lines, num_colums) * spacer.size[0] ) / num_colums )
-        height = int( ( self.GetSize()[1] - self.CalcNumHorSpacers (num_lines, num_colums) * spacer.size[1] ) / num_lines  )        
+    def SetSizeElements(self, num_lines, num_colums, elements, elements_size):      
         for line in range(num_lines):
             for colum in range(num_colums):                                
-                elements[line][colum].SetSize( (width, height) )
-                
+                elements[line][colum].Resize(elements_size)                    
+    
     # Method: Sets the local position(position inside the layout) for each element inside the Layout.
     #         This values are written inside each object attached to the Layout.
     #         This method accounts for the own Layout size.  
@@ -296,13 +347,10 @@ class Layout:
     #                             but your dimensions will serve to the elements position calculation.           
     #
     # Output: None    
-    def SetLocalPosElements(self, num_lines, num_colums, elements, spacer):
-        local_pos = [None] * 2
+    def SetLocalPosElements(self, num_lines, num_colums, elements, list_local_pos):        
         for line in range(num_lines):
             for colum in range(num_colums):                                
-                local_pos[0] = (colum + 1) * spacer.size[0] + colum * self.elements[line][colum].GetSize()[0]
-                local_pos[1] = (line  + 1) * spacer.size[1] + line  * self.elements[line][colum].GetSize()[1]
-                elements[line][colum].SetLocalPos( (local_pos[0], local_pos[1]) )
+                elements[line][colum].SetLocalPos( list_local_pos[ (line * num_colums) + colum ] )
     
     # Method: Sets the size of this Layout.
     #
@@ -310,9 +358,7 @@ class Layout:
     #
     # Output: None
     def SetSize(self, size):       
-        self.size = size        
-        # Update the elements size
-        self.SetSizeElements(self.num_lines, self.num_colums, self.elements, self.spacer)
+        self.size = size   
     
     # Method: Sets the local position of this Layout inside a [Panel|Layout].
     #
@@ -321,8 +367,6 @@ class Layout:
     # Output: None    
     def SetLocalPos(self, local_pos):        
         self.local_pos = local_pos  
-        # Update the elements local position
-        self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, self.spacer)
     
     # Method: Returns the current size of this Layout. 
     #
@@ -439,6 +483,7 @@ class Panel:
     #         The changes in the panel size will be reflected in the scale factor.
     #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
     #         local position of this panel. 
+    #         This method will be tipically called when the window containing this layout is resized.
     #
     # Input : new_size         -> The new size for the panel.
     #
@@ -504,7 +549,7 @@ class Panel:
     # Output: None
     def SetSizeElements(self, num_elem, list_of_elements, list_sizes):
         for elem_order in range(num_elem):
-            list_of_elements[elem_order].SetSize( list_sizes[elem_order] )
+            list_of_elements[elem_order].Resize( list_sizes[elem_order] )
                 
     # Method: Sets the local position(position inside the Panel) for each element contained in the Panel.
     #         This values are written inside each object contained in the Panel.
