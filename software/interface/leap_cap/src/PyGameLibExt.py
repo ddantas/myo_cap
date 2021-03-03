@@ -122,27 +122,27 @@ class Image:
             if(orientation == VERTICAL):
                 # Uses the higher height possible for the image
                 new_image_size[VERTICAL]   = frame_size[VERTICAL]
-                # Calculates the vertical size for image based in the aspect ratio
+                # Calculates the horizontal size for image based in the aspect ratio
                 new_image_size[HORIZONTAL] = int( new_image_size[VERTICAL] * aspect_ratio ) 
                 # If the calculated horizontal size for image don't fit into the frame, the vertical size for image will be the result of
                 # the wider width possible for the image divided by the original aspect ratio of the image.
                 if( new_image_size[HORIZONTAL] > frame_size[HORIZONTAL] ):
                     # Uses the wider width possible for the image.
                     new_image_size[HORIZONTAL]   = frame_size[HORIZONTAL]
-                    # Calculates the horizontal size for image based in the aspect ratio
-                    new_image_size[VERTICAL]     = int( new_image_size[HORIZONTAL] * aspect_ratio )     
-            # Orientação Vertical
+                    # Calculates the Vertical size for image based in the aspect ratio
+                    new_image_size[VERTICAL]     = int( new_image_size[HORIZONTAL] / aspect_ratio )     
+            # Orientação Horizontal
             else:            
                 # Uses the wider width possible for the image.
                 new_image_size[HORIZONTAL]   = frame_size[HORIZONTAL]
-                # Calculates the horizontal size for image based in the aspect ratio
-                new_image_size[VERTICAL]     = int( new_image_size[HORIZONTAL] * aspect_ratio )     
+                # Calculates the vertical size for image based in the aspect ratio
+                new_image_size[VERTICAL]     = int( new_image_size[HORIZONTAL] / aspect_ratio )     
                 # If the calculated vertical size for image don't fit into the frame, the horizontal size for image will be the result of
                 # the higher height possible for the image multiplied by the original aspect ratio of the image.
                 if( new_image_size[VERTICAL] > frame_size[VERTICAL] ):
                     # Uses the higher height possible for the image
                     new_image_size[VERTICAL]   = frame_size[VERTICAL]
-                    # Calculates the vertical size for image based in the aspect ratio
+                    # Calculates the horizontal size for image based in the aspect ratio
                     new_image_size[HORIZONTAL] = int( new_image_size[VERTICAL] * aspect_ratio )                         
             return (new_image_size[HORIZONTAL], new_image_size[VERTICAL] )
         
