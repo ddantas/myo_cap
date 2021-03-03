@@ -18,6 +18,9 @@ BLACK = (0, 0, 0)
 VERTICAL   = 0
 HORIZONTAL = 1
 
+# Constants for position
+ORIGIN     = (0, 0)
+
 # Type of elements
 IMAGE             = 0
 PROGRESS_BAR      = 1
@@ -28,13 +31,164 @@ PANEL             = 4
 ## All elements but Spacers have the methods: Risize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
 
 
+
+
 ## Image Class ##################################################################################################################
-class Image:
+class Image: 
     
-    def __init__(self, size, local_pos):
-        self.type_of_elem  = IMAGE            
-        self.size          = size
-        self.local_pos     = local_pos        
+    '''
+    # Method: Constructor for the class.
+    #
+    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation for the progress bar.
+    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size for the progress bar in pixels. 
+    #         outer_local_pos  -> Tuple(outer local position in horizontal, outer local position in vertical). outer local position for this 
+    #                             progress bar inside a [Panel|Layout].                             
+    #         progress_perc    -> Float value [0.0 - 1.0]. The initial percentage of progress for the bar.  
+    #                             Can be changed after by calling the SetProgress method. 
+    #         border_color     -> Color used in the borders of the progress bar.
+    #         bar_color        -> Color used in the internal bar that indicates progress or level.
+    #
+    # Output: Object of the type ProgressBar constructed.
+    '''
+    def __init__(self, orientation, frame_size, frame_local_pos, image_path, image_name, frame_color):        
+        self.type_of_elem  = IMAGE
+        # Orientation of the progress bar
+        self.orientation      = orientation
+        self.frame_size       = frame_size
+        self.frame_local_pos  = frame_local_pos     
+        self.image_path       = image_path
+        self.image_name       = image_name
+        self.frame_color      = frame_color
+        # Load the image
+        self.image            = pg.image.load(self.image_path + self.image_name)        
+        # Get the image original size
+        self.orig_image_size  = self.image.get_rect().size
+        # Calculates the image size
+        #self.image_size       = self.CalcImageSize(self.orientation, self.frame_size, self.orig_image_size)
+        # Aspect ratio it's not kept
+        self.image_size       = self.frame_size
+        # Resize the Image
+        self.image            = pg.transform.scale(self.image, self.image_size)
+        # Calcuculates the image local position in the frame        
+        #self.image_local_pos  = 
+        # Aspect ratio it's not kept
+        self.image_local_pos  = ORIGIN
+        
+        #self.inner_size       = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
+        #self.inner_local_pos  = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
+    
+    '''
+    # Method: Resizes this progress bar.
+    #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
+    #         local position of this progress bar. 
+    #         In that case it's just a method that standardize a resize method since other elements need a more complex action
+    #         in a resize situation than just call SetSize.  
+    #
+    # Input : new_size         -> The new size for the progress bar.
+    #
+    # Output: None    
+    '''
+    def Resize(self, new_frame_size):        
+        # Sets the new frame size
+        self.SetFrameSize(new_frame_size)
+        
+        # Calculates and sets the new inner size for the progress bar 
+        #self.inner_size       = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
+        # Aspect ratio it's not kept
+        self.image_size       = self.frame_size 
+        
+        # Calculates and sets the new inner local position for the progress bar 
+        # self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)
+        # Aspect ratio it's not kept
+        self.image_local_pos  = ORIGIN
+        
+        
+        # Reload the original image
+        self.image             = pg.image.load(self.image_path + self.image_name)        
+        # Rescale the image        
+        self.image             = pg.transform.scale(self.image, self.image_size)
+        
+    '''        
+    # Method: Calculate the inner size of the progress bar. The inner size it's the size of the bar that indicates progress 
+    #         or level of a variable.
+    #         That size it's dependent of the progress or level. 
+    #         If the progress pecentage it's 1.0 (full bar), than this size will be the outer size of the progress bar minus
+    #         six pixels in the vertical and in the horizontal.
+    #
+    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
+    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
+    #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
+    #
+    # Output: inner_size       -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
+    '''
+    def CalcImageSize(self, orientation, frame_size, orig_image_size):
+        pass
+    '''    
+        # Orientação vertical
+        if(orientation == VERTICAL):
+            inner_size = (outer_size[0]-6, (outer_size[1]-6) * progress_perc )
+            return inner_size
+        # Orientação horizontal
+        else:            
+            inner_size = ( int( (outer_size[0] - 6) * progress_perc ), int( outer_size[1] - 6 ) )
+            return inner_size
+    '''    
+    '''
+    # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
+    #         or level of a variable.
+    #         That local position it's dependent of the progress or level.     
+    #         For different orientations the calculus it's different.
+    #
+    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
+    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
+    #         outer_local_pos  -> Tuple(outer local position in horizontal, outer loca position in vertical). outer local position for this 
+    #                             progress bar inside a [Panel|Layout].                             
+    #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
+    #
+    # Output: inner_local_pos  -> Tuple(inner local position in horizontal, inner local position in vertical). Inner local position for bar 
+    #                             inside the progress bar. Tuple of values in pixels.     
+    '''
+    def CalcImageLocalPos(self, orientation, outer_size, outer_local_pos, progress_perc):
+        pass
+    '''        
+        # Orientação vertical
+        if(orientation == VERTICAL):            
+            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 + ( (outer_size[1] - 6) - (outer_size[1] - 6) * progress_perc) ) )
+            return inner_local_pos
+        # Orientação horizontal
+        else:            
+            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 ) )      
+            return inner_local_pos
+    '''                                 
+    def SetFrameSize(self, frame_size):     
+        # Sets the new frame size 
+        self.frame_size      = frame_size        
+        
+    def SetLocalPos(self, frame_local_pos):        
+        # Sets the new frame local position
+        self.frame_local_pos = frame_local_pos
+                
+    def GetFrameSize(self):       
+        return self.frame_size
+            
+    def GetFrameLocalPos(self):        
+        return self.frame_local_pos  
+    
+    def GetSize(self):
+        return self.GetFrameSize()
+    
+    def GetLocalPos(self):        
+        return self.GetFrameLocalPos()
+    
+    def GetDrawParam(self, pos_offset):
+       
+        return ([ self.type_of_elem, self.frame_size  , ( pos_offset[0] + self.frame_local_pos[0] , pos_offset[1] + self.frame_local_pos[1] ),
+                                     self.image       , ( pos_offset[0] + self.frame_local_pos[0] + self.image_local_pos[0] , 
+                                                          pos_offset[1] + self.frame_local_pos[1] + self.image_local_pos[1]                 ),
+                                     self.frame_color  ])        
+            
+    
+
 
 ## Progress Bar Class ###########################################################################################################
 ## A Progress Bar it's a visual element used to express progress or level of variables.
@@ -45,8 +199,8 @@ class ProgressBar:
     # Method: Constructor for the class.
     #
     # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation for the progress bar.
-    #         outer_size      -> Tuple(outer size in horizontal, outer size in vertical). Size for the progress bar in pixels. 
-    #         outer_local_pos -> Tuple(outer local position in horizontal, outer local position in vertical). outer local position for this 
+    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size for the progress bar in pixels. 
+    #         outer_local_pos  -> Tuple(outer local position in horizontal, outer local position in vertical). outer local position for this 
     #                             progress bar inside a [Panel|Layout].                             
     #         progress_perc    -> Float value [0.0 - 1.0]. The initial percentage of progress for the bar.  
     #                             Can be changed after by calling the SetProgress method. 
@@ -85,10 +239,10 @@ class ProgressBar:
     #         six pixels in the vertical and in the horizontal.
     #
     # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
-    #         outer_size      -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
+    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
     #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
     #
-    # Output: inner_size      -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
+    # Output: inner_size       -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
     def CalcInnerSize(self, orientation, outer_size, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):
@@ -105,8 +259,8 @@ class ProgressBar:
     #         For different orientations the calculus it's different.
     #
     # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
-    #         outer_size      -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
-    #         outer_local_pos -> Tuple(outer local position in horizontal, outer loca position in vertical). outer local position for this 
+    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
+    #         outer_local_pos  -> Tuple(outer local position in horizontal, outer loca position in vertical). outer local position for this 
     #                             progress bar inside a [Panel|Layout].                             
     #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
     #
@@ -663,9 +817,24 @@ class Panel:
 def Draw(win, elem_draw_param):
     num_elem = len(elem_draw_param)
     for num_elem in range(num_elem):        
+        # Visual element it's a Image
+        if( elem_draw_param[num_elem][0] == IMAGE ):    
+            # Frame parameters
+            frame_color      = elem_draw_param[num_elem][5]
+            frame_size       = elem_draw_param[num_elem][1]
+            frame_position   = elem_draw_param[num_elem][2]
+            # Image parameters
+            image            = elem_draw_param[num_elem][3]
+            image_position   = elem_draw_param[num_elem][4]                        
+            # Draw the Framer with the frame Color            
+            pg.draw.rect( win, frame_color, (*frame_position, *frame_size) )    
+            # Draw the Image
+            win.blit(image, image_position)
+ 
         # Visual element it's a Progress Bar
         if( elem_draw_param[num_elem][0] == PROGRESS_BAR ):
             pg.draw.rect(win, elem_draw_param[num_elem][5], (*elem_draw_param[num_elem][2], *elem_draw_param[num_elem][1]), 1)
             pg.draw.rect(win, elem_draw_param[num_elem][6], (*elem_draw_param[num_elem][4], *elem_draw_param[num_elem][3])   )    
+        
             
 
