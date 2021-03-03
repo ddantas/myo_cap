@@ -15,8 +15,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Constants for orientation
-VERTICAL   = 0
-HORIZONTAL = 1
+HORIZONTAL = 0
+VERTICAL   = 1
 
 # Constants for position
 ORIGIN     = (0, 0)
@@ -50,32 +50,30 @@ class Image:
     #
     # Output: Object of the type ProgressBar constructed.
     '''
-    def __init__(self, orientation, frame_size, frame_local_pos, image_path, image_name, frame_color):        
+    def __init__(self, orientation, frame_size, frame_local_pos, image_path, image_name, frame_color, keep_aspect_ratio):        
         self.type_of_elem  = IMAGE
         # Orientation of the progress bar
-        self.orientation      = orientation
-        self.frame_size       = frame_size
-        self.frame_local_pos  = frame_local_pos     
-        self.image_path       = image_path
-        self.image_name       = image_name
-        self.frame_color      = frame_color
+        self.orientation       = orientation
+        self.frame_size        = frame_size
+        self.frame_local_pos   = frame_local_pos     
+        self.image_path        = image_path
+        self.image_name        = image_name
+        self.frame_color       = frame_color
+        self.keep_aspect_ratio = keep_aspect_ratio        
         # Load the image
         self.image            = pg.image.load(self.image_path + self.image_name)        
         # Get the image original size
         self.orig_image_size  = self.image.get_rect().size
+        # Calculates the aspect ratio
+        self.aspect_ratio     = self.orig_image_size[0] / self.orig_image_size[1]
+        print(self.orig_image_size)
+        print(self.aspect_ratio)        
         # Calculates the image size
-        #self.image_size       = self.CalcImageSize(self.orientation, self.frame_size, self.orig_image_size)
-        # Aspect ratio it's not kept
-        self.image_size       = self.frame_size
+        self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
         # Resize the Image
         self.image            = pg.transform.scale(self.image, self.image_size)
         # Calcuculates the image local position in the frame        
-        #self.image_local_pos  = 
-        # Aspect ratio it's not kept
-        self.image_local_pos  = ORIGIN
-        
-        #self.inner_size       = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
-        #self.inner_local_pos  = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
+        self.image_local_pos  = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
     
     '''
     # Method: Resizes this progress bar.
@@ -90,23 +88,16 @@ class Image:
     '''
     def Resize(self, new_frame_size):        
         # Sets the new frame size
-        self.SetFrameSize(new_frame_size)
-        
-        # Calculates and sets the new inner size for the progress bar 
-        #self.inner_size       = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
-        # Aspect ratio it's not kept
-        self.image_size       = self.frame_size 
-        
-        # Calculates and sets the new inner local position for the progress bar 
-        # self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)
-        # Aspect ratio it's not kept
-        self.image_local_pos  = ORIGIN
-        
-        
+        self.SetFrameSize(new_frame_size)       
+        # Calculates the new image size
+        self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
         # Reload the original image
         self.image             = pg.image.load(self.image_path + self.image_name)        
-        # Rescale the image        
-        self.image             = pg.transform.scale(self.image, self.image_size)
+        # Resize the Image
+        self.image            = pg.transform.scale(self.image, self.image_size)
+        # Calcuculates the image local position in the frame        
+        self.image_local_pos  = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
+
         
     '''        
     # Method: Calculate the inner size of the progress bar. The inner size it's the size of the bar that indicates progress 
@@ -121,18 +112,44 @@ class Image:
     #
     # Output: inner_size       -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
     '''
-    def CalcImageSize(self, orientation, frame_size, orig_image_size):
-        pass
-    '''    
-        # Orientação vertical
-        if(orientation == VERTICAL):
-            inner_size = (outer_size[0]-6, (outer_size[1]-6) * progress_perc )
-            return inner_size
-        # Orientação horizontal
-        else:            
-            inner_size = ( int( (outer_size[0] - 6) * progress_perc ), int( outer_size[1] - 6 ) )
-            return inner_size
-    '''    
+    def CalcImageSize(self, orientation, keep_aspect_ratio, frame_size, aspect_ratio):
+        
+        # The Aspect Ratio should be kept.
+        if(keep_aspect_ratio):     
+            # New_image_size
+            new_image_size = [None] * 2
+            # Orientação Vertical
+            if(orientation == VERTICAL):
+                # Uses the higher height possible for the image
+                new_image_size[VERTICAL]   = frame_size[VERTICAL]
+                # Calculates the vertical size for image based in the aspect ratio
+                new_image_size[HORIZONTAL] = int( new_image_size[VERTICAL] * aspect_ratio ) 
+                # If the calculated horizontal size for image don't fit into the frame, the vertical size for image will be the result of
+                # the wider width possible for the image divided by the original aspect ratio of the image.
+                if( new_image_size[HORIZONTAL] > frame_size[HORIZONTAL] ):
+                    # Uses the wider width possible for the image.
+                    new_image_size[HORIZONTAL]   = frame_size[HORIZONTAL]
+                    # Calculates the horizontal size for image based in the aspect ratio
+                    new_image_size[VERTICAL]     = int( new_image_size[HORIZONTAL] * aspect_ratio )     
+            # Orientação Vertical
+            else:            
+                # Uses the wider width possible for the image.
+                new_image_size[HORIZONTAL]   = frame_size[HORIZONTAL]
+                # Calculates the horizontal size for image based in the aspect ratio
+                new_image_size[VERTICAL]     = int( new_image_size[HORIZONTAL] * aspect_ratio )     
+                # If the calculated vertical size for image don't fit into the frame, the horizontal size for image will be the result of
+                # the higher height possible for the image multiplied by the original aspect ratio of the image.
+                if( new_image_size[VERTICAL] > frame_size[VERTICAL] ):
+                    # Uses the higher height possible for the image
+                    new_image_size[VERTICAL]   = frame_size[VERTICAL]
+                    # Calculates the vertical size for image based in the aspect ratio
+                    new_image_size[HORIZONTAL] = int( new_image_size[VERTICAL] * aspect_ratio )                         
+            return (new_image_size[HORIZONTAL], new_image_size[VERTICAL] )
+        
+        # The Aspect Ratio don't need to be kept.    
+        else:
+            # The Image occupies all the size of the frame.
+            return frame_size 
     '''
     # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
     #         or level of a variable.
@@ -148,18 +165,24 @@ class Image:
     # Output: inner_local_pos  -> Tuple(inner local position in horizontal, inner local position in vertical). Inner local position for bar 
     #                             inside the progress bar. Tuple of values in pixels.     
     '''
-    def CalcImageLocalPos(self, orientation, outer_size, outer_local_pos, progress_perc):
-        pass
-    '''        
-        # Orientação vertical
-        if(orientation == VERTICAL):            
-            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 + ( (outer_size[1] - 6) - (outer_size[1] - 6) * progress_perc) ) )
-            return inner_local_pos
-        # Orientação horizontal
-        else:            
-            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 ) )      
-            return inner_local_pos
-    '''                                 
+    def CalcImageLocalPos(self, keep_aspect_ratio, frame_size, image_size):
+        # New_image_size
+        new_image_local_pos = [None] * 2
+        
+        # The Aspect Ratio should be kept.
+        if(keep_aspect_ratio): 
+            # Calculates the horizontal offset inside the frame to the image.
+            new_image_local_pos[HORIZONTAL] = int( ( frame_size[HORIZONTAL] - image_size[HORIZONTAL] ) / 2 )
+            # Calculates the Vertical offset inside the frame to the image.
+            new_image_local_pos[VERTICAL]   = int( ( frame_size[VERTICAL]   - image_size[VERTICAL] )   / 2 )
+            
+        # The Aspect Ratio don't need to be kept.    
+        else:
+            # The Image occupies all the size of the frame. And it's located at the same place as the frame are.
+            new_image_local_pos    = ORIGIN
+            
+        return (new_image_local_pos[HORIZONTAL], new_image_local_pos[VERTICAL] )
+                   
     def SetFrameSize(self, frame_size):     
         # Sets the new frame size 
         self.frame_size      = frame_size        
@@ -826,7 +849,7 @@ def Draw(win, elem_draw_param):
             # Image parameters
             image            = elem_draw_param[num_elem][3]
             image_position   = elem_draw_param[num_elem][4]                        
-            # Draw the Framer with the frame Color            
+            # Draw the Frame with the frame Color            
             pg.draw.rect( win, frame_color, (*frame_position, *frame_size) )    
             # Draw the Image
             win.blit(image, image_position)
