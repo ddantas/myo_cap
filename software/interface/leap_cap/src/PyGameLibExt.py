@@ -28,7 +28,7 @@ SPACER            = 2
 LAYOUT            = 3
 PANEL             = 4
 
-## All elements but Spacers have the methods: Risize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
+## All elements but Spacers have the methods: Resize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
 
 
 
@@ -65,9 +65,7 @@ class Image:
         # Get the image original size
         self.orig_image_size  = self.image.get_rect().size
         # Calculates the aspect ratio
-        self.aspect_ratio     = self.orig_image_size[0] / self.orig_image_size[1]
-        print(self.orig_image_size)
-        print(self.aspect_ratio)        
+        self.aspect_ratio     = self.orig_image_size[0] / self.orig_image_size[1]       
         # Calculates the image size
         self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
         # Resize the Image
@@ -856,8 +854,18 @@ def Draw(win, elem_draw_param):
  
         # Visual element it's a Progress Bar
         if( elem_draw_param[num_elem][0] == PROGRESS_BAR ):
-            pg.draw.rect(win, elem_draw_param[num_elem][5], (*elem_draw_param[num_elem][2], *elem_draw_param[num_elem][1]), 1)
-            pg.draw.rect(win, elem_draw_param[num_elem][6], (*elem_draw_param[num_elem][4], *elem_draw_param[num_elem][3])   )    
+            # Border parameters
+            border_size           = elem_draw_param[num_elem][1]
+            border_position       = elem_draw_param[num_elem][2]
+            border_color          = elem_draw_param[num_elem][5]           
+            border_width          = 1  
+            # Progres bar parameter
+            progress_bar_size     = elem_draw_param[num_elem][3]
+            progress_bar_position = elem_draw_param[num_elem][4]
+            progress_bar_color    = elem_draw_param[num_elem][6]
+            # Draw border and progress bar
+            pg.draw.rect( win, border_color, (*border_position, *border_size), border_width ) 
+            pg.draw.rect( win, progress_bar_color, (*progress_bar_position, *progress_bar_size) )    
         
             
 
