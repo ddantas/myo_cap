@@ -356,18 +356,19 @@ class Layout:
     
     # Method: Constructor for the class.      
     #
-    # Input : size             -> Tuple(size in horizontal, size in vertical). Size of this Layout. Size in Pixels.
-    #         local_pos        -> Tuple(position in horizontal, position in vertical). Local position of this layout inside
-    #                             a Window, Panel or another Layout.    
-    #         num_lines        -> Number of lines for the the Layout.      
-    #         num_colums       -> Number of colums for the the Layout.  
-    #         list_of_elements -> List of [Images | Progress Bars | Panels | Layouts] containing 
-    #                             at least (number of lines * number of colums) elements. 
-    #         spacer           -> Object of type "Spacer". The spacer won't attached to the Layout,
-    #                             but your dimensions will serve to the elements size and position calculation.
+    # Input : size              -> Tuple(size in horizontal, size in vertical). Size of this Layout. Size in Pixels.
+    #         local_pos         -> Tuple(position in horizontal, position in vertical). Local position of this layout inside
+    #                              a Window, Panel or another Layout.    
+    #         num_lines         -> Number of lines for the the Layout.      
+    #         num_colums        -> Number of colums for the the Layout.  
+    #         list_of_elements  -> List of [Images | Progress Bars | Panels | Layouts] containing 
+    #                              at least (number of lines * number of colums) elements. 
+    #         spacer            -> Object of type "Spacer". The spacer won't attached to the Layout,
+    #                              but your dimensions will serve to the elements size and position calculation.
+    #         spacers_in_border -> [True|False]. Determines whether or not spacers will be putted in the layout borders.
     #
     # Output: Object of the type Layout constructed.
-    def __init__(self, size, local_pos, num_lines, num_colums, list_of_elements, spacer):
+    def __init__(self, size, local_pos, num_lines, num_colums, list_of_elements, spacer, spacers_in_border):
         self.type_of_elem       = LAYOUT 
         self.size               = size
         self.local_pos          = local_pos
@@ -375,12 +376,13 @@ class Layout:
         self.num_lines          = num_lines
         self.num_colums         = num_colums
         self.spacer             = spacer
+        self.spacers_in_border  = spacers_in_border
         # Calculate the number of vertical spacers inside the Layout
         # Note: A vertical spacer have vertical orientation and so spaces horizontally elements.
-        self.num_vert_spacers   = self.CalcNumVertSpacers(num_colums)
+        self.num_vert_spacers   = self.CalcNumVertSpacers(num_colums, self.spacers_in_border)
         # Calculate the number of horizontal spacers inside the Layout
         # Note: A horizontal spacer have horizontal orientation and so spaces vertically elements.
-        self.num_hor_spacers    = self.CalcNumHorSpacers (num_lines)
+        self.num_hor_spacers    = self.CalcNumHorSpacers (num_lines, self.spacers_in_border)
         # List of lists arranged as a matrix(grid) contain pointers to the elements(objects) attached to the layout.
         self.elements           = [None] * self.num_lines
         for line in range(self.num_lines):
@@ -392,7 +394,7 @@ class Layout:
         # Set the size of the Elements in the grid    
         self.SetSizeElements  (self.num_lines, self.num_colums, self.elements, elements_size)
         # Cauculates the local positions of the Elements in the grid
-        lst_elements_local_pos = self.CalcLocalPosElements(elements_size, self.num_lines, self.num_colums, self.spacer)     
+        lst_elements_local_pos = self.CalcLocalPosElements(elements_size, self.num_lines, self.num_colums, self.spacer, self.spacers_in_border)     
         # Set the local position of the Elements in the grid    
         self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, lst_elements_local_pos)
     
@@ -414,25 +416,37 @@ class Layout:
         # Update the elements size        
         self.SetSizeElements(self.num_lines, self.num_colums, self.elements, elements_size)
         # Calculate the new local positions for the elements inside this Layout
-        elements_local_pos = self.CalcLocalPosElements(elements_size, self.num_lines, self.num_colums, self.spacer)                        
+        elements_local_pos = self.CalcLocalPosElements(elements_size, self.num_lines, self.num_colums, self.spacer, self.spacers_in_border)                        
         # Update the elements local position                
         self.SetLocalPosElements(self.num_lines, self.num_colums, self.elements, elements_local_pos)
     
     # Method: Calculate the number of vertical spacers inside the Layout.
     #         Note: A vertical spacer have vertical orientation and so spaces horizontally elements.
     #
-    #         num_colums       -> Number of colums of the the Layout.  
+    #         num_colums        -> Number of colums of the the Layout. 
+    #         spacers_in_border -> [True|False]. Determines whether or not spacers will be putted in the layout borders.
     #
     # Output: Integer. Number of vertical spacers inside the Layout.  
-    def CalcNumVertSpacers(self, num_colums):        
-        # Have zero colums
-        if not num_colums:
-            num_vert_spacers = 0
-            
-        # Have one or more colums
+    def CalcNumVertSpacers(self, num_colums, spacers_in_border):     
+        # Uses spacers in the borders of the layout
+        if(spacers_in_border):
+            # Have zero colums
+            if not num_colums:
+                num_vert_spacers = 0                
+            # Have one or more colums
+            else:
+                # Vertical spacers are like vertical bars
+                num_vert_spacers = 1 + num_colums         
+                
+        # Don't uses spacers in the borders of the layout
         else:
-            # Vertical spacers are like vertical bars
-            num_vert_spacers = 1 + num_colums         
+            # Have zero colums
+            if not num_colums:
+                num_vert_spacers = 0                
+            # Have one or more colums
+            else:
+                # Vertical spacers are like vertical bars
+                num_vert_spacers = num_colums - 1     
             
         return num_vert_spacers            
     
@@ -440,18 +454,32 @@ class Layout:
     #         Note: A horizontal spacer have horizontal orientation and so spaces vertically elements.
     #
     #         num_lines        -> Number of lines for the the Layout.      
+    #         spacers_in_border -> [True|False]. Determines whether or not spacers will be putted in the layout borders.
     #
     # Output: Integer. Number of horizontal spacers inside the Layout      
-    def CalcNumHorSpacers (self, num_lines):
-        # Have zero lines
-        if not num_lines:
-            num_hor_spacers = 0
-            
-        # Have one or more lines
-        else:  
-            # Horizontal spacers are like horizontal bars
-            num_hor_spacers = 1 + num_lines
-            
+    def CalcNumHorSpacers (self, num_lines, spacers_in_border):
+        # Uses spacers in the borders of the layout
+        if(spacers_in_border):
+            # Have zero lines
+            if not num_lines:
+                num_hor_spacers = 0
+                
+            # Have one or more lines
+            else:  
+                # Horizontal spacers are like horizontal bars
+                num_hor_spacers = 1 + num_lines
+                
+        # Don't uses spacers in the borders of the layout
+        else:
+            # Have zero lines
+            if not num_lines:
+                num_hor_spacers = 0
+                
+            # Have one or more lines
+            else:  
+                # Horizontal spacers are like horizontal bars
+                num_hor_spacers = num_lines - 1 
+                
         return num_hor_spacers
     
     # Method: Calculate the size of the elements inside the Layout.
@@ -466,43 +494,66 @@ class Layout:
     # Output: Tuple(size in horizontal, size in vertical). Size of elements inside this Layout. Size in Pixels.        
     def CalSizeElements(self, layout_size, num_lines, num_colums, spacer):
         # The width it's the result of the horizontal usefull size inside the layout divided by the number of columms. 
-        width  = int( ( layout_size[HORIZONTAL] - self.CalcNumVertSpacers(num_colums) * spacer.size[HORIZONTAL] ) / num_colums )
+        width  = int( ( layout_size[HORIZONTAL] - self.CalcNumVertSpacers(num_colums, self.spacers_in_border) * spacer.size[HORIZONTAL] ) / num_colums )
         # The height it's the result of the vertical usefull size inside the layout divided by the number of lines.
-        height = int( ( layout_size[VERTICAL] - self.CalcNumHorSpacers (num_lines) * spacer.size[VERTICAL] ) / num_lines  )
+        height = int( ( layout_size[VERTICAL] - self.CalcNumHorSpacers (num_lines, self.spacers_in_border) * spacer.size[VERTICAL] ) / num_lines  )
         return (( width, height))
     
     # Method: Calculate the local position of the elements inside the Layout.
     #
-    # Input : elements_size    -> Tuple(size in horizontal, size in vertical). Size of elements inside this Layout. 
-    #         num_lines        -> Number of lines for the the Layout.      
-    #         num_colums       -> Number of colums of the the Layout.
-    #         spacer           -> Object of type "Spacer". The spacer won't attached to the Layout,
+    # Input : elements_size     -> Tuple(size in horizontal, size in vertical). Size of elements inside this Layout. 
+    #         num_lines         -> Number of lines for the the Layout.      
+    #         num_colums        -> Number of colums of the the Layout.
+    #         spacer            -> Object of type "Spacer". The spacer won't attached to the Layout,
     #                             but your dimensions will serve to the elements size calculation.
+    #         spacers_in_border -> [True|False]. Determines whether or not spacers will be putted in the layout borders.
     #
     # Output: List of Tuples(local position in horizontal, local position in vertical). Local position of elements 
     #         inside this Layout. 
     #         The position of the elements inside this list is the folow: 
     #         list_of_local_pos_elements[ line * num_colums + colum ]  = elements[line][colum].local_pos()
-    def CalcLocalPosElements(self, elements_size, num_lines, num_colums, spacer):                
+    def CalcLocalPosElements(self, elements_size, num_lines, num_colums, spacer, spacers_in_border):                
         list_local_pos = []
         local_pos = [None] * 2        
-        for line in range(num_lines):
-            for colum in range(num_colums):                   
-                # Calculates the horizontal local position of the elements inside the Layout.
-                # The horizontal local position it's the sum of two horizontal spaces occupied. 
-                # The space of the vertical spacers at left of the current element. 
-                # And the space occupied by the elements at left of the current element.
-                # Reminder: If the are only one element in the horizontal, there will be one vertical spacer at left and other 
-                # at right of this element.
-                local_pos[HORIZONTAL] = (colum + 1) * spacer.size[HORIZONTAL] + colum * elements_size[HORIZONTAL]
-                # Calculates the vertical local position of the elements inside the Layout.
-                # The vertical local position it's the sum of two vertical spaces occupied. 
-                # The space of the vertical spacers above the current element. 
-                # And the space occupied by the elements above the current element.
-                # Reminder: If the are only one element in the vertical, there will be one horizontal spacer above and other below 
-                # this element.
-                local_pos[VERTICAL] = (line  + 1) * spacer.size[VERTICAL] + line  * elements_size[VERTICAL]
-                list_local_pos.append( ( local_pos[HORIZONTAL] , local_pos[VERTICAL]) )
+        # Uses spacers in the borders of the layout
+        if(spacers_in_border):
+            for line in range(num_lines):
+                for colum in range(num_colums):                   
+                    # Calculates the horizontal local position of the elements inside the Layout.
+                    # The horizontal local position it's the sum of two horizontal spaces occupied. 
+                    # The space of the vertical spacers at left of the current element. 
+                    # And the space occupied by the elements at left of the current element.
+                    # Reminder: If the are only one element in the horizontal, there will be one vertical spacer at left and other 
+                    # at right of this element.
+                    local_pos[HORIZONTAL] = (colum + 1) * spacer.size[HORIZONTAL] + colum * elements_size[HORIZONTAL]
+                    # Calculates the vertical local position of the elements inside the Layout.
+                    # The vertical local position it's the sum of two vertical spaces occupied. 
+                    # The space of the vertical spacers above the current element. 
+                    # And the space occupied by the elements above the current element.
+                    # Reminder: If the are only one element in the vertical, there will be one horizontal spacer above and other below 
+                    # this element.
+                    local_pos[VERTICAL] = (line  + 1) * spacer.size[VERTICAL] + line  * elements_size[VERTICAL]
+                    list_local_pos.append( ( local_pos[HORIZONTAL] , local_pos[VERTICAL]) )
+                    
+        # Don't uses spacers in the borders of the layout
+        else:
+            for line in range(num_lines):
+                for colum in range(num_colums):                   
+                    # Calculates the horizontal local position of the elements inside the Layout.
+                    # The horizontal local position it's the sum of two horizontal spaces occupied. 
+                    # The space of the vertical spacers at left of the current element. 
+                    # And the space occupied by the elements at left of the current element.
+                    # Reminder: If the are only one element in the horizontal, there will be one vertical spacer at left and other 
+                    # at right of this element.
+                    local_pos[HORIZONTAL] = colum * spacer.size[HORIZONTAL] + colum * elements_size[HORIZONTAL]
+                    # Calculates the vertical local position of the elements inside the Layout.
+                    # The vertical local position it's the sum of two vertical spaces occupied. 
+                    # The space of the vertical spacers above the current element. 
+                    # And the space occupied by the elements above the current element.
+                    # Reminder: If the are only one element in the vertical, there will be one horizontal spacer above and other below 
+                    # this element.
+                    local_pos[VERTICAL]   = line * spacer.size[VERTICAL] + line  * elements_size[VERTICAL]
+                    list_local_pos.append( ( local_pos[HORIZONTAL] , local_pos[VERTICAL]) )        
         return list_local_pos
         
     # Method: Attach elements in the spaces inside the layout.    
