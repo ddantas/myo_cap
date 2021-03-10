@@ -65,7 +65,7 @@ class Image:
         # Get the image original size
         self.orig_image_size  = self.image.get_rect().size
         # Calculates the aspect ratio
-        self.aspect_ratio     = self.orig_image_size[0] / self.orig_image_size[1]       
+        self.aspect_ratio     = self.orig_image_size[HORIZONTAL] / self.orig_image_size[VERTICAL]       
         # Calculates the image size
         self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
         # Resize the Image
@@ -90,7 +90,7 @@ class Image:
         # Calculates the new image size
         self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
         # Reload the original image
-        self.image             = pg.image.load(self.image_path + self.image_name)        
+        self.image            = pg.image.load(self.image_path + self.image_name)        
         # Resize the Image
         self.image            = pg.transform.scale(self.image, self.image_size)
         # Calcuculates the image local position in the frame        
@@ -203,9 +203,9 @@ class Image:
     
     def GetDrawParam(self, pos_offset):
        
-        return ([ self.type_of_elem, self.frame_size  , ( pos_offset[0] + self.frame_local_pos[0] , pos_offset[1] + self.frame_local_pos[1] ),
-                                     self.image       , ( pos_offset[0] + self.frame_local_pos[0] + self.image_local_pos[0] , 
-                                                          pos_offset[1] + self.frame_local_pos[1] + self.image_local_pos[1]                 ),
+        return ([ self.type_of_elem, self.frame_size  , ( pos_offset[HORIZONTAL] + self.frame_local_pos[HORIZONTAL] , pos_offset[VERTICAL] + self.frame_local_pos[VERTICAL] ),
+                                     self.image       , ( pos_offset[HORIZONTAL] + self.frame_local_pos[HORIZONTAL] + self.image_local_pos[HORIZONTAL] , 
+                                                          pos_offset[VERTICAL]   + self.frame_local_pos[VERTICAL]   + self.image_local_pos[VERTICAL]                        ),
                                      self.frame_color  ])        
             
     
@@ -230,16 +230,18 @@ class ProgressBar:
     #
     # Output: Object of the type ProgressBar constructed.
     def __init__(self, orientation, outer_size, outer_local_pos, progress_perc, border_color, bar_color):        
-        self.type_of_elem     = PROGRESS_BAR
+        self.type_of_elem       = PROGRESS_BAR
         # Orientation of the progress bar
-        self.orientation      = orientation
-        self.outer_size      = outer_size
-        self.outer_local_pos = outer_local_pos        
-        self.progress_perc    = progress_perc
-        self.border_color     = border_color
-        self.bar_color        = bar_color
-        self.inner_size       = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
-        self.inner_local_pos  = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
+        self.orientation        = orientation
+        self.outer_size         = outer_size
+        self.outer_local_pos    = outer_local_pos        
+        self.progress_perc      = progress_perc
+        self.border_color       = border_color        
+        self.bar_color          = bar_color
+        # Border to bar distance in pixels
+        self.border_to_bar_dist = 3
+        self.inner_size         = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
+        self.inner_local_pos    = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)                
     
     # Method: Resizes this progress bar.
     #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
@@ -267,11 +269,11 @@ class ProgressBar:
     def CalcInnerSize(self, orientation, outer_size, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):
-            inner_size = (outer_size[0]-6, (outer_size[1]-6) * progress_perc )
+            inner_size = ( int( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) ), int( ( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) * progress_perc ) )
             return inner_size
         # Orientação horizontal
         else:            
-            inner_size = ( int( (outer_size[0] - 6) * progress_perc ), int( outer_size[1] - 6 ) )
+            inner_size = ( int( ( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) ) * progress_perc ), int( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) )
             return inner_size
         
     # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
@@ -290,11 +292,13 @@ class ProgressBar:
     def CalcInnerLocalPos(self, orientation, outer_size, outer_local_pos, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):            
-            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 + ( (outer_size[1] - 6) - (outer_size[1] - 6) * progress_perc) ) )
+            inner_local_pos = ( int( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist ),
+                                int( outer_local_pos[VERTICAL] + self.border_to_bar_dist + 
+                                  ( (outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) - ( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) * progress_perc) ) )
             return inner_local_pos
         # Orientação horizontal
         else:            
-            inner_local_pos = ( int( outer_local_pos[0] + 3 ), int( outer_local_pos[1] + 3 ) )      
+            inner_local_pos = ( int( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist ), int( outer_local_pos[VERTICAL] + self.border_to_bar_dist ) )      
             return inner_local_pos
                  
     def SetProgress(self, progress_perc):
@@ -320,8 +324,8 @@ class ProgressBar:
         
     def GetDrawParam(self, pos_offset):
        
-        return ([ self.type_of_elem, self.outer_size  , ( pos_offset[0] + self.outer_local_pos[0], pos_offset[1] + self.outer_local_pos[1]  ),
-                                     self.inner_size   , ( pos_offset[0] + self.inner_local_pos[0] , pos_offset[1] + self.inner_local_pos[1]   ),
+        return ([ self.type_of_elem, self.outer_size   , ( pos_offset[HORIZONTAL] + self.outer_local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.outer_local_pos[VERTICAL] ),
+                                     self.inner_size   , ( pos_offset[HORIZONTAL] + self.inner_local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.inner_local_pos[VERTICAL] ),
                                      self.border_color , self.bar_color  ])        
         
 ## Spacer Class #################################################################################################################        
@@ -337,7 +341,7 @@ class Spacer:
     # Output: Object of the type Spacer constructed.
     def __init__(self, size):
         self.type_of_elem  = SPACER
-        self.size          = ( int(size[0]) ,int(size[1]) )        
+        self.size          = ( int(size[HORIZONTAL]) ,int(size[VERTICAL]) )        
 
 ## Layout Class #################################################################################################################
 ## That Class represents a layout inside a Window, Panel or even another Layout. 
@@ -462,9 +466,9 @@ class Layout:
     # Output: Tuple(size in horizontal, size in vertical). Size of elements inside this Layout. Size in Pixels.        
     def CalSizeElements(self, layout_size, num_lines, num_colums, spacer):
         # The width it's the result of the horizontal usefull size inside the layout divided by the number of columms. 
-        width  = int( ( layout_size[0] - self.CalcNumVertSpacers(num_colums) * spacer.size[0] ) / num_colums )
+        width  = int( ( layout_size[HORIZONTAL] - self.CalcNumVertSpacers(num_colums) * spacer.size[HORIZONTAL] ) / num_colums )
         # The height it's the result of the vertical usefull size inside the layout divided by the number of lines.
-        height = int( ( layout_size[1] - self.CalcNumHorSpacers (num_lines ) * spacer.size[1] ) / num_lines  )
+        height = int( ( layout_size[VERTICAL] - self.CalcNumHorSpacers (num_lines) * spacer.size[VERTICAL] ) / num_lines  )
         return (( width, height))
     
     # Method: Calculate the local position of the elements inside the Layout.
@@ -490,15 +494,15 @@ class Layout:
                 # And the space occupied by the elements at left of the current element.
                 # Reminder: If the are only one element in the horizontal, there will be one vertical spacer at left and other 
                 # at right of this element.
-                local_pos[0] = (colum + 1) * spacer.size[0] + colum * elements_size[0]
+                local_pos[HORIZONTAL] = (colum + 1) * spacer.size[HORIZONTAL] + colum * elements_size[HORIZONTAL]
                 # Calculates the vertical local position of the elements inside the Layout.
                 # The vertical local position it's the sum of two vertical spaces occupied. 
                 # The space of the vertical spacers above the current element. 
                 # And the space occupied by the elements above the current element.
                 # Reminder: If the are only one element in the vertical, there will be one horizontal spacer above and other below 
                 # this element.
-                local_pos[1] = (line  + 1) * spacer.size[1] + line  * elements_size[1]
-                list_local_pos.append( ( local_pos[0] , local_pos[1]) )
+                local_pos[VERTICAL] = (line  + 1) * spacer.size[VERTICAL] + line  * elements_size[VERTICAL]
+                list_local_pos.append( ( local_pos[HORIZONTAL] , local_pos[VERTICAL]) )
         return list_local_pos
         
     # Method: Attach elements in the spaces inside the layout.    
@@ -605,7 +609,7 @@ class Layout:
     #                             draw parameters for the element attached in the higher and left position of the layout.
     def GetDrawParam(self, pos_offset):
         # Update the position offset with the local position of this Layout.
-        pos_offset      = ( pos_offset[0] + self.local_pos[0], pos_offset[1] + self.local_pos[1]  )
+        pos_offset      = ( pos_offset[HORIZONTAL] + self.local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.local_pos[VERTICAL]  )
         list_draw_param = []
         for line in range(self.num_lines):
             for colum in range(self.num_colums):
@@ -690,7 +694,7 @@ class Panel:
     def Resize(self, new_size):      
         # Scale of fator it's used to deduce the new sizes e positions for the elements included in panel.
         # scale_factor = (scale_factor_horizontal, scale_factor_vertical)
-        self.scale_factor = (new_size[0]/self.original_size[0] , new_size[1]/self.original_size[1])
+        self.scale_factor = (new_size[HORIZONTAL]/self.original_size[HORIZONTAL] , new_size[VERTICAL]/self.original_size[VERTICAL])
         # Calculate the new sizes for the elements inside this panel
         lst_sizes         = self.CalcSizeElements(self.scale_factor)
         # Calculate the new local positions for the elements inside this panel
@@ -714,8 +718,8 @@ class Panel:
     def CalcSizeElements(self, scale_factor):        
         lst_sizes = []
         for elem_order in range(self.num_elem):            
-            lst_sizes.append( ( int( scale_factor[0] * self.lst_orig_sizes[elem_order][0]), 
-                                int( scale_factor[1] * self.lst_orig_sizes[elem_order][1]) ) )       
+            lst_sizes.append( ( int( scale_factor[HORIZONTAL] * self.lst_orig_sizes[elem_order][HORIZONTAL]), 
+                                int( scale_factor[VERTICAL]   * self.lst_orig_sizes[elem_order][VERTICAL]) ) )       
         return lst_sizes    
         
     # Method: Calculates new values for the list of positions for the elements contained in the Panel.
@@ -730,8 +734,8 @@ class Panel:
     def CalcLocalPosElements(self, scale_factor):        
         lst_local_pos = []
         for elem_order in range(self.num_elem):
-            lst_local_pos.append( ( int( scale_factor[0] * self.lst_orig_local_pos[elem_order][0] ),
-                                    int( scale_factor[1] * self.lst_orig_local_pos[elem_order][1] ) ) )
+            lst_local_pos.append( ( int( scale_factor[HORIZONTAL] * self.lst_orig_local_pos[elem_order][HORIZONTAL] ),
+                                    int( scale_factor[VERTICAL]   * self.lst_orig_local_pos[elem_order][VERTICAL] ) ) )
         return lst_local_pos
                
     # Method: Sets the width and hight for each element inside the Panel.
@@ -819,7 +823,7 @@ class Panel:
     #                             draw parameters for the first included element in this Panel.
     def GetDrawParam(self, pos_offset):
         # Update the position offset with the local position of this Panel.
-        pos_offset      = ( pos_offset[0] + self.local_pos[0], pos_offset[1] + self.local_pos[1]  )
+        pos_offset      = ( pos_offset[HORIZONTAL] + self.local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.local_pos[VERTICAL]  )
         list_draw_param = []
         for elem_order in range(self.num_elem):
             # It is a Image or a Progress Bar.
@@ -836,8 +840,8 @@ class Panel:
         
 ### Global Methods ##############################################################################################################    
 def Draw(win, elem_draw_param):
-    num_elem = len(elem_draw_param)
-    for num_elem in range(num_elem):        
+    num_elem_total = len(elem_draw_param)
+    for num_elem in range(num_elem_total):        
         # Visual element it's a Image
         if( elem_draw_param[num_elem][0] == IMAGE ):    
             # Frame parameters
