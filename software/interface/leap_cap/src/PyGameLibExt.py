@@ -29,8 +29,7 @@ LAYOUT            = 3
 PANEL             = 4
 
 ## All elements but Spacers have the methods: Resize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
-
-
+## Spacers just have the contructor and the GetSize() methods.
 
 
 ## Image Class ##################################################################################################################
@@ -50,28 +49,26 @@ class Image:
     #
     # Output: Object of the type ProgressBar constructed.
     '''
-    def __init__(self, orientation, frame_size, frame_local_pos, image_path, image_name, frame_color, keep_aspect_ratio):        
+    def __init__(self, orientation, frame_size, frame_local_pos, image_surface, frame_color, keep_aspect_ratio):        
         self.type_of_elem  = IMAGE
         # Orientation of the progress bar
         self.orientation       = orientation
         self.frame_size        = frame_size
-        self.frame_local_pos   = frame_local_pos     
-        self.image_path        = image_path
-        self.image_name        = image_name
+        self.frame_local_pos   = frame_local_pos             
         self.frame_color       = frame_color
         self.keep_aspect_ratio = keep_aspect_ratio        
-        # Load the image
-        self.image            = pg.image.load(self.image_path + self.image_name)        
+        # Stores the original image
+        self.orig_image        = image_surface       
         # Get the image original size
-        self.orig_image_size  = self.image.get_rect().size
+        self.orig_image_size   = self.orig_image.get_rect().size
         # Calculates the aspect ratio
-        self.aspect_ratio     = self.orig_image_size[HORIZONTAL] / self.orig_image_size[VERTICAL]       
+        self.aspect_ratio      = self.orig_image_size[HORIZONTAL] / self.orig_image_size[VERTICAL]       
         # Calculates the image size
-        self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
+        self.image_size        = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
         # Resize the Image
-        self.image            = pg.transform.scale(self.image, self.image_size)
+        self.image             = pg.transform.smoothscale(self.orig_image, self.image_size)
         # Calcuculates the image local position in the frame        
-        self.image_local_pos  = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
+        self.image_local_pos   = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
     
     '''
     # Method: Resizes this progress bar.
@@ -88,11 +85,9 @@ class Image:
         # Sets the new frame size
         self.SetFrameSize(new_frame_size)       
         # Calculates the new image size
-        self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
-        # Reload the original image
-        self.image            = pg.image.load(self.image_path + self.image_name)        
+        self.image_size       = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)           
         # Resize the Image
-        self.image            = pg.transform.scale(self.image, self.image_size)
+        self.image            = pg.transform.smoothscale(self.orig_image, self.image_size)
         # Calcuculates the image local position in the frame        
         self.image_local_pos  = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
 
@@ -343,6 +338,9 @@ class Spacer:
         self.type_of_elem  = SPACER
         self.size          = ( int(size[HORIZONTAL]) ,int(size[VERTICAL]) )        
 
+    def GetSize(self):       
+        return self.size
+    
 ## Layout Class #################################################################################################################
 ## That Class represents a layout inside a Window, Panel or even another Layout. 
 ## A Layout it's a structure that mananges automatically the size and position of elements attached to it.
