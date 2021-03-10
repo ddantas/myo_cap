@@ -186,6 +186,9 @@ class Image:
                 
     def GetFrameSize(self):       
         return self.frame_size
+    
+    def GetImageSize(self):
+        return self.image_size
             
     def GetFrameLocalPos(self):        
         return self.frame_local_pos  
