@@ -11,8 +11,10 @@ import pygame as pg
 RED   = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE  = (0, 0, 255)
+GRAY  = (230, 230, 230)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
 
 # Constants for orientation
 HORIZONTAL = 0
@@ -192,6 +194,9 @@ class Image:
             
     def GetFrameLocalPos(self):        
         return self.frame_local_pos  
+    
+    def GetImageLocalPos(self):        
+        return self.image_local_pos  
     
     def GetSize(self):
         return self.GetFrameSize()
@@ -768,8 +773,8 @@ class Panel:
     def CalcSizeElements(self, scale_factor):        
         lst_sizes = []
         for elem_order in range(self.num_elem):            
-            lst_sizes.append( ( int( scale_factor[HORIZONTAL] * self.lst_orig_sizes[elem_order][HORIZONTAL]), 
-                                int( scale_factor[VERTICAL]   * self.lst_orig_sizes[elem_order][VERTICAL]) ) )       
+            lst_sizes.append( ( scale_factor[HORIZONTAL] * self.lst_orig_sizes[elem_order][HORIZONTAL], 
+                                scale_factor[VERTICAL]   * self.lst_orig_sizes[elem_order][VERTICAL]   ) )       
         return lst_sizes    
         
     # Method: Calculates new values for the list of positions for the elements contained in the Panel.
@@ -784,8 +789,8 @@ class Panel:
     def CalcLocalPosElements(self, scale_factor):        
         lst_local_pos = []
         for elem_order in range(self.num_elem):
-            lst_local_pos.append( ( int( scale_factor[HORIZONTAL] * self.lst_orig_local_pos[elem_order][HORIZONTAL] ),
-                                    int( scale_factor[VERTICAL]   * self.lst_orig_local_pos[elem_order][VERTICAL] ) ) )
+            lst_local_pos.append( ( scale_factor[HORIZONTAL] * self.lst_orig_local_pos[elem_order][HORIZONTAL] ,
+                                    scale_factor[VERTICAL]   * self.lst_orig_local_pos[elem_order][VERTICAL] )  )
         return lst_local_pos
                
     # Method: Sets the width and hight for each element inside the Panel.

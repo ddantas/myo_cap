@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Mar 10 14:31:41 2021
+
+@author: asaph
+"""
+
 import sys
 import os
 
@@ -7,37 +14,43 @@ myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspa
 sys.path.append(myograph_import_path)
 images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'leap_cap') , 'images') , '')    
 
-
 import pygame as pg
-import Constants as const
 import UiSubject
+import Constants as const
 
-DEFAULT_WIN_SIZE = (800, 600)
-DEFAULT_IMG_NAMES = ['1th_flex.png', '1th_flex_curlEC.png', '2in_flexEC.png', '2in_flex_curlEC.png']
+# Window parameters
+WINDOW_TITLE     = 'Subject'
+#DEFAULT_WIN_SIZE = (800, 600)
+DEFAULT_WIN_SIZE = (1024, 576)
+#DEFAULT_WIN_SIZE = (1280, 720)
+
+# Images names for the hand gesstures. It's a dictionary for indexes.
+images_names = {'1th_flex':  0, '1th_flexEC':  1, '1th_flex_curl':  2, '1th_flex_curlEC':  3, 
+                '2in_flex':  4, '2in_flexEC':  5, '2in_flex_curl':  6, '2in_flex_curlEC':  7,
+                '3md_flex':  8, '3md_flexEC':  9, '3md_flex_curl': 10, '3md_flex_curlEC': 11, 
+                '4an_flex': 12, '4an_flexEC': 13, '4an_flex_curl': 14, '4an_flex_curlEC': 15, 
+                '5mn_flex': 16, '5mn_flexEC': 17, '5mn_flex_curl': 18, '5mn_flex_curlEC': 19, 
+                'hand_close': 20, 'hand_closeEC': 21, 'hand_open': 22, 'hand_openEC'    : 23} 
+
 
 class WinSubject:
     
-    def __init__(self):
-        self.ui_subject = UiSubject.UiSubject()    
-                
-    def show(self):
-        pg.init()
-        self.ui_subject.win = pg.display.set_mode(size=self.ui_subject.win_size, flags = pg.RESIZABLE)                
-        self.ui_subject.win.fill(self.ui_subject.white)  
-        pg.display.set_caption(self.ui_subject.win_title)
-        self.ui_subject.drawImages()
-        self.ui_subject.SetTimeBarsProgress(0.5, 0.75)
-        self.ui_subject.drawTimeBars()
-        # Uncoment the next line to show the panel perimeters
-        self.ui_subject.PrintPanelPerimeters()
-        pg.display.flip()
-        
+    def __init__(self):        
+        lst_images_names     = list(images_names.keys())
+        displayed_images_num = [0, 3, 5, 7]
+        self.ui_subject      = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, images_path, lst_images_names, 
+                                                       displayed_images_num, UiSubject.LEFT_HAND)    
+        self.close = False
+            
+    def show(self):        
+        self.ui_subject.draw()
+
     def close(self):
-        pg.display.quit()
+        self.ui_subject.close()
 
     def getKey(self):
         
-        if not(self.ui_subject.close):
+        if not(self.close):
             
             # Redraw the images            
             #self.drawImages()    
@@ -45,7 +58,7 @@ class WinSubject:
             for event in pg.event.get():
                     if event.type == pg.QUIT:
                         pg.display.quit(); #sys.exit() if sys is imported
-                        self.ui_subject.close = True
+                        self.close = True
                         
                     if event.type == pg.KEYDOWN:                                      
                         # left hand
@@ -83,21 +96,12 @@ class WinSubject:
                             return 'PINKY'
                         
                     if(event.type == pg.VIDEORESIZE):
-                        #print('Window resized')
-                        #print( 'New resolution: (%d, %d)' % pg.display.get_window_size() )
-                        self.ui_subject.win_size = pg.display.get_window_size()
-                        self.ui_subject.UpdatePanelsSize()                        
-                        self.ui_subject.win.fill(self.ui_subject.white)
-                        self.ui_subject.drawImages()
-                        self.ui_subject.drawTimeBars()
-                        # Uncoment the next line to show the panel perimeters
-                        self.ui_subject.PrintPanelPerimeters()
-                        pg.display.flip()
+                        new_win_size = pg.display.get_window_size()
+                        self.ui_subject.resize(new_win_size)
+                        self.ui_subject.draw()
                         
             else:   
                     return const.NO_KEY_PRESSED
                            
                 
-        return const.CLOSE_SUBJECT_WIN            
-                    
-    
+        return const.CLOSE_SUBJECT_WIN                               
