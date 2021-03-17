@@ -5,17 +5,8 @@ Created on Wed Mar 10 12:31:49 2021
 @author: Asaphe Magno
 """
 
-import sys
-import os
 import pygame as pg
 import PyGameLibExt as PGExt
-
-# Obtain the myograph path
-myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
-# Adds the myograph path for future inclusions 
-sys.path.append(myograph_import_path)
-# Generates the folder path to the images of the project
-images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'leap_cap') , 'images') , '')    
 
 # Hand options
 LEFT_HAND  = 0
@@ -31,11 +22,9 @@ THUMB     = 4
 # Fingers joints
 JOINT_METACARP_FALANG = 0
 JOINT_FALANG_FALANG   = 1
-NUM_IMAGES_IN_LAYOUT  = 4
 
 IMAGES_FORMAT         = '.png'
 DEFAULT_IMAGES_SIZE   = (310, 370)
-IMG_ORIG_ASPECT_RATIO = DEFAULT_IMAGES_SIZE[PGExt.HORIZONTAL] / DEFAULT_IMAGES_SIZE[PGExt.VERTICAL]
 FIXED_ASPECT_RATIO    = True
 
 class UiSubject:
@@ -75,6 +64,10 @@ class UiSubject:
         # Load the displayed images
         self.disp_images = self.LoadDisplayedImages(self.displayed_images_num)        
         
+        # Calculates the sizes of the Layouts inside the Main Panel.
+        self.calcSizeOfLayouts()
+        # Calculates the positions of the Layouts inside the Main Panel.
+        self.calcPosOfLayouts()
         self.createLayouts()
         self.createMainPanel()
         
@@ -103,7 +96,8 @@ class UiSubject:
         # Time bars layout below the Image layout an above the joint angles layout.
         self.time_bars_layout_pos = (0, 0)          
         
-    def createImagesLayout(self, size, image_layout_pos, displayed_images, spacer):       
+    def createImagesLayout(self, size, image_layout_pos, displayed_images, spacer):  
+        NUM_IMAGES_IN_LAYOUT  = 4                
         NUM_LINES_IN_LAYOUT = 1    
         SPACERS_IN_BORDER   = True
         images_layout = PGExt.Layout(size, image_layout_pos, NUM_LINES_IN_LAYOUT, NUM_IMAGES_IN_LAYOUT, displayed_images, spacer, SPACERS_IN_BORDER)
@@ -127,14 +121,11 @@ class UiSubject:
     
     def createFingersLettersLayout(self):
         pass
-    
-    def createLayouts(self):
-        ## Create the Layouts.   
-        self.calcSizeOfLayouts()
-        self.calcPosOfLayouts()
-        # Create the Images Layout.
+        
+    def createLayouts(self):                
         self.images_layout = self.createImagesLayout(self.image_layout_size, self.image_layout_pos, self.disp_images, self.default_spacer)
-        # Get the width of the first image of the images layout
+        # Get the width of the first image of the Images Layout.
+        # That width will be used also as the width of Joint Angles and Fingers Letters Layouts. 
         self.images_width = self.images[0].GetImageSize()[PGExt.HORIZONTAL]           
         self.createTimeBarsLayout()        
         self.createJointAnglesLayout()
@@ -159,9 +150,11 @@ class UiSubject:
     def draw(self):
         # Creates a resizeble PyGame Window for the Subject Window 
         self.win = pg.display.set_mode(size=self.win_size, flags = pg.RESIZABLE)  
-        draw_param = self.main_panel.GetDrawParam(PGExt.ORIGIN)
+        # Get the draw parameters for each elements inside the main panel in the right order to be drawn.
+        draw_param = self.main_panel.GetDrawParam(PGExt.ORIGIN)        
         self.win.fill(PGExt.WHITE) 
         PGExt.Draw(self.win, draw_param)        
+        # Update the window with elements redrawed.
         pg.display.flip()
       
     def close(self):
