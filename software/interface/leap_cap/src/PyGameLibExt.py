@@ -57,8 +57,8 @@ class Image:
         self.frame_local_pos   = frame_local_pos             
         self.frame_color       = frame_color
         self.keep_aspect_ratio = keep_aspect_ratio        
-        # Stores the original image
-        self.orig_image        = image_surface       
+        # Convert the original surface to one sufarce with 24 bits of color depth
+        self.orig_image        = image_surface.convert(24)       
         # Get the image original size
         self.orig_image_size   = self.orig_image.get_rect().size
         # Calculates the aspect ratio
@@ -708,11 +708,9 @@ class Panel:
     #                             elements(list_of_elements[0]).  
     #
     # Output: Object of the type Layout constructed.
-    def __init__(self, type_of_panel, size, local_pos, num_elem, list_of_elements, list_sizes, list_local_pos):
+    def __init__(self, size, local_pos, num_elem, list_of_elements, list_sizes, list_local_pos):
         # Type of this element -> PANEL
         self.type_of_elem       = PANEL
-        # Variable to check if this panel is the Main Panel         
-        self.is_main_panel      = type_of_panel
         # Original size of this panel
         self.original_size      = size
         # Current size of this panel
