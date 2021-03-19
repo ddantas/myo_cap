@@ -385,10 +385,10 @@ class Layout:
         self.spacers_in_border  = spacers_in_border
         # Calculate the number of vertical spacers inside the Layout
         # Note: A vertical spacer have vertical orientation and so spaces horizontally elements.
-        self.num_vert_spacers   = self.CalcNumVertSpacers(num_colums, self.spacers_in_border)
+        self.num_vert_spacers   = Layout.CalcNumVertSpacers(num_colums, self.spacers_in_border)
         # Calculate the number of horizontal spacers inside the Layout
         # Note: A horizontal spacer have horizontal orientation and so spaces vertically elements.
-        self.num_hor_spacers    = self.CalcNumHorSpacers (num_lines, self.spacers_in_border)
+        self.num_hor_spacers    = Layout.CalcNumHorSpacers (num_lines, self.spacers_in_border)
         # List of lists arranged as a matrix(grid) contain pointers to the elements(objects) attached to the layout.
         self.elements           = [None] * self.num_lines
         for line in range(self.num_lines):
@@ -396,7 +396,7 @@ class Layout:
         # Atach the Elements in the grid    
         self.AttachElements( num_lines, num_colums, list_of_elements)            
         # Calculates the size of the Elements in the grid    
-        elements_size = self.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer)
+        elements_size = Layout.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer, self.spacers_in_border)
         # Set the size of the Elements in the grid    
         self.SetSizeElements  (self.num_lines, self.num_colums, self.elements, elements_size)
         # Cauculates the local positions of the Elements in the grid
@@ -418,7 +418,7 @@ class Layout:
         # Update the Layout size
         self.size          = new_size
         # Calculate the new sizes for the elements inside this Layout
-        elements_size      = self.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer)
+        elements_size      = Layout.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer, self.spacers_in_border)
         # Update the elements size        
         self.SetSizeElements(self.num_lines, self.num_colums, self.elements, elements_size)
         # Calculate the new local positions for the elements inside this Layout
@@ -433,7 +433,7 @@ class Layout:
     #         spacers_in_border -> [True|False]. Determines whether or not spacers will be putted in the layout borders.
     #
     # Output: Integer. Number of vertical spacers inside the Layout.  
-    def CalcNumVertSpacers(self, num_colums, spacers_in_border):     
+    def CalcNumVertSpacers(num_colums, spacers_in_border):     
         # Uses spacers in the borders of the layout
         if(spacers_in_border):
             # Have zero colums
@@ -463,7 +463,7 @@ class Layout:
     #         spacers_in_border -> [True|False]. Determines whether or not spacers will be putted in the layout borders.
     #
     # Output: Integer. Number of horizontal spacers inside the Layout      
-    def CalcNumHorSpacers (self, num_lines, spacers_in_border):
+    def CalcNumHorSpacers (num_lines, spacers_in_border):
         # Uses spacers in the borders of the layout
         if(spacers_in_border):
             # Have zero lines
@@ -498,11 +498,11 @@ class Layout:
     #                             but your dimensions will serve to the elements size calculation.
     #
     # Output: Tuple(size in horizontal, size in vertical). Size of elements inside this Layout. Size in Pixels.        
-    def CalSizeElements(self, layout_size, num_lines, num_colums, spacer):
+    def CalSizeElements(layout_size, num_lines, num_colums, spacer, spacers_in_border):
         # The width it's the result of the horizontal usefull size inside the layout divided by the number of columms. 
-        width  = int( ( layout_size[HORIZONTAL] - self.CalcNumVertSpacers(num_colums, self.spacers_in_border) * spacer.size[HORIZONTAL] ) / num_colums )
+        width  = int( ( layout_size[HORIZONTAL] - Layout.CalcNumVertSpacers(num_colums, spacers_in_border) * spacer.size[HORIZONTAL] ) / num_colums )
         # The height it's the result of the vertical usefull size inside the layout divided by the number of lines.
-        height = int( ( layout_size[VERTICAL] - self.CalcNumHorSpacers (num_lines, self.spacers_in_border) * spacer.size[VERTICAL] ) / num_lines  )
+        height = int( ( layout_size[VERTICAL] - Layout.CalcNumHorSpacers (num_lines, spacers_in_border) * spacer.size[VERTICAL] ) / num_lines  )
         return (( width, height))
     
     # Method: Calculate the local position of the elements inside the Layout.
