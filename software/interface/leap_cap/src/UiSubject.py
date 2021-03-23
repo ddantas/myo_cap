@@ -35,23 +35,27 @@ FIXED_ASPECT_RATIO    = True
 
 class UiSubject:
     
-    def __init__(self, win_size, win_name, images_path, images_names, indexes_displayed_images, chosen_hand):
-        
-        # Initialize PyGame
-        pg.init()
-        
+    def __init__(self, win_size, win_title, images_path, images_names, indexes_displayed_images, chosen_hand):
+               
         # Store the current hand choice. The choice it's left or right hand.
         self.chosen_hand = chosen_hand     
         # List with the number of the images that will be displayed
         self.indexes_displayed_images = indexes_displayed_images            
         # Subject window size
         self.win_size = win_size          
-            
+ 
+        # Initialize PyGame
+        pg.init()
+        # Creates a resizeble PyGame Window for the Subject Window 
+        self.win   = pg.display.set_mode(size=win_size, flags = pg.RESIZABLE)  
+        # Sets the window title
+        pg.display.set_caption(win_title)
+           
         ## Layouts size definition                
         # Default vertical spacing used between elements in the window
-        vertical_spacing   = win_size[PGExt.VERTICAL]   * 0.02                
+        vertical_spacing   = self.win_size[PGExt.VERTICAL]   * 0.01                
         # Default horizontal spacing used between elements in the window
-        horizontal_spacing = win_size[PGExt.HORIZONTAL] * 0.01    
+        horizontal_spacing = self.win_size[PGExt.HORIZONTAL] * 0.02    
         # Vertical screen percentage for the Layouts in the window. Values between 0 - 1.0 -> 0 - 100% 
         self.vert_perc_images_layout          = 0.45
         self.vert_perc_time_bars_panel        = 0.07
@@ -64,17 +68,17 @@ class UiSubject:
         # The width value of the fingers letters layout will be setted to the image size as soon as image size be calculated.        
   
         # Creates a default spacer. Defines the default spacing used to separate elements in this window
-        self.default_spacer = PGExt.Spacer( (vertical_spacing, horizontal_spacing) )
+        self.default_spacer = PGExt.Spacer( (horizontal_spacing, vertical_spacing) )
         # Load the images
         self.images         = self.LoadImages(images_path, images_names)  
         # Load the displayed images
         self.disp_images    = self.LoadDisplayedImages(self.indexes_displayed_images)        
         
-        # Calculates the sizes of the Elements inside the Main Panel.
+        # Calculates the sizes of the visual Elements inside the Main Panel.
         self.calcSizeOfElements()
-        # Calculates the positions of the Elements inside the Main Panel.
+        # Calculates the positions of the visual elements inside the Main Panel.
         self.calcPosOfElements()
-        self.createLayouts()
+        self.createElements()
         self.createMainPanel()
         
     def LoadImages(self, images_path, images_names):
@@ -111,7 +115,7 @@ class UiSubject:
         # Image layout above all layouts. 
         self.image_layout_pos     = PGExt.ORIGIN 
         # Time bars layout it's below the Image layout and above the Joint Angles Layout.
-        self.time_bars_panel_pos        = (0, self.image_layout_size[PGExt.VERTICAL])                  
+        self.time_bars_panel_pos        = (PGExt.ORIGIN[PGExt.HORIZONTAL], self.image_layout_size[PGExt.VERTICAL])                  
         # Time bars layout it's below the Time Bars Panel and above the Fingers Letters Layout.
         self.joint_angles_layout_pos    = (self.default_spacer.GetSize()[PGExt.HORIZONTAL] , self.time_bars_panel_pos[PGExt.VERTICAL]     + 
                                            self.time_bars_panel_size[PGExt.VERTICAL]       + self.default_spacer.GetSize()[PGExt.VERTICAL])
@@ -161,6 +165,14 @@ class UiSubject:
         arb_value = (50, 50)      
         # Initial value of the joint angles bars.
         progress_perc = 1
+        # Spacer for the Joint Angles Layout
+        # Default vertical spacing used between elements in the window
+        vertical_spacing      = self.win_size[PGExt.VERTICAL]   * 0.002    
+        # Default horizontal spacing used between elements in the window
+        horizontal_spacing    = self.win_size[PGExt.HORIZONTAL] * 0.016  
+        # Creates a spacer for the Joint Angles Layout.
+        self.joint_ang_spacer = PGExt.Spacer( (horizontal_spacing, vertical_spacing) )
+        
         # Joint angles bars creation.
         self.joints_prog_bars = [None] * NUM_FINGERS    
         for finger_number in range(NUM_FINGERS):
@@ -168,21 +180,20 @@ class UiSubject:
             for joint_number in range(NUM_JOINTS):
                 self.joints_prog_bars[finger_number][joint_number] = PGExt.ProgressBar(PGExt.HORIZONTAL, arb_value, arb_value, 
                                                                                        progress_perc, PGExt.BLACK, PGExt.BLUE)    
-        SPACERS_IN_BORDER    = False
-        
+        SPACERS_IN_BORDER    = True        
         # Create a list of references to the joint progress bar objects. That list will be used to add this bars into the Layout. 
         lst_joints_prog_bars = []
         for finger_number in range(NUM_FINGERS):            
             for joint_number in range(NUM_JOINTS):                
                 lst_joints_prog_bars.append( self.joints_prog_bars[finger_number][joint_number] )
         joint_angles_layout  = PGExt.Layout(self.joint_angles_layout_size, self.joint_angles_layout_pos, NUM_JOINTS, NUM_FINGERS, 
-                                            lst_joints_prog_bars, self.default_spacer, SPACERS_IN_BORDER)
+                                            lst_joints_prog_bars, self.joint_ang_spacer, SPACERS_IN_BORDER)
         return joint_angles_layout
     
     def createFingersLettersLayout(self):
         pass
         
-    def createLayouts(self):                
+    def createElements(self):                
         self.images_layout = self.createImagesLayout(self.image_layout_size, self.image_layout_pos, self.disp_images, self.default_spacer)        
         self.time_bars_panel       = self.createTimeBarsPanel()        
         self.joint_angles_layout   = self.createJointAnglesLayout()
@@ -203,17 +214,26 @@ class UiSubject:
     def resize(self, new_win_size):
         self.win_size = new_win_size
         self.main_panel.Resize(new_win_size)
-        
-    def draw(self):
-        # Creates a resizeble PyGame Window for the Subject Window 
-        self.win   = pg.display.set_mode(size=self.win_size, flags = pg.RESIZABLE)  
+                        
+    def drawVisualElements(self):        
         # Get the draw parameters for each elements inside the main panel in the right order to be drawn.
-        draw_param = self.main_panel.GetDrawParam(PGExt.ORIGIN)        
-        self.win.fill(PGExt.WHITE) 
-        PGExt.Draw(self.win, draw_param)        
+        draw_param = self.main_panel.GetDrawParam(PGExt.ORIGIN)                  
+        PGExt.Draw(self.win, draw_param)                
+        
+    def drawContainersBorders(self):    
+        # Get the border draw parameters for each Panel or Layout inside the main panel including itself.
+        border_draw_param = self.main_panel.GetContainersBorders(PGExt.ORIGIN)    
+        # Draw the borders of each Panel or Layout inside the main panel including itself.        
+        PGExt.DrawContainersBorders(self.win, border_draw_param, PGExt.GREEN)                
+        
+    def draw(self):            
+        self.win.fill(PGExt.WHITE)       
+        self.drawVisualElements()
+        # Comment the next line to don't draw the borders of the panels and layouts.
+        self.drawContainersBorders()
         # Update the window with elements redrawed.
         pg.display.flip()
-      
+            
     def close(self):
         pg.display.quit()
             

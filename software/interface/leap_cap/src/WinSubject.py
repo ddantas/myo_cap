@@ -41,10 +41,15 @@ class WinSubject:
         self.ui_subject      = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, images_path, lst_images_names, 
                                                        displayed_images_num, UiSubject.LEFT_HAND)    
         self.close = False
-            
+        '''
+        # Initialise the values for the joint angles bars as zero.
+        self.joints_value = [None] * NUM_FINGERS    
+        for finger_number in range(NUM_FINGERS):
+            self.joints_value[finger_number] = [0] * NUM_JOINTS               
+        '''    
     def show(self):        
         self.ui_subject.draw()
-
+        
     def close(self):
         self.ui_subject.close()
 
@@ -98,7 +103,7 @@ class WinSubject:
                     if(event.type == pg.VIDEORESIZE):
                         new_win_size = pg.display.get_window_size()
                         self.ui_subject.resize(new_win_size)
-                        self.ui_subject.draw()
+                        self.ui_subject.draw()                        
                         
             else:   
                     return const.NO_KEY_PRESSED

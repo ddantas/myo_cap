@@ -272,11 +272,11 @@ class ProgressBar:
     def CalcInnerSize(self, orientation, outer_size, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):
-            inner_size = ( int( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) ), int( ( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) * progress_perc ) )
+            inner_size = ( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2), ( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) * progress_perc )
             return inner_size
         # Orientação horizontal
         else:            
-            inner_size = ( int( ( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) ) * progress_perc ), int( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) )
+            inner_size = ( ( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) * progress_perc ), outer_size[VERTICAL] - (self.border_to_bar_dist * 2) )
             return inner_size
         
     # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
@@ -295,13 +295,13 @@ class ProgressBar:
     def CalcInnerLocalPos(self, orientation, outer_size, outer_local_pos, progress_perc):
         # Orientação vertical
         if(orientation == VERTICAL):            
-            inner_local_pos = ( int( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist ),
-                                int( outer_local_pos[VERTICAL] + self.border_to_bar_dist + 
-                                  ( (outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) - ( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) * progress_perc) ) )
+            inner_local_pos = ( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist,
+                                outer_local_pos[VERTICAL] + self.border_to_bar_dist + 
+                                  ( (outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) - ( outer_size[VERTICAL] - (self.border_to_bar_dist * 2) ) * progress_perc)  )
             return inner_local_pos
         # Orientação horizontal
         else:            
-            inner_local_pos = ( int( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist ), int( outer_local_pos[VERTICAL] + self.border_to_bar_dist ) )      
+            inner_local_pos = ( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist , outer_local_pos[VERTICAL] + self.border_to_bar_dist )      
             return inner_local_pos
                  
     def SetProgress(self, progress_perc):
@@ -344,8 +344,16 @@ class Spacer:
     # Output: Object of the type Spacer constructed.
     def __init__(self, size):
         self.type_of_elem  = SPACER
-        self.size          = ( int(size[HORIZONTAL]) ,int(size[VERTICAL]) )        
+        # Original size of this panel
+        self.original_size = size
+        self.size          = size
 
+    def SetSize(self, new_size):               
+        self.size = new_size
+    
+    def GetOrigSize(self):
+        return self.original_size
+    
     def GetSize(self):       
         return self.size
     
@@ -375,7 +383,10 @@ class Layout:
     #
     # Output: Object of the type Layout constructed.
     def __init__(self, size, local_pos, num_lines, num_colums, list_of_elements, spacer, spacers_in_border):
-        self.type_of_elem       = LAYOUT 
+        self.type_of_elem       = LAYOUT         
+        # Original size of this panel
+        self.original_size      = size
+        # Current size of this panel
         self.size               = size
         self.local_pos          = local_pos
         self.num_tot_elements   = num_lines * num_colums 
@@ -415,10 +426,19 @@ class Layout:
     #
     # Output: None        
     def Resize(self, new_size):              
+        # Scale factor it's used to deduce the new sizes for spacer and indirectly new sizes e positions for the elements
+        # included in layout.
+        # scale_factor = (scale_factor_horizontal, scale_factor_vertical)
+        self.scale_factor = (new_size[HORIZONTAL]/self.original_size[HORIZONTAL] , new_size[VERTICAL]/self.original_size[VERTICAL])
+        # Calculate the new values for the Spacer
+        new_spacer_width  = self.spacer.GetOrigSize()[HORIZONTAL] * self.scale_factor[HORIZONTAL]
+        new_spacer_height = self.spacer.GetOrigSize()[VERTICAL]   * self.scale_factor[VERTICAL]   
+        # Update the spacer               
+        self.spacer.SetSize( (new_spacer_width, new_spacer_height) )        
         # Update the Layout size
-        self.size          = new_size
+        self.size         = new_size
         # Calculate the new sizes for the elements inside this Layout
-        elements_size      = Layout.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer, self.spacers_in_border)
+        elements_size      = Layout.CalSizeElements(self.size, self.num_lines, self.num_colums, self.spacer, self.spacers_in_border)        
         # Update the elements size        
         self.SetSizeElements(self.num_lines, self.num_colums, self.elements, elements_size)
         # Calculate the new local positions for the elements inside this Layout
@@ -680,6 +700,25 @@ class Layout:
                     list_draw_param = list_draw_param + self.elements[line][colum].GetDrawParam(pos_offset)
         # Returns a list with all draw parameters of all elements inside the layout concatenated     
         return list_draw_param
+    
+    def GetContainersBorders(self, pos_offset):
+        # Update the position offset with the local position of this Layout.
+        pos_offset      = ( pos_offset[HORIZONTAL] + self.local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.local_pos[VERTICAL]  )
+        list_draw_param = []
+        # Append the draw parameters of this layout into the lists containers borders to be draw.
+        elem_type = self.type_of_elem
+        elem_size = self.GetSize()
+        elem_pos  = pos_offset
+        list_draw_param.append([elem_type, elem_size, elem_pos])
+        for line in range(self.num_lines):
+            for colum in range(self.num_colums):
+                # It is a Panel or a Layout    
+                if( (self.elements[line][colum].type_of_elem == PANEL) or (self.elements[line][colum].type_of_elem == LAYOUT) ):
+                    # Join the current list with the lists of the element 
+                    list_draw_param = list_draw_param + self.elements[line][colum].GetContainersBorders(pos_offset)
+        # Returns a list with all borders of all containers inside this layout concatenated. And concatenate that list with 
+        # itself border.
+        return list_draw_param      
 
 ### Panel Class #################################################################################################################
 ## That Class represents a panel inside a Window, Panel or even another Panel. 
@@ -890,9 +929,26 @@ class Panel:
                 # Join the current list with the lists of the element 
                 list_draw_param = list_draw_param + self.elements[elem_order].GetDrawParam(pos_offset)
         # Returns a list with all draw parameters of all elements inside the panel concatenated     
-        return list_draw_param    
+        return list_draw_param   
 
-        
+    def GetContainersBorders(self, pos_offset):
+        # Update the position offset with the local position of this Panel.
+        pos_offset      = ( pos_offset[HORIZONTAL] + self.local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.local_pos[VERTICAL]  )
+        list_draw_param = []
+        # Append the border of this panel into the lists containers borders to be draw.
+        elem_type = self.type_of_elem
+        elem_size = self.GetSize()
+        elem_pos  = pos_offset
+        list_draw_param.append([elem_type, elem_size, elem_pos])
+        for elem_order in range(self.num_elem): 
+            # It is a Panel or a Layout    
+            if( (self.elements[elem_order].type_of_elem == PANEL) or (self.elements[elem_order].type_of_elem == LAYOUT) ):
+                # Join the current list with the lists of the element 
+                list_draw_param = list_draw_param + self.elements[elem_order].GetContainersBorders(pos_offset)
+        # Returns a list with all borders of all containers inside this panel concatenated. And concatenate that list with 
+        # itself border.
+        return list_draw_param       
+            
 ### Global Methods ##############################################################################################################    
 def Draw(win, elem_draw_param):
     num_elem_total = len(elem_draw_param)
@@ -926,5 +982,14 @@ def Draw(win, elem_draw_param):
             pg.draw.rect( win, border_color, (*border_position, *border_size), border_width ) 
             pg.draw.rect( win, progress_bar_color, (*progress_bar_position, *progress_bar_size) )    
         
-            
+def DrawContainersBorders(win, elem_draw_param, border_color):
+    num_elem_total = len(elem_draw_param)
+    for num_elem in range(num_elem_total):        
+        # Element it's a Container(Layout or Panel)
+        if( (elem_draw_param[num_elem][0] == LAYOUT) or (elem_draw_param[num_elem][0] == PANEL)):                
+            # Border parameters
+            border_size           = elem_draw_param[num_elem][1]
+            border_position       = elem_draw_param[num_elem][2]
+            border_width          = 1  
+            pg.draw.rect( win, border_color, (*border_position, *border_size), border_width ) 
 
