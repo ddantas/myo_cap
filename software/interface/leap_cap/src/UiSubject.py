@@ -31,18 +31,15 @@ NUM_JOINTS            = 2
 NUM_DISPLAYED_IMAGES  = 4
 IMAGES_FORMAT         = '.png'
 DEFAULT_IMAGES_SIZE   = (310, 370)
-FIXED_ASPECT_RATIO    = True
 
 class UiSubject:
     
-    def __init__(self, win_size, win_title, images_path, images_names, indexes_displayed_images, chosen_hand):
+    def __init__(self, win_size, win_title, images_path, displayed_images_names, chosen_hand):
                
         # Store the current hand choice. The choice it's left or right hand.
-        self.chosen_hand = chosen_hand     
-        # List with the number of the images that will be displayed
-        self.indexes_displayed_images = indexes_displayed_images            
+        self.chosen_hand  = chosen_hand 
         # Subject window size
-        self.win_size = win_size          
+        self.win_size = win_size                  
  
         # Initialize PyGame
         pg.init()
@@ -69,40 +66,20 @@ class UiSubject:
   
         # Creates a default spacer. Defines the default spacing used to separate elements in this window
         self.default_spacer = PGExt.Spacer( (horizontal_spacing, vertical_spacing) )
-        # Load the images
-        self.images         = self.LoadImages(images_path, images_names)  
         # Load the displayed images
-        self.disp_images    = self.LoadDisplayedImages(self.indexes_displayed_images)        
-        
+        self.disp_images    = self.LoadDisplayedImages(images_path, displayed_images_names)                
         # Calculates the sizes of the visual Elements inside the Main Panel.
         self.calcSizeOfElements()
         # Calculates the positions of the visual elements inside the Main Panel.
         self.calcPosOfElements()
         self.createElements()
-        self.createMainPanel()
-        
-        # Some Tests
-        self.SetGestureTimeProgress(0.95)
-        self.SetExperimentTimeProgress(0.5)
-        self.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,
-                                      0.6, 0.5, 0.4, 0.3, 0.2] )
-        #self.gesture_progress_bar.SetProgress(0.95)
-        #self.experiment_progress_bar.SetProgress(0.5)
-        #self.joints_prog_bars[0][4].SetProgress(0.1)
-        #print( self.GetJointAnglesProgress() )
-        
-    def LoadImages(self, images_path, images_names):
-        total_num_images = len(images_names)
-        images           = [None] * total_num_images
-        for image_num in range(total_num_images):  
-            image_surface = pg.image.load(images_path + images_names[image_num] + IMAGES_FORMAT)      
-            images[image_num] = PGExt.Image(PGExt.VERTICAL, DEFAULT_IMAGES_SIZE, PGExt.ORIGIN, image_surface, PGExt.GRAY, FIXED_ASPECT_RATIO)            
-        return images
+        self.createMainPanel()     
     
-    def LoadDisplayedImages(self, indexes_displayed_images):        
-        disp_images          = [None] * NUM_DISPLAYED_IMAGES
+    def LoadDisplayedImages(self, images_path, displayed_images_names):        
+        disp_images = [None] * NUM_DISPLAYED_IMAGES
         for image_num in range(NUM_DISPLAYED_IMAGES):  
-            disp_images[image_num] = self.images[ indexes_displayed_images[image_num] ]
+            image_surface          = pg.image.load(images_path + displayed_images_names[image_num] + IMAGES_FORMAT)      
+            disp_images[image_num] = PGExt.Image(PGExt.VERTICAL, DEFAULT_IMAGES_SIZE, PGExt.ORIGIN, image_surface, PGExt.GRAY, PGExt.FIXED_ASPECT_RATIO) 
         return disp_images
     
     # Calculates the sizes of the Elements inside the Main Panel.
@@ -219,7 +196,12 @@ class UiSubject:
         NUM_ELEMENTS = 3
         # Create the Main Panel that holds the Layouts created.
         self.main_panel = PGExt.Panel( self.win_size, PGExt.ORIGIN, NUM_ELEMENTS, self.lst_elements, self.lst_sizes_elements, self.lst_pos_elements)        
-            
+    
+    def SetDisplayedImages(self, orientation, images_path, displayed_images_names, frame_color, keep_aspect_ratio):    
+        for image_num in range(NUM_DISPLAYED_IMAGES):              
+            new_image_surface = pg.image.load(images_path + displayed_images_names[image_num] + IMAGES_FORMAT)      
+            self.disp_images[image_num].SetNewImage(orientation, new_image_surface, frame_color, keep_aspect_ratio)
+    
     def SetGestureTimeProgress(self, percentage):
         self.gesture_progress_bar.SetProgress(percentage) 
         

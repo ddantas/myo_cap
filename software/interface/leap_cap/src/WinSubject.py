@@ -17,6 +17,7 @@ images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'le
 import pygame as pg
 import UiSubject
 import Constants as const
+import PyGameLibExt as PGExt
 
 # Window parameters
 WINDOW_TITLE     = 'Subject'
@@ -35,18 +36,11 @@ images_names = {'1th_flex':  0, '1th_flexEC':  1, '1th_flex_curl':  2, '1th_flex
 
 class WinSubject:
     
-    def __init__(self):        
-        lst_images_names     = list(images_names.keys())
-        displayed_images_num = [0, 3, 5, 7]
-        self.ui_subject      = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, images_path, lst_images_names, 
-                                                       displayed_images_num, UiSubject.LEFT_HAND)    
+    def __init__(self):                
+        displayed_images_names = ['1th_flex', '1th_flex_curlEC', '2in_flexEC', '2in_flex_curlEC']
+        self.ui_subject        = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, images_path, displayed_images_names, UiSubject.LEFT_HAND)    
         self.close = False
-        '''
-        # Initialise the values for the joint angles bars as zero.
-        self.joints_value = [None] * NUM_FINGERS    
-        for finger_number in range(NUM_FINGERS):
-            self.joints_value[finger_number] = [0] * NUM_JOINTS               
-        '''    
+ 
     def show(self):        
         self.ui_subject.draw()
         
@@ -103,6 +97,15 @@ class WinSubject:
                     if(event.type == pg.VIDEORESIZE):
                         new_win_size = pg.display.get_window_size()
                         self.ui_subject.resize(new_win_size)
+                        '''
+                        # Some Tests
+                        self.ui_subject.SetGestureTimeProgress(0.95)
+                        self.ui_subject.SetExperimentTimeProgress(0.5)
+                        self.ui_subject.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,
+                                                                 0.6, 0.5, 0.4, 0.3, 0.2] )
+                        displayed_images_names = ['5mn_flexEC', '1th_flex_curl', '5mn_flex_curl', 'hand_open']
+                        self.ui_subject.SetDisplayedImages(PGExt.VERTICAL, images_path, displayed_images_names, PGExt.GRAY, PGExt.FIXED_ASPECT_RATIO)                           
+                        '''
                         self.ui_subject.draw()                        
                         
             else:   

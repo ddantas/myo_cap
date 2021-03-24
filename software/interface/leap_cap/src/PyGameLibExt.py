@@ -15,6 +15,8 @@ GRAY  = (230, 230, 230)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+# Constant for aspect ratio
+FIXED_ASPECT_RATIO = True
 
 # Constants for orientation
 HORIZONTAL = 0
@@ -52,8 +54,7 @@ class Image:
     # Output: Object of the type ProgressBar constructed.
     '''
     def __init__(self, orientation, frame_size, frame_local_pos, image_surface, frame_color, keep_aspect_ratio):        
-        self.type_of_elem  = IMAGE
-        # Orientation of the progress bar
+        self.type_of_elem      = IMAGE        
         self.orientation       = orientation
         self.frame_size        = frame_size
         self.frame_local_pos   = frame_local_pos             
@@ -185,6 +186,23 @@ class Image:
     def SetLocalPos(self, frame_local_pos):        
         # Sets the new frame local position
         self.frame_local_pos = frame_local_pos
+        
+    def SetNewImage(self, orientation, new_image_surface, frame_color, keep_aspect_ratio):
+        self.orientation       = orientation            
+        self.frame_color       = frame_color
+        self.keep_aspect_ratio = keep_aspect_ratio        
+        # Convert the new original surface to one sufarce with 24 bits of color depth
+        self.orig_image        = new_image_surface.convert(24)       
+        # Get the image original size
+        self.orig_image_size   = self.orig_image.get_rect().size
+        # Calculates the aspect ratio
+        self.aspect_ratio      = self.orig_image_size[HORIZONTAL] / self.orig_image_size[VERTICAL]       
+        # Calculates the image size
+        self.image_size        = self.CalcImageSize(self.orientation, self.keep_aspect_ratio, self.frame_size, self.aspect_ratio)
+        # Resize the Image
+        self.image             = pg.transform.smoothscale(self.orig_image, self.image_size)
+        # Calcuculates the image local position in the frame        
+        self.image_local_pos   = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)        
                 
     def GetFrameSize(self):       
         return self.frame_size
