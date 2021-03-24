@@ -20,8 +20,8 @@ INDICATOR = 3
 THUMB     = 4
 
 # Fingers Joints options
-JOINT_METACARP_FALANG = 0
-JOINT_FALANG_FALANG   = 1
+JOINT_FALANG_FALANG   = 0
+JOINT_METACARP_FALANG = 1
 
 # Fingers parameters
 NUM_FINGERS           = 5
@@ -80,9 +80,16 @@ class UiSubject:
         self.calcPosOfElements()
         self.createElements()
         self.createMainPanel()
+        
+        # Some Tests
+        self.SetGestureTimeProgress(0.95)
+        self.SetExperimentTimeProgress(0.5)
+        self.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,
+                                      0.6, 0.5, 0.4, 0.3, 0.2] )
         #self.gesture_progress_bar.SetProgress(0.95)
         #self.experiment_progress_bar.SetProgress(0.5)
-        #self.joints_prog_bars[3][0].SetProgress(0.1)
+        #self.joints_prog_bars[0][4].SetProgress(0.1)
+        #print( self.GetJointAnglesProgress() )
         
     def LoadImages(self, images_path, images_names):
         total_num_images = len(images_names)
@@ -175,20 +182,19 @@ class UiSubject:
         horizontal_spacing    = self.win_size[PGExt.HORIZONTAL] * 0.016  
         # Creates a spacer for the Joint Angles Layout.
         self.joint_ang_spacer = PGExt.Spacer( (horizontal_spacing, vertical_spacing) )
-        
+        SPACERS_IN_BORDER    = True      
         # Joint angles bars creation.
-        self.joints_prog_bars = [None] * NUM_FINGERS    
-        for finger_number in range(NUM_FINGERS):
-            self.joints_prog_bars[finger_number] = [None] * NUM_JOINTS       
-            for joint_number in range(NUM_JOINTS):
-                self.joints_prog_bars[finger_number][joint_number] = PGExt.ProgressBar(PGExt.VERTICAL, arb_value, arb_value, 
-                                                                                       progress_perc, PGExt.BLACK, PGExt.BLUE)    
-        SPACERS_IN_BORDER    = True        
+        self.joints_prog_bars = [None] * NUM_JOINTS    
+        for joint_number in range(NUM_JOINTS):
+            self.joints_prog_bars[joint_number] = [None] * NUM_FINGERS       
+            for finger_number in range(NUM_FINGERS):
+                self.joints_prog_bars[joint_number][finger_number] = PGExt.ProgressBar(PGExt.VERTICAL, arb_value, arb_value, 
+                                                                                       progress_perc, PGExt.BLACK, PGExt.BLUE)          
         # Create a list of references to the joint progress bar objects. That list will be used to add this bars into the Layout. 
         lst_joints_prog_bars = []
         for joint_number in range(NUM_JOINTS):
             for finger_number in range(NUM_FINGERS):                                        
-                lst_joints_prog_bars.append( self.joints_prog_bars[finger_number][joint_number] )
+                lst_joints_prog_bars.append( self.joints_prog_bars[joint_number][finger_number] )
         joint_angles_layout  = PGExt.Layout(self.joint_angles_layout_size, self.joint_angles_layout_pos, NUM_JOINTS, NUM_FINGERS, 
                                             lst_joints_prog_bars, self.joint_ang_spacer, SPACERS_IN_BORDER)
         return joint_angles_layout
@@ -214,6 +220,30 @@ class UiSubject:
         # Create the Main Panel that holds the Layouts created.
         self.main_panel = PGExt.Panel( self.win_size, PGExt.ORIGIN, NUM_ELEMENTS, self.lst_elements, self.lst_sizes_elements, self.lst_pos_elements)        
             
+    def SetGestureTimeProgress(self, percentage):
+        self.gesture_progress_bar.SetProgress(percentage) 
+        
+    def GetGestureTimeProgress(self):        
+        return self.gesture_progress_bar.GetProgress() 
+    
+    def SetExperimentTimeProgress(self, percentage):
+        self.experiment_progress_bar.SetProgress(percentage) 
+        
+    def GetExperimentTimeProgress(self):        
+        return self.experiment_progress_bar.GetProgress() 
+    
+    def SetJointAnglesProgress(self, lst_percentages):
+        for joint_number in range(NUM_JOINTS):
+            for finger_number in range(NUM_FINGERS):      
+                self.joints_prog_bars[joint_number][finger_number].SetProgress( lst_percentages[ joint_number * NUM_FINGERS + finger_number] )                   
+    
+    def GetJointAnglesProgress(self):        
+        lst_percentages = []
+        for joint_number in range(NUM_JOINTS):
+            for finger_number in range(NUM_FINGERS): 
+                lst_percentages.append( self.joints_prog_bars[joint_number][finger_number].GetProgress() )
+        return lst_percentages
+    
     def resize(self, new_win_size):
         self.win_size = new_win_size
         self.main_panel.Resize(new_win_size)

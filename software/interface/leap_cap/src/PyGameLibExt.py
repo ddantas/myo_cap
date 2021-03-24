@@ -308,6 +308,9 @@ class ProgressBar:
         self.progress_perc = progress_perc   
         self.UpdateInnerBar()
     
+    def GetProgress(self):
+        return self.progress_perc
+    
     def UpdateInnerBar(self):
         self.inner_size      = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
         self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
