@@ -176,8 +176,18 @@ class UiSubject:
                                             lst_joints_prog_bars, self.joint_ang_spacer, SPACERS_IN_BORDER)
         return joint_angles_layout
     
-    def createFingersLettersLayout(self):
-        pass
+    def createLetters(self):
+        lst_letters = ['T', 'I', 'M', 'R', 'P']
+        letters     = [None] * NUM_FINGERS
+        font = pg.font.SysFont('Arial', 60)
+        for finger_number in range(NUM_FINGERS):            
+            letter_size    = font.size( lst_letters[finger_number] )
+            letter_surface = font.render( lst_letters[finger_number], True, PGExt.BLACK)    
+            letters[finger_number] = PGExt.Image(PGExt.HORIZONTAL, letter_size, PGExt.ORIGIN, letter_surface, PGExt.GRAY, PGExt.FIXED_ASPECT_RATIO) 
+        return letters
+            
+    def createFingersLettersLayout(self):  
+        self.finger_letters = self.createLetters()
         
     def createElements(self):                
         self.images_layout = self.createImagesLayout(self.image_layout_size, self.image_layout_pos, self.disp_images, self.default_spacer)        
