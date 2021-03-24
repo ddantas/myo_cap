@@ -276,7 +276,7 @@ class ProgressBar:
             return inner_size
         # Orientação horizontal
         else:            
-            inner_size = ( ( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) * progress_perc ), outer_size[VERTICAL] - (self.border_to_bar_dist * 2) )
+            inner_size = ( ( outer_size[HORIZONTAL] - (self.border_to_bar_dist * 2) ) * progress_perc, outer_size[VERTICAL] - (self.border_to_bar_dist * 2) )
             return inner_size
         
     # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
@@ -306,6 +306,11 @@ class ProgressBar:
                  
     def SetProgress(self, progress_perc):
         self.progress_perc = progress_perc   
+        self.UpdateInnerBar()
+    
+    def UpdateInnerBar(self):
+        self.inner_size      = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
+        self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
                 
     def SetSize(self, outer_size):     
         # Sets the new outer size for the progress bar 

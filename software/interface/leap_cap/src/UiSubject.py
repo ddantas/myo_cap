@@ -80,6 +80,9 @@ class UiSubject:
         self.calcPosOfElements()
         self.createElements()
         self.createMainPanel()
+        #self.gesture_progress_bar.SetProgress(0.95)
+        #self.experiment_progress_bar.SetProgress(0.5)
+        #self.joints_prog_bars[3][0].SetProgress(0.1)
         
     def LoadImages(self, images_path, images_names):
         total_num_images = len(images_names)
@@ -145,12 +148,12 @@ class UiSubject:
         experiment_progress_bar_pos  = ( self.default_spacer.GetSize()[PGExt.HORIZONTAL], gesture_progress_bar_size[PGExt.VERTICAL] +  
                                                                                           self.default_spacer.GetSize()[PGExt.VERTICAL] )        
         # Progress Bars Creation
-        gesture_progress_bar         = PGExt.ProgressBar(PGExt.VERTICAL, experiment_progress_bar_size, gesture_progress_bar_pos,
+        self.gesture_progress_bar         = PGExt.ProgressBar(PGExt.HORIZONTAL, gesture_progress_bar_size, gesture_progress_bar_pos,
                                                     gesture_time_perc, PGExt.BLACK, PGExt.BLUE)
-        experiment_progress_bar      = PGExt.ProgressBar(PGExt.VERTICAL, experiment_progress_bar_size, experiment_progress_bar_pos, 
+        self.experiment_progress_bar      = PGExt.ProgressBar(PGExt.HORIZONTAL, experiment_progress_bar_size, experiment_progress_bar_pos, 
                                                     experiment_time_perc, PGExt.BLACK, PGExt.BLUE)
         
-        lst_time_bars      = [gesture_progress_bar, experiment_progress_bar]
+        lst_time_bars      = [self.gesture_progress_bar, self.experiment_progress_bar]
         lst_sizes_bars     = [gesture_progress_bar_size, experiment_progress_bar_size]
         lst_pos_bars       = [gesture_progress_bar_pos, experiment_progress_bar_pos]
         NUM_ELEM_IN_PANEL  = 2                        
@@ -178,13 +181,13 @@ class UiSubject:
         for finger_number in range(NUM_FINGERS):
             self.joints_prog_bars[finger_number] = [None] * NUM_JOINTS       
             for joint_number in range(NUM_JOINTS):
-                self.joints_prog_bars[finger_number][joint_number] = PGExt.ProgressBar(PGExt.HORIZONTAL, arb_value, arb_value, 
+                self.joints_prog_bars[finger_number][joint_number] = PGExt.ProgressBar(PGExt.VERTICAL, arb_value, arb_value, 
                                                                                        progress_perc, PGExt.BLACK, PGExt.BLUE)    
         SPACERS_IN_BORDER    = True        
         # Create a list of references to the joint progress bar objects. That list will be used to add this bars into the Layout. 
         lst_joints_prog_bars = []
-        for finger_number in range(NUM_FINGERS):            
-            for joint_number in range(NUM_JOINTS):                
+        for joint_number in range(NUM_JOINTS):
+            for finger_number in range(NUM_FINGERS):                                        
                 lst_joints_prog_bars.append( self.joints_prog_bars[finger_number][joint_number] )
         joint_angles_layout  = PGExt.Layout(self.joint_angles_layout_size, self.joint_angles_layout_pos, NUM_JOINTS, NUM_FINGERS, 
                                             lst_joints_prog_bars, self.joint_ang_spacer, SPACERS_IN_BORDER)
@@ -200,11 +203,11 @@ class UiSubject:
         #self.fingers_angles_layout = self.createFingersLettersLayout()
         
     def createMainPanel(self):
-        # List of Layouts that will be added to Main Panel.
+        # List of Elements that will be added to Main Panel.
         self.lst_elements       = [self.images_layout, self.time_bars_panel, self.joint_angles_layout]
-        # List of the sizes of each Layout that will be added to Main Panel.
+        # List of the sizes of each Element that will be added to Main Panel.
         self.lst_sizes_elements = [self.image_layout_size, self.time_bars_panel_size, self.joint_angles_layout_size]
-        # List of the positions for each Layout inside of the panel. 
+        # List of the positions for each Element inside of the main panel. 
         self.lst_pos_elements   = [self.image_layout_pos, self.time_bars_panel_pos, self.joint_angles_layout_pos]                
         # Number of Elements in the main panel
         NUM_ELEMENTS = 3
@@ -230,7 +233,7 @@ class UiSubject:
         self.win.fill(PGExt.WHITE)       
         self.drawVisualElements()
         # Comment the next line to don't draw the borders of the panels and layouts.
-        self.drawContainersBorders()
+        #self.drawContainersBorders()
         # Update the window with elements redrawed.
         pg.display.flip()
             
