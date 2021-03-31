@@ -40,20 +40,19 @@ PANEL             = 4
 ## Image Class ##################################################################################################################
 class Image: 
     
-    '''
     # Method: Constructor for the class.
     #
-    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation for the progress bar.
-    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size for the progress bar in pixels. 
-    #         outer_local_pos  -> Tuple(outer local position in horizontal, outer local position in vertical). outer local position for this 
-    #                             progress bar inside a [Panel|Layout].                             
-    #         progress_perc    -> Float value [0.0 - 1.0]. The initial percentage of progress for the bar.  
-    #                             Can be changed after by calling the SetProgress method. 
-    #         border_color     -> Color used in the borders of the progress bar.
-    #         bar_color        -> Color used in the internal bar that indicates progress or level.
+    # Input : orientation       -> [VERTICAL|HORIZONTAL]. Orientation for the image inside the frame.
+    #         frame_size        -> Tuple(outer size in horizontal, outer size in vertical). Size for frame in pixels. 
+    #         outer_local_pos   -> Tuple(outer local position in horizontal, outer local position in vertical). Outer local position for  
+    #                              the frame inside a [Panel|Layout].                             
+    #         image_surface     -> Surface created with Pygame lib. That image in surface format it's located inside a frame.
+    #                              The method pygame.image.load() can be used to transform images in surfaces.
+    #         frame_color       -> Color used in frame of a image. Works as background color.
+    #         keep_aspect_ratio -> [True|False]. It's recomended to use ASPECT_RATIO_FIXED or ASPECT_RATIO_NOT_FIXED constants defined in 
+    #                              this lib.
     #
-    # Output: Object of the type ProgressBar constructed.
-    '''
+    # Output: Object of the type Image constructed.    
     def __init__(self, orientation, frame_size, frame_local_pos, image_surface, frame_color, keep_aspect_ratio):        
         self.type_of_elem      = IMAGE        
         self.orientation       = orientation
@@ -74,17 +73,16 @@ class Image:
         # Calcuculates the image local position in the frame        
         self.image_local_pos   = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
     
-    '''
-    # Method: Resizes this progress bar.
-    #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
-    #         local position of this progress bar. 
-    #         In that case it's just a method that standardize a resize method since other elements need a more complex action
-    #         in a resize situation than just call SetSize.  
+
+    # Method: Resizes this Image Object. 
     #
-    # Input : new_size         -> The new size for the progress bar.
+    #         This method resize the frame size and consequently the image size.
+    #         How the flag keep_aspect_ratio can be True, the local positioning of the image inside the frame need to be recalculated.
+    #         As weel as the image size for the case above.  
+    #
+    # Input : new_frame_size         -> The new size for the progress bar.
     #
     # Output: None    
-    '''
     def Resize(self, new_frame_size):        
         # Sets the new frame size
         self.SetFrameSize(new_frame_size)       
@@ -96,19 +94,19 @@ class Image:
         self.image_local_pos  = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
 
         
-    '''        
-    # Method: Calculate the inner size of the progress bar. The inner size it's the size of the bar that indicates progress 
-    #         or level of a variable.
-    #         That size it's dependent of the progress or level. 
-    #         If the progress pecentage it's 1.0 (full bar), than this size will be the outer size of the progress bar minus
-    #         six pixels in the vertical and in the horizontal.
+    
+    # Method: Calculates the size of image inside the frame. The calculus depends of the flag keep_aspect_ratio. 
+    #         It can calculate a size for the image that it's equal to the frame, or can calculate a size for the image to 
+    #         fit horizontally or vertically the image into the frame respecting the fixed aspect ratio depending the orientation
+    #         the image.    
     #
-    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
-    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
-    #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
+    # Input : orientation       -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
+    #         keep_aspect_ratio -> [True|False]. It's recomended to use ASPECT_RATIO_FIXED or ASPECT_RATIO_NOT_FIXED constants defined in 
+    #                              this lib.
+    #         frame_size        -> Tuple(outer size in horizontal, outer size in vertical). Size for frame in pixels. 
+    #         aspect_ratio      -> The original aspect ratio of the surface added to this Image object. 
     #
-    # Output: inner_size       -> Tuple(inner size in horizontal, inner size in vertical). Size for bar inside the progress bar in pixels. 
-    '''
+    # Output: image_size        -> Tuple(size in horizontal, size in vertical). Size in pixels of the image inside the frame.     
     def CalcImageSize(self, orientation, keep_aspect_ratio, frame_size, aspect_ratio):
         
         # The Aspect Ratio should be kept.
@@ -147,21 +145,17 @@ class Image:
         else:
             # The Image occupies all the size of the frame.
             return frame_size 
-    '''
-    # Method: Calculate the inner local position of the progress bar. The inner local position it's the local of the bar that indicates progress 
-    #         or level of a variable.
-    #         That local position it's dependent of the progress or level.     
-    #         For different orientations the calculus it's different.
+    
+    # Method: Calculates the inner local position of the image inside the frame. 
+    #         The local position it's dependent of the flag aspect_ratio.
     #
-    # Input : orientation      -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
-    #         outer_size       -> Tuple(outer size in horizontal, outer size in vertical). Size of the progress bar in pixels.  
-    #         outer_local_pos  -> Tuple(outer local position in horizontal, outer loca position in vertical). outer local position for this 
-    #                             progress bar inside a [Panel|Layout].                             
-    #         progress_perc    -> Float value [0.0 - 1.0]. The current percentage of progress for the bar.  
+    # Input : keep_aspect_ratio -> [True|False]. It's recomended to use ASPECT_RATIO_FIXED or ASPECT_RATIO_NOT_FIXED constants defined in 
+    #                              this lib.
+    #         frame_size        -> Tuple(outer size in horizontal, outer size in vertical). Size for frame in pixels. 
+    #         image_size        -> Tuple(size in horizontal, size in vertical). The current size of the image.
     #
-    # Output: inner_local_pos  -> Tuple(inner local position in horizontal, inner local position in vertical). Inner local position for bar 
-    #                             inside the progress bar. Tuple of values in pixels.     
-    '''
+    # Output: image_local_pos  -> Tuple(inner local position in horizontal, inner local position in vertical). Inner local position for  
+    #                             image inside the frame. Tuple of values in pixels.     
     def CalcImageLocalPos(self, keep_aspect_ratio, frame_size, image_size):
         # New_image_size
         new_image_local_pos = [None] * 2
@@ -180,14 +174,36 @@ class Image:
             
         return (new_image_local_pos[HORIZONTAL], new_image_local_pos[VERTICAL] )
                    
+    # Method: Sets the size of the frame.     
+    #
+    # Input : frame_size        -> Tuple(outer size in horizontal, outer size in vertical). Size for frame in pixels. 
+    #
+    # Output: None.
     def SetFrameSize(self, frame_size):     
         # Sets the new frame size 
         self.frame_size      = frame_size        
-        
+    
+    # Method: Sets the local position of the frame inside a [Layout|Panel]                             
+    #
+    # Input : frame_local_pos    -> Tuple(local position in horizontal, local position in vertical). Local position in pixels. 
+    #
+    # Output: None.        
     def SetLocalPos(self, frame_local_pos):        
         # Sets the new frame local position
         self.frame_local_pos = frame_local_pos
         
+    # Method: Calculates the inner local position of the image inside the frame. 
+    #         The local position it's dependent of the flag aspect_ratio.
+    #
+    # Input : orientation       -> [VERTICAL|HORIZONTAL]. Orientation of the progress bar.
+    #                              this lib.
+    #         new_image_surface -> Surface created with Pygame lib. New image in surface format that will substitute the current image
+    #                              inside a frame.
+    #         frame_color       -> Color used in frame of a image. Works as background color.
+    #         keep_aspect_ratio -> [True|False]. It's recomended to use ASPECT_RATIO_FIXED or ASPECT_RATIO_NOT_FIXED constants defined in 
+    #                              this lib.
+    #
+    # Output: None
     def SetNewImage(self, orientation, new_image_surface, frame_color, keep_aspect_ratio):
         self.orientation       = orientation            
         self.frame_color       = frame_color
@@ -205,27 +221,70 @@ class Image:
         # Calcuculates the image local position in the frame        
         self.image_local_pos   = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)        
                 
+    # Method: Gets the size of the frame.     
+    #
+    # Input : None
+    #
+    # Output: frame_size        -> Tuple(frame size in horizontal, frame size in vertical). Size of the frame in pixels. 
     def GetFrameSize(self):       
         return self.frame_size
     
+    # Method: Gets the image size.     
+    #
+    # Input : None
+    #
+    # Output: image_size        -> Tuple(image size in horizontal, image size in vertical). Size of the image in pixels. 
     def GetImageSize(self):
         return self.image_size
-            
+    
+    # Method: Gets the local position of the frame inside a [Layout|Panel] .     
+    #
+    # Input : None
+    #
+    # Output: frame_local_pos   -> Tuple(local position in horizontal, local position in vertical). Local position of the frame in pixels.         
     def GetFrameLocalPos(self):        
         return self.frame_local_pos  
     
+    # Method: Gets the local position of the image inside a frame.     
+    #
+    # Input : None
+    #
+    # Output: image_local_pos   -> Tuple(local position in horizontal, local position in vertical). Local position of the image in pixels.         
     def GetImageLocalPos(self):        
         return self.image_local_pos  
     
+    # Method: It's a standardization method. Gets the size of the frame.     
+    #
+    # Input : None
+    #
+    # Output: frame_size        -> Tuple(frame size in horizontal, frame size in vertical). Size of the frame in pixels. 
     def GetSize(self):
         return self.GetFrameSize()
     
+    # Method: It's a standardization method. Gets the local position of the frame inside a [Layout|Panel] .     
+    #
+    # Input : None
+    #
+    # Output: frame_local_pos   -> Tuple(local position in horizontal, local position in vertical). Local position of the frame in pixels.
     def GetLocalPos(self):        
         return self.GetFrameLocalPos()
     
+    # Method: Gets the original surface added or setted in this image object.     
+    #
+    # Input : None
+    #
+    # Output: orig_image        -> Pygame Surface object. Original surface added or setted in this image object. 
     def GetOrigImage(self):
         return self.orig_image
     
+    # Method: Returns a list of draw parameters of this image object.   
+    #         Note: The global position of the image it's the result of the sum of the local position of 
+    #               this image with the position of the element that contais it(pos_offset). 
+    #               global position = pos_offset + local_pos.
+    #         The list returned can be added to another list and than passed to the "Draw" method inside this Lib. 
+    # Input : pos_offset       -> Position Offset in pixels. It's used to calculate the global(in the window) position of this 
+    #                             image. It accumulates the offsets up to this Image.    
+    # Output: list             -> List of draw parameters. 
     def GetDrawParam(self, pos_offset):
        
         return ([ self.type_of_elem, self.frame_size  , ( pos_offset[HORIZONTAL] + self.frame_local_pos[HORIZONTAL] , pos_offset[VERTICAL] + self.frame_local_pos[VERTICAL] ),
