@@ -17,7 +17,6 @@ images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'le
 import pygame as pg
 import UiSubject
 import Constants as const
-import PyGameLibExt as PGExt
 
 # Window parameters
 WINDOW_TITLE     = 'Subject'
@@ -38,7 +37,7 @@ class WinSubject:
     
     def __init__(self):                
         displayed_images_names = ['1th_flex', '1th_flex_curlEC', '2in_flexEC', '2in_flex_curlEC']
-        self.ui_subject        = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, images_path, displayed_images_names, UiSubject.LEFT_HAND)    
+        self.ui_subject        = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, images_path, displayed_images_names, UiSubject.RIGHT_HAND)    
         self.close = False
  
     def show(self):        
@@ -106,8 +105,10 @@ class WinSubject:
                         displayed_images_names = ['5mn_flexEC', '1th_flex_curl', '5mn_flex_curl', 'hand_open']
                         self.ui_subject.SetDisplayedImages(PGExt.VERTICAL, images_path, displayed_images_names, PGExt.GRAY, PGExt.FIXED_ASPECT_RATIO)                           
                         '''
-                        self.ui_subject.draw()                        
+                        #self.ui_subject.SetHand(UiSubject.LEFT_HAND)
+                        self.ui_subject.draw()      
                         
+
             else:   
                     return const.NO_KEY_PRESSED
                            

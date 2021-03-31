@@ -16,7 +16,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Constant for aspect ratio
-FIXED_ASPECT_RATIO = True
+ASPECT_RATIO_FIXED     = True
+ASPECT_RATIO_NOT_FIXED = False
 
 # Constants for orientation
 HORIZONTAL = 0
@@ -221,6 +222,9 @@ class Image:
     
     def GetLocalPos(self):        
         return self.GetFrameLocalPos()
+    
+    def GetOrigImage(self):
+        return self.orig_image
     
     def GetDrawParam(self, pos_offset):
        

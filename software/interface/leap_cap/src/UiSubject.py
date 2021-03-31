@@ -9,8 +9,8 @@ import pygame as pg
 import PyGameLibExt as PGExt
 
 # Hand options
-LEFT_HAND  = 0
-RIGHT_HAND = 1
+RIGHT_HAND = 0
+LEFT_HAND  = 1
 
 # Fingers options
 PINKY     = 0
@@ -35,11 +35,13 @@ DEFAULT_IMAGES_SIZE   = (310, 370)
 class UiSubject:
     
     def __init__(self, win_size, win_title, images_path, displayed_images_names, chosen_hand):
-               
-        # Store the current hand choice. The choice it's left or right hand.
-        self.chosen_hand  = chosen_hand 
+                       
         # Subject window size
-        self.win_size = win_size                  
+        self.win_size               = win_size                  
+        self.images_path            = images_path
+        self.displayed_images_names = displayed_images_names
+        # Store the current hand choice. The choice it's left or right hand.
+        self.chosen_hand            = chosen_hand 
  
         # Initialize PyGame
         pg.init()
@@ -50,28 +52,29 @@ class UiSubject:
            
         ## Layouts size definition                
         # Default vertical spacing used between elements in the window
-        vertical_spacing   = self.win_size[PGExt.VERTICAL]   * 0.01                
+        self.vertical_spacing   = self.win_size[PGExt.VERTICAL]   * 0.01                
         # Default horizontal spacing used between elements in the window
-        horizontal_spacing = self.win_size[PGExt.HORIZONTAL] * 0.02    
+        self.horizontal_spacing = self.win_size[PGExt.HORIZONTAL] * 0.02    
         # Vertical screen percentage for the Layouts in the window. Values between 0 - 1.0 -> 0 - 100% 
-        self.vert_perc_images_layout          = 0.45
-        self.vert_perc_time_bars_panel        = 0.07
+        self.vert_perc_images_layout          = 0.495
+        self.vert_perc_time_bars_panel        = 0.065
         self.vert_perc_joint_angles_layout    = 0.38
-        self.vert_perc_fingers_letters_layout = 0.1
+        self.vert_perc_fingers_letters_layout = 0.041
+        # One Vertical spacing between the panels are been used too.
         # Horizontal screen percentage for the Layouts in the window. Values between 0 - 1.0 -> 0 - 100% 
         self.horiz_perc_images_paenl          = 1
         self.horiz_perc_time_bars_layout      = 1
         # The width value of the joints angles layout will be setted to the image size as soon as image size be calculated.
-        # The width value of the fingers letters layout will be setted to the image size as soon as image size be calculated.        
-  
+        # The width value of the fingers letters layout will be setted to the image size as soon as image size be calculated.      
+        
         # Creates a default spacer. Defines the default spacing used to separate elements in this window
-        self.default_spacer = PGExt.Spacer( (horizontal_spacing, vertical_spacing) )
-        # Load the displayed images
-        self.disp_images    = self.LoadDisplayedImages(images_path, displayed_images_names)                
+        self.default_spacer = PGExt.Spacer( (self.horizontal_spacing, self.vertical_spacing) )
+          
         # Calculates the sizes of the visual Elements inside the Main Panel.
         self.calcSizeOfElements()
         # Calculates the positions of the visual elements inside the Main Panel.
         self.calcPosOfElements()
+        
         self.createElements()
         self.createMainPanel()     
     
@@ -79,7 +82,7 @@ class UiSubject:
         disp_images = [None] * NUM_DISPLAYED_IMAGES
         for image_num in range(NUM_DISPLAYED_IMAGES):  
             image_surface          = pg.image.load(images_path + displayed_images_names[image_num] + IMAGES_FORMAT)      
-            disp_images[image_num] = PGExt.Image(PGExt.VERTICAL, DEFAULT_IMAGES_SIZE, PGExt.ORIGIN, image_surface, PGExt.GRAY, PGExt.FIXED_ASPECT_RATIO) 
+            disp_images[image_num] = PGExt.Image(PGExt.VERTICAL, DEFAULT_IMAGES_SIZE, PGExt.ORIGIN, image_surface, PGExt.GRAY, PGExt.ASPECT_RATIO_FIXED) 
         return disp_images
     
     # Calculates the sizes of the Elements inside the Main Panel.
@@ -107,8 +110,9 @@ class UiSubject:
         self.joint_angles_layout_pos    = (self.default_spacer.GetSize()[PGExt.HORIZONTAL] , self.time_bars_panel_pos[PGExt.VERTICAL]     + 
                                            self.time_bars_panel_size[PGExt.VERTICAL]       + self.default_spacer.GetSize()[PGExt.VERTICAL])
         # Fingers Letters Layout it's below the Joint Angles Layout.
-        self.fingers_letters_layout_pos = (0, self.joint_angles_layout_pos[PGExt.VERTICAL] + self.joint_angles_layout_size[PGExt.VERTICAL]                                         
-                                                                                           + self.default_spacer.GetSize()[PGExt.VERTICAL])        
+        self.fingers_letters_layout_pos = (self.default_spacer.GetSize()[PGExt.HORIZONTAL] , self.joint_angles_layout_pos[PGExt.VERTICAL] + 
+                                           self.joint_angles_layout_size[PGExt.VERTICAL]                                                  )        
+        
     def createImagesLayout(self, size, image_layout_pos, displayed_images, spacer):  
         NUM_COLUMNS_IN_LAYOUT  = NUM_DISPLAYED_IMAGES                
         NUM_LINES_IN_LAYOUT    = 1    
@@ -116,7 +120,7 @@ class UiSubject:
         images_layout = PGExt.Layout(size, image_layout_pos, NUM_LINES_IN_LAYOUT, NUM_COLUMNS_IN_LAYOUT, displayed_images, spacer, SPACERS_IN_BORDER)
         return images_layout
     
-    # Do not make convert float pixels values into int values that will reduce the final size and positions precision.
+    # Do not convert float pixels values into int values because that will reduce the final size and positions precision.
     def createTimeBarsPanel(self):
         # Percentage of the remaining gesture time. Value betweeen 0.0 - 1 -> 0 - 100% 
         gesture_time_perc    = 1
@@ -153,11 +157,11 @@ class UiSubject:
         # Initial value of the joint angles bars.
         progress_perc = 1
         # Spacer for the Joint Angles Layout
-        # Default vertical spacing used between elements in the window
+        # Vertical spacing used between elements in this layout.
         vertical_spacing      = self.win_size[PGExt.VERTICAL]   * 0.002    
-        # Default horizontal spacing used between elements in the window
-        horizontal_spacing    = self.win_size[PGExt.HORIZONTAL] * 0.016  
-        # Creates a spacer for the Joint Angles Layout.
+        # Horizontal spacing used between elements in this layout.
+        horizontal_spacing    = self.win_size[PGExt.HORIZONTAL] * 0.022  
+        # Creates a spacer for the Joint Angles and Figers Letters Layouts.
         self.joint_ang_spacer = PGExt.Spacer( (horizontal_spacing, vertical_spacing) )
         SPACERS_IN_BORDER    = True      
         # Joint angles bars creation.
@@ -176,34 +180,79 @@ class UiSubject:
                                             lst_joints_prog_bars, self.joint_ang_spacer, SPACERS_IN_BORDER)
         return joint_angles_layout
     
+    # Creates a list of Image objects(PyGameLibExt). Each element is one of five letters that represents each finger.
     def createLetters(self):
-        lst_letters = ['T', 'I', 'M', 'R', 'P']
-        letters     = [None] * NUM_FINGERS
-        font = pg.font.SysFont('Arial', 60)
+        # Default: Right Hand. 
+        lst_letters = ['T', 'I', 'M', 'R', 'P'];   font_size = 150
+        # Left Hand.
+        if (self.chosen_hand):  lst_letters = ['P', 'R', 'M', 'I', 'T']
+        font = pg.font.SysFont('Arial', font_size)
+        
+        # Gets the biggest dimensions of the letters.        
+        width_max  = 0; height_max = 0
         for finger_number in range(NUM_FINGERS):            
             letter_size    = font.size( lst_letters[finger_number] )
-            letter_surface = font.render( lst_letters[finger_number], True, PGExt.BLACK)    
-            letters[finger_number] = PGExt.Image(PGExt.HORIZONTAL, letter_size, PGExt.ORIGIN, letter_surface, PGExt.GRAY, PGExt.FIXED_ASPECT_RATIO) 
-        return letters
+            # Bigger width
+            if( letter_size[PGExt.HORIZONTAL] > width_max  ):
+                width_max = letter_size[PGExt.HORIZONTAL]
+            # Bigger height
+            if( letter_size[PGExt.VERTICAL]   > height_max ):
+                height_max = letter_size[PGExt.VERTICAL]
+        
+        # Creates a background surface with the same dimensions for each letter.
+        flags = 0; depth = 24 
+        bg_surface = [None] * NUM_FINGERS
+        for finger_number in range(NUM_FINGERS):                   
+            bg_surface[finger_number] = pg.Surface((width_max, height_max), flags, depth)
+            bg_surface[finger_number].fill(PGExt.WHITE)    
+      
+        # Creates a surface for each letter.
+        ANTI_ALIASING = True;  font_color = PGExt.BLACK;  font_bg_color = PGExt.WHITE
+        letter_surface = [None] * NUM_FINGERS
+        for finger_number in range(NUM_FINGERS):                        
+            letter_surface[finger_number] = font.render( lst_letters[finger_number], ANTI_ALIASING, font_color, font_bg_color)    
+
+        # Fuses the background surface with the letter surface. For each letter. The letter it's in the center of the background.        
+        for finger_number in range(NUM_FINGERS):   
+            horizontal_offset = ( width_max  - letter_surface[finger_number].get_width()  ) / 2
+            vertical_offset   = ( height_max - letter_surface[finger_number].get_height() ) / 2
+            offset            = ( horizontal_offset, vertical_offset ) 
+            # Fuse the surfaces into the bg_surface 
+            bg_surface[finger_number].blit(letter_surface[finger_number], offset)            
+            
+        # Creates a list of Image objects(PyGameLibExt) for each of five letters.        
+        letters_imgs = [None] * NUM_FINGERS
+        letter_size  = (width_max, height_max)
+        for finger_number in range(NUM_FINGERS):                        
+            letters_imgs[finger_number] = PGExt.Image(PGExt.VERTICAL, letter_size, PGExt.ORIGIN, bg_surface[finger_number], 
+                                                      PGExt.WHITE, PGExt.ASPECT_RATIO_FIXED)                             
+        return letters_imgs    
             
     def createFingersLettersLayout(self):  
-        self.finger_letters = self.createLetters()
+        self.finger_letters_imgs = self.createLetters()
+        NUM_COLUMNS_IN_LAYOUT    = NUM_FINGERS
+        NUM_LINES_IN_LAYOUT      = 1    
+        SPACERS_IN_BORDER        = True
+        fingers_letters_layout   = PGExt.Layout(self.fingers_letters_layout_size, self.fingers_letters_layout_pos, NUM_LINES_IN_LAYOUT, 
+                                              NUM_COLUMNS_IN_LAYOUT, self.finger_letters_imgs, self.joint_ang_spacer, SPACERS_IN_BORDER)
+        return fingers_letters_layout
         
-    def createElements(self):                
+    def createElements(self):                        
+        self.disp_images   = self.LoadDisplayedImages(self.images_path, self.displayed_images_names)                
         self.images_layout = self.createImagesLayout(self.image_layout_size, self.image_layout_pos, self.disp_images, self.default_spacer)        
         self.time_bars_panel       = self.createTimeBarsPanel()        
         self.joint_angles_layout   = self.createJointAnglesLayout()
-        #self.fingers_angles_layout = self.createFingersLettersLayout()
+        self.fingers_angles_layout = self.createFingersLettersLayout()
         
     def createMainPanel(self):
         # List of Elements that will be added to Main Panel.
-        self.lst_elements       = [self.images_layout, self.time_bars_panel, self.joint_angles_layout]
+        self.lst_elements       = [self.images_layout, self.time_bars_panel, self.joint_angles_layout, self.fingers_angles_layout]
         # List of the sizes of each Element that will be added to Main Panel.
-        self.lst_sizes_elements = [self.image_layout_size, self.time_bars_panel_size, self.joint_angles_layout_size]
+        self.lst_sizes_elements = [self.image_layout_size, self.time_bars_panel_size, self.joint_angles_layout_size, self.fingers_letters_layout_size]
         # List of the positions for each Element inside of the main panel. 
-        self.lst_pos_elements   = [self.image_layout_pos, self.time_bars_panel_pos, self.joint_angles_layout_pos]                
+        self.lst_pos_elements   = [self.image_layout_pos, self.time_bars_panel_pos, self.joint_angles_layout_pos, self.fingers_letters_layout_pos]                
         # Number of Elements in the main panel
-        NUM_ELEMENTS = 3
+        NUM_ELEMENTS = 4
         # Create the Main Panel that holds the Layouts created.
         self.main_panel = PGExt.Panel( self.win_size, PGExt.ORIGIN, NUM_ELEMENTS, self.lst_elements, self.lst_sizes_elements, self.lst_pos_elements)        
     
@@ -212,6 +261,18 @@ class UiSubject:
             new_image_surface = pg.image.load(images_path + displayed_images_names[image_num] + IMAGES_FORMAT)      
             self.disp_images[image_num].SetNewImage(orientation, new_image_surface, frame_color, keep_aspect_ratio)
     
+    def SetHand(self, chosen_hand):
+        if not(self.chosen_hand == chosen_hand):            
+            # Get the current letters images inverting the order of ther letter images.
+            new_order_letters_imgs = [None] * NUM_FINGERS
+            for finger_number in range(NUM_FINGERS):   
+                new_order_letters_imgs[finger_number] = self.finger_letters_imgs[ (NUM_FINGERS - 1) - finger_number ].GetOrigImage()
+            # Updates the Letters Images.
+            for finger_number in range(NUM_FINGERS):   
+                orientation = PGExt.VERTICAL;   frame_color = PGExt.WHITE;  keep_aspect_ratio =  PGExt.ASPECT_RATIO_FIXED                
+                self.finger_letters_imgs[finger_number].SetNewImage(orientation, new_order_letters_imgs[finger_number], frame_color, keep_aspect_ratio)            
+            self.chosen_hand = chosen_hand
+            
     def SetGestureTimeProgress(self, percentage):
         self.gesture_progress_bar.SetProgress(percentage) 
         
