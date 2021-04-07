@@ -85,7 +85,6 @@ class Image:
         # Calcuculates the image local position in the frame        
         self.image_local_pos   = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
     
-
     # Method: Resizes this Image Object. 
     #
     #         This method resize the frame size and consequently the image size.
@@ -104,9 +103,7 @@ class Image:
         self.image            = pg.transform.smoothscale(self.orig_image, self.image_size)
         # Calcuculates the image local position in the frame        
         self.image_local_pos  = self.CalcImageLocalPos(self.keep_aspect_ratio, self.frame_size, self.image_size)
-
-        
-    
+            
     # Method: Calculates the size of image inside the frame. The calculus depends of the flag keep_aspect_ratio. 
     #         The method can calculate a size for the image that it's equal to the frame, or can calculate a size for the image to 
     #         fit horizontally or vertically into the frame respecting the fixed aspect ratio depending the orientation
@@ -301,13 +298,12 @@ class Image:
         return ([ self.type_of_elem, self.frame_size  , ( pos_offset[HORIZONTAL] + self.frame_local_pos[HORIZONTAL] , pos_offset[VERTICAL] + self.frame_local_pos[VERTICAL] ),
                                      self.image       , ( pos_offset[HORIZONTAL] + self.frame_local_pos[HORIZONTAL] + self.image_local_pos[HORIZONTAL] , 
                                                           pos_offset[VERTICAL]   + self.frame_local_pos[VERTICAL]   + self.image_local_pos[VERTICAL]                        ),
-                                     self.frame_color  ])        
-            
-    
+                                     self.frame_color  ])                        
 
 
 ## Progress Bar Class ###########################################################################################################
 ## A Progress Bar it's a visual element used to express progress or level of variables.
+## It can be added to a panel or layouts to receive auto resizing and positioning inside a window.
 ## It can have horizontal or vertical orientation. Also have a color used in it's border and other used in the bar. 
 ## It's progress can be setted calling the SetProgress method. And it's size can be choosed during the construction.
 class ProgressBar:
@@ -341,7 +337,7 @@ class ProgressBar:
     # Method: Resizes this progress bar.
     #         A call to this method probably will be folowed by a call of the SetLocalPos method to update the
     #         local position of this progress bar. 
-    #         In that case it's just a method that standardize a resize method since other elements need a more complex action
+    #         In that case it's just a method that standardizea a resize method since other elements need a more complex action
     #         in a resize situation than just call SetSize.  
     #
     # Input : new_size         -> The new size for the progress bar.
@@ -459,7 +455,7 @@ class Spacer:
     
 ## Layout Class #################################################################################################################
 ## That Class represents a layout inside a Window, Panel or even another Layout. 
-## A Layout it's a structure that mananges automatically the size and position of elements attached to it.
+## A Layout it's a structure that manages automatically the size and position of elements attached to it.
 ## Elements that can be attached are of the type: Image, Progress Bar, Panel, and Layout.  
 ## A Layout have (number of lines * number of colums) elements organized in (number of lines) lines and (number of colums) colums.
 ## The elements attached are spaced vertically and horizontally according with the spacer object provided to the class constructor.
@@ -1092,4 +1088,18 @@ def DrawContainersBorders(win, elem_draw_param, border_color):
             border_position       = elem_draw_param[num_elem][2]
             border_width          = 1  
             pg.draw.rect( win, border_color, (*border_position, *border_size), border_width ) 
-
+            
+def rgb2GrayScale(surface):
+    # Get the image original size
+    image_size   = surface.get_rect().size
+    for line in range (image_size[HORIZONTAL]):
+        for column in range (image_size[VERTICAL]):
+            pixel = surface.get_at((line, column))
+            RED = 0           ; GREEN = 1           ; BLUE = 2; #ALPHA = 3  
+            RED_WEIGHT = 0.299; GREEN_WEIGHT = 0.587; BLUE_WEIGHT = 0.114
+            grayscale_value = pixel[RED] * RED_WEIGHT + pixel[GREEN] * GREEN_WEIGHT + pixel[BLUE] * BLUE_WEIGHT
+            grayscale_value = int(grayscale_value)
+            if(grayscale_value > 255): grayscale_value = 255 
+            pixel[RED] = grayscale_value; pixel[GREEN] = grayscale_value; pixel[BLUE] = grayscale_value; 
+            surface.set_at((line, column), pixel)
+            
