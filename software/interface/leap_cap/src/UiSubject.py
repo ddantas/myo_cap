@@ -29,19 +29,18 @@ NUM_JOINTS            = 2
 
 # Images parameters
 NUM_DISPLAYED_IMAGES  = 4
-IMAGES_FORMAT         = '.png'
 DEFAULT_IMAGES_SIZE   = (310, 370)
+IMAGES_FORMAT         = '.png'
 
 class UiSubject:
     
-    def __init__(self, win_size, win_title, images_path, displayed_images_names, chosen_hand):
+    def __init__(self, win_size, win_title, lst_displayed_imgs, chosen_hand):
                        
         # Subject window size
-        self.win_size               = win_size                  
-        self.images_path            = images_path
-        self.displayed_images_names = displayed_images_names
+        self.win_size           = win_size                  
+        self.lst_displayed_imgs = lst_displayed_imgs
         # Store the current hand choice. The choice it's left or right hand.
-        self.chosen_hand            = chosen_hand 
+        self.chosen_hand        = chosen_hand 
  
         # Initialize PyGame
         pg.init()
@@ -78,11 +77,10 @@ class UiSubject:
         self.createElements()
         self.createMainPanel()     
     
-    def LoadDisplayedImages(self, images_path, displayed_images_names):        
+    def LoadDisplayedImages(self, lst_displayed_imgs):        
         disp_images = [None] * NUM_DISPLAYED_IMAGES
-        for image_num in range(NUM_DISPLAYED_IMAGES):  
-            image_surface          = pg.image.load(images_path + displayed_images_names[image_num] + IMAGES_FORMAT)      
-            disp_images[image_num] = PGExt.Image(PGExt.VERTICAL, DEFAULT_IMAGES_SIZE, PGExt.ORIGIN, image_surface, PGExt.GRAY, PGExt.ASPECT_RATIO_FIXED) 
+        for image_num in range(NUM_DISPLAYED_IMAGES):              
+            disp_images[image_num] = PGExt.Image(PGExt.VERTICAL, DEFAULT_IMAGES_SIZE, PGExt.ORIGIN, lst_displayed_imgs[image_num], PGExt.GRAY, PGExt.ASPECT_RATIO_FIXED) 
         return disp_images
     
     # Calculates the sizes of the Elements inside the Main Panel.
@@ -238,7 +236,7 @@ class UiSubject:
         return fingers_letters_layout
         
     def createElements(self):                        
-        self.disp_images   = self.LoadDisplayedImages(self.images_path, self.displayed_images_names)                
+        self.disp_images   = self.LoadDisplayedImages(self.lst_displayed_imgs)                
         self.images_layout = self.createImagesLayout(self.image_layout_size, self.image_layout_pos, self.disp_images, self.default_spacer)        
         self.time_bars_panel       = self.createTimeBarsPanel()        
         self.joint_angles_layout   = self.createJointAnglesLayout()
@@ -256,10 +254,9 @@ class UiSubject:
         # Create the Main Panel that holds the Layouts created.
         self.main_panel = PGExt.Panel( self.win_size, PGExt.ORIGIN, NUM_ELEMENTS, self.lst_elements, self.lst_sizes_elements, self.lst_pos_elements)        
     
-    def SetDisplayedImages(self, orientation, images_path, displayed_images_names, frame_color, keep_aspect_ratio):    
-        for image_num in range(NUM_DISPLAYED_IMAGES):              
-            new_image_surface = pg.image.load(images_path + displayed_images_names[image_num] + IMAGES_FORMAT)      
-            self.disp_images[image_num].SetNewImage(orientation, new_image_surface, frame_color, keep_aspect_ratio)
+    def SetDisplayedImages(self, orientation, lst_displayed_imgs, frame_color, keep_aspect_ratio):    
+        for image_num in range(NUM_DISPLAYED_IMAGES):                          
+            self.disp_images[image_num].SetNewImage(orientation, lst_displayed_imgs[image_num], frame_color, keep_aspect_ratio)
     
     def SetHand(self, chosen_hand):
         if not(self.chosen_hand == chosen_hand):            
@@ -311,14 +308,14 @@ class UiSubject:
         border_draw_param = self.main_panel.GetContainersBorders(PGExt.ORIGIN)    
         # Draw the borders of each Panel or Layout inside the main panel including itself.        
         PGExt.DrawContainersBorders(self.win, border_draw_param, PGExt.GREEN)                
-        
+                    
     def draw(self):            
         self.win.fill(PGExt.WHITE)       
         self.drawVisualElements()
         # Comment the next line to don't draw the borders of the panels and layouts.
         #self.drawContainersBorders()
-        # Update the window with elements redrawed.
-        pg.display.flip()
+        # Update the window with elements redrawed.        
+        pg.display.flip()                
             
     def close(self):
         pg.display.quit()
