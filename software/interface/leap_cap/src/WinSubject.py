@@ -7,17 +7,15 @@ Created on Wed Mar 10 14:31:41 2021
 
 import sys
 import os
-import PyGameLibExt as PGExt
-
-# obtain the myograph path
-myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
-# adds the myograph path for future inclusions 
-sys.path.append(myograph_import_path)
-images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'leap_cap') , 'images') , '')    
-
 import pygame as pg
+import PyGameLibExt as PGExt
 import UiSubject
 import Constants as const
+
+# Image parameters
+IMAGES_FORMAT         = '.png'
+GRAYSCALE_SUFFIX      = 'EC'
+NUM_DISPLAYED_IMAGES  = 4
 
 # Window parameters
 WINDOW_TITLE     = 'Subject'
@@ -26,30 +24,18 @@ DEFAULT_WIN_SIZE = (1024, 576)
 #DEFAULT_WIN_SIZE = (1280, 720)
 
 
-IMAGES_FORMAT         = '.png'
-GRAYSCALE_SUFFIX      = 'EC'
-NUM_DISPLAYED_IMAGES  = 4
-
-# Images names for the hand gesstures. It's a dictionary for indexes.
-images_names  = {'1th_flex':  0, '1th_flexEC':  1, '1th_flex_curl':  2, '1th_flex_curlEC':  3, 
-                 '2in_flex':  4, '2in_flexEC':  5, '2in_flex_curl':  6, '2in_flex_curlEC':  7,
-                 '3md_flex':  8, '3md_flexEC':  9, '3md_flex_curl': 10, '3md_flex_curlEC': 11, 
-                 '4an_flex': 12, '4an_flexEC': 13, '4an_flex_curl': 14, '4an_flex_curlEC': 15, 
-                 '5mn_flex': 16, '5mn_flexEC': 17, '5mn_flex_curl': 18, '5mn_flex_curlEC': 19, 
-                 'hand_close': 20, 'hand_closeEC': 21, 'hand_open': 22, 'hand_openEC'    : 23} 
-
-
 class WinSubject:
     
     def __init__(self):                
-        self.routine_img_dict      = {}
-        # Will receive the list of gesture image names by a variable in the settings object. After the Routine loader be constructed.    
-        routine_img_names          = ['1th_flex', '1th_flex_curl', '2in_flex', '2in_flex_curl', '3md_flex', '3md_flex_curl',
-                                      '4an_flex', '4an_flex_curl', '5mn_flex', '5mn_flex_curl', 'hand_close', 'hand_open'  ]
-        self.routine_img_surfaces  = WinSubject.loadRoutineImages(self.routine_img_dict, images_path, routine_img_names)
+        
+        images_path  = WinSubject.getImagesDir()
+        images_names = WinSubject.getImagesNames(images_path)
         # Will receive the list of gesture sequence by a variable in the settings object. After the Routine loader be constructed.    
         self.gesture_sequence      = ['1th_flex', '1th_flex_curl', '2in_flex', '2in_flex_curl', '3md_flex', '3md_flex_curl',
                                       '4an_flex', '4an_flex_curl', '5mn_flex', '5mn_flex_curl', 'hand_close', 'hand_open'  ]
+        
+        self.routine_img_dict      = {}        
+        self.routine_img_surfaces  = WinSubject.loadRoutineImages(self.routine_img_dict, images_path, images_names)        
         self.current_gesture_index = 0
         images_names_to_disp       = WinSubject.createLstImgNamesToDisplay(self.gesture_sequence, self.current_gesture_index)
         lst_imgs_to_disp           = WinSubject.createLstImgsToDisplay(images_names_to_disp, self.routine_img_dict, self.routine_img_surfaces)                
@@ -187,3 +173,19 @@ class WinSubject:
                            
                 
         return const.CLOSE_SUBJECT_WIN                               
+    
+    def getImagesDir():
+        # obtain the myograph path
+        myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]        
+        # adds the myograph path for future inclusions 
+        sys.path.append(myograph_import_path)
+        images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'leap_cap') , 'images') , '')    
+        return images_path
+    
+    def getImagesNames(images_path):
+        # Gets the file names of the images inside the 'images_path'
+        images_file_lst = next(os.walk(images_path))[2] 
+        # Removes the file extension
+        for image_index in range( len(images_file_lst)):
+            images_file_lst[image_index] = images_file_lst[image_index].split('.')[0]
+        return images_file_lst    
