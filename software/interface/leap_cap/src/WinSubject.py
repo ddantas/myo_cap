@@ -10,30 +10,38 @@ import os
 import pygame as pg
 import PyGameLibExt as PGExt
 import UiSubject
+
+# obtain the myograph path
+myograph_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]        
+# adds the myograph path for future inclusions 
+sys.path.append(myograph_path)
+
 import Constants as const
+
 
 # Image parameters
 IMAGES_FORMAT         = '.png'
 GRAYSCALE_SUFFIX      = 'EC'
 NUM_DISPLAYED_IMAGES  = 4
 
+# Gestures index definitions
+GESTURE               = 0
+GESTURE_TIME          = 1
+  
 # Window parameters
-WINDOW_TITLE     = 'Subject'
-#DEFAULT_WIN_SIZE = (800, 600)
-DEFAULT_WIN_SIZE = (1024, 576)
-#DEFAULT_WIN_SIZE = (1280, 720)
+WINDOW_TITLE          = 'Subject'
+DEFAULT_WIN_SIZE      = (1024, 576)
 
 
 class WinSubject:
     
-    def __init__(self):                
-        
-        images_path  = WinSubject.getImagesDir()
-        images_names = WinSubject.getImagesNames(images_path)
-        # Will receive the list of gesture sequence by a variable in the settings object. After the Routine loader be constructed.    
-        self.gesture_sequence      = ['1th_flex', '1th_flex_curl', '2in_flex', '2in_flex_curl', '3md_flex', '3md_flex_curl',
-                                      '4an_flex', '4an_flex_curl', '5mn_flex', '5mn_flex_curl', 'hand_close', 'hand_open'  ]
-        
+    def __init__(self):                        
+        images_path                = WinSubject.getImagesDir()
+        images_names               = WinSubject.getImagesNames(images_path)
+        gesture_routine_path       = WinSubject.getGestureSeqPath()
+        gesture_and_time_seq       = WinSubject.getGestureSequence(gesture_routine_path, 'default.txt')           
+        self.gesture_sequence      = gesture_and_time_seq[GESTURE]
+        self.gesture_time_seq      = gesture_and_time_seq[GESTURE_TIME]
         self.routine_img_dict      = {}        
         self.routine_img_surfaces  = WinSubject.loadRoutineImages(self.routine_img_dict, images_path, images_names)        
         self.current_gesture_index = 0
@@ -173,13 +181,10 @@ class WinSubject:
                            
                 
         return const.CLOSE_SUBJECT_WIN                               
+
     
-    def getImagesDir():
-        # obtain the myograph path
-        myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]        
-        # adds the myograph path for future inclusions 
-        sys.path.append(myograph_import_path)
-        images_path = os.path.join( os.path.join( os.path.join(myograph_import_path, 'leap_cap') , 'images') , '')    
+    def getImagesDir():        
+        images_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'images') , '')    
         return images_path
     
     def getImagesNames(images_path):
@@ -189,3 +194,21 @@ class WinSubject:
         for image_index in range( len(images_file_lst)):
             images_file_lst[image_index] = images_file_lst[image_index].split('.')[0]
         return images_file_lst    
+    
+    def getGestureSeqPath():
+        gesture_routine_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'routine') , '')    
+        return gesture_routine_path
+    
+    def getGestureSequence(gesture_routine_path, gesture_seq_name):
+        gesture_seq_file = open(gesture_routine_path + gesture_seq_name, 'r')
+        gestures_lines   = gesture_seq_file.readlines()        
+        gesture_sequence = []
+        gesture_time_seq = []        
+        for line in gestures_lines:
+            if not ( (line[0] == '#') or (line[0] == ' ') or (line[0] == '\n') ):
+                temp = line.replace('\n','').split(';') 
+                gesture_sequence.append( temp[0] );     gesture_time_seq.append( temp[1] )                
+        gesture_seq_file.close()        
+        return gesture_sequence, gesture_time_seq
+
+        
