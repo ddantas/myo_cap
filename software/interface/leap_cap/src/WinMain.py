@@ -149,8 +149,10 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         AuxFunc.showMessage('warning!', 'Function in development!')
     
     def showSubjectWindow(self):        
+        # Will get the time step from the Settings
+        time_step = 500
         routine_file_name = self.leap_cap_settings.getCaptureRoutine()
-        self.win_subject  = WinSubject.WinSubject(routine_file_name)
+        self.win_subject  = WinSubject.WinSubject(routine_file_name, time_step, WinSubject.RIGHT_HAND)
         self.win_subject.show()
         self.subj_win_is_open = 1
 

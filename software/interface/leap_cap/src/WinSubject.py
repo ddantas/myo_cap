@@ -27,6 +27,10 @@ NUM_DISPLAYED_IMAGES  = 4
 # Gestures index definitions
 GESTURE               = 0
 GESTURE_TIME          = 1
+
+# Hand options
+RIGHT_HAND = 0
+LEFT_HAND  = 1
   
 # Window parameters
 WINDOW_TITLE          = 'Subject'
@@ -35,19 +39,33 @@ DEFAULT_WIN_SIZE      = (1024, 576)
 
 class WinSubject:
     
-    def __init__(self, routine_name):                        
+    def __init__(self, routine_name, time_step, hand_chosen):     
+        ## Gesture images parameters                   
         images_path                = WinSubject.getImagesDir()
         images_names               = WinSubject.getImagesNames(images_path)
         gesture_routine_path       = WinSubject.getGestureSeqPath()
-        gesture_and_time_seq       = WinSubject.getGestureSequence(gesture_routine_path, routine_name)           
-        self.gesture_sequence      = gesture_and_time_seq[GESTURE]
-        self.gesture_time_seq      = gesture_and_time_seq[GESTURE_TIME]
+        gesture_and_duration_seq   = WinSubject.getGestureSequence(gesture_routine_path, routine_name)           
+        self.gesture_sequence      = gesture_and_duration_seq[GESTURE]
+        self.gesture_duration_seq  = gesture_and_duration_seq[GESTURE_TIME]
         self.routine_img_dict      = {}        
         self.routine_img_surfaces  = WinSubject.loadRoutineImages(self.routine_img_dict, images_path, images_names)        
         self.current_gesture_index = 0
         images_names_to_disp       = WinSubject.createLstImgNamesToDisplay(self.gesture_sequence, self.current_gesture_index)
         lst_imgs_to_disp           = WinSubject.createLstImgsToDisplay(images_names_to_disp, self.routine_img_dict, self.routine_img_surfaces)                
-        self.ui_subject            = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, lst_imgs_to_disp, UiSubject.RIGHT_HAND)    
+        
+        ## Time bars parameters      
+        self.time_step             = time_step
+        # Current time inside a gesture time 
+        self.gesture_time          = 0
+        # Current time inside a experiment time
+        self.experiment_time       = 0
+        self.experiment_duration   = WinSubject.calcExperimentDuration(self.gesture_duration_seq)
+        
+        ## Joint Angles Bars
+        self.hand_chosen           = hand_chosen
+        
+        ## UI parameters                   
+        self.ui_subject            = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, lst_imgs_to_disp, hand_chosen)    
         self.close = False
  
     def show(self):        
@@ -124,17 +142,17 @@ class WinSubject:
                     
                     if event.type == pg.KEYDOWN:                                      
                         # left hand
-                        if event.key == pg.K_1:     return 'PINKY'      #return const.PINKY                            
-                        if event.key == pg.K_2:     return 'RING'       #return const.RING                            
-                        if event.key == pg.K_3:     return 'MIDDLE'     #return const.MIDDLE
-                        if event.key == pg.K_4:     return 'INDICATOR'  #return const.INDICATOR                                                    
-                        if event.key == pg.K_SPACE: self.nextGesture(); self.ui_subject.draw();   return 'THUMB'  #return const.THUMB                              
+                        if event.key == pg.K_1:     self.nextTimeStep(); self.ui_subject.draw();   return 'PINKY'      #return const.PINKY                            
+                        if event.key == pg.K_2:     return 'RING'        #return const.RING                            
+                        if event.key == pg.K_3:     return 'MIDDLE'      #return const.MIDDLE
+                        if event.key == pg.K_4:     return 'INDICATOR'   #return const.INDICATOR                                                    
+                        if event.key == pg.K_SPACE: self.nextGesture();  self.ui_subject.draw();   return 'THUMB'  #return const.THUMB                              
                         # right hand
-                        if event.key == pg.K_SPACE: return 'THUMB'      #return const.THUMB 
-                        if event.key == pg.K_7:     return 'INDICATOR'  #return const.INDICATOR                                                        
-                        if event.key == pg.K_8:     return 'MIDDLE'     #return const.MIDDLE
-                        if event.key == pg.K_9:     return 'RING'       #return const.RING
-                        if event.key == pg.K_0:     return 'PINKY'      #return const.PINKY        
+                        if event.key == pg.K_SPACE: return 'THUMB'       #return const.THUMB 
+                        if event.key == pg.K_7:     return 'INDICATOR'   #return const.INDICATOR                                                        
+                        if event.key == pg.K_8:     return 'MIDDLE'      #return const.MIDDLE
+                        if event.key == pg.K_9:     return 'RING'        #return const.RING
+                        if event.key == pg.K_0:     return 'PINKY'       #return const.PINKY        
                             
                     if(event.type == pg.VIDEORESIZE):
                         new_win_size = pg.display.get_window_size();    self.ui_subject.resize(new_win_size);   self.ui_subject.draw()       
@@ -161,20 +179,48 @@ class WinSubject:
         return gesture_routine_path
     
     def getGestureSequence(gesture_routine_path, gesture_seq_name):
-        gesture_seq_file = open(gesture_routine_path + gesture_seq_name, 'r')
-        gestures_lines   = gesture_seq_file.readlines()        
-        gesture_sequence = []
-        gesture_time_seq = []        
+        gesture_seq_file     = open(gesture_routine_path + gesture_seq_name, 'r')
+        gestures_lines       = gesture_seq_file.readlines()        
+        gesture_sequence     = []
+        gesture_duration_seq = []        
         for line in gestures_lines:
             if not ( (line[0] == '#') or (line[0] == ' ') or (line[0] == '\n') ):
                 temp = line.replace('\n','').split(';') 
-                gesture_sequence.append( temp[0] );     gesture_time_seq.append( temp[1] )                
+                gesture_sequence.append( temp[0] );     gesture_duration_seq.append( int( temp[1] ) )                
         gesture_seq_file.close()        
-        return gesture_sequence, gesture_time_seq
-
+        return gesture_sequence, gesture_duration_seq
+    
+    def calcExperimentDuration(gesture_duration_seq):
+        experiment_duration = 0
+        for gesture in range( len(gesture_duration_seq) ) :
+            experiment_duration = experiment_duration + gesture_duration_seq[gesture]    
+        return experiment_duration
+    
+    def updateGestureTimeBar(self):
+        percentage = self.gesture_time / self.gesture_duration_seq[self.current_gesture_index]
+        self.ui_subject.SetGestureTimeProgress(1 - percentage)
+    
+    def updateExperimentTimeBar(self):
+        percentage = self.experiment_time / self.experiment_duration
+        self.ui_subject.SetExperimentTimeProgress(1 - percentage)
+        
+    def nextTimeStep(self):                
+        # The experiment it's over.
+        if (self.current_gesture_index >= len(self.gesture_duration_seq) ): return 0            
+        self.gesture_time     = self.gesture_time + self.time_step        
+        if(self.gesture_time >= self.gesture_duration_seq[self.current_gesture_index]):
+            # Update gesture time
+            self.gesture_time = self.gesture_time - self.gesture_duration_seq[self.current_gesture_index]            
+            self.updateGestureTimeBar()            
+            # Update experiment time
+            self.experiment_time = self.experiment_time + self.gesture_duration_seq[self.current_gesture_index]
+            self.updateExperimentTimeBar()
+            self.nextGesture()            
+            # If that was the last gesture, than update the gesture time bar to empty.
+            if (self.current_gesture_index >= len(self.gesture_duration_seq) ): self.ui_subject.SetGestureTimeProgress(0);     
+        else: self.updateGestureTimeBar()        
+            
     def tests(self):
-        self.ui_subject.SetGestureTimeProgress(0.95)
-        self.ui_subject.SetExperimentTimeProgress(0.5)
         self.ui_subject.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,  0.6, 0.5, 0.4, 0.3, 0.2] )                                                
         self.ui_subject.SetHand(UiSubject.LEFT_HAND)
         
