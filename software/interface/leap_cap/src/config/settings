@@ -32,6 +32,6 @@
 ##
 ## Gesture capture settings
 ##
-# device: keyboard
+# device: leap_motion
 # routine: default.csv
-# hand: right
+# hand: left

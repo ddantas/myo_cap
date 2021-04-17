@@ -148,11 +148,13 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def openCSVEMG(file_name):
         AuxFunc.showMessage('warning!', 'Function in development!')
     
-    def showSubjectWindow(self):        
+    def showSubjectWindow(self):                
+        if(self.leap_cap_settings.getHand() == 'left'):  hand_chosen = WinSubject.LEFT_HAND      
+        else:                                            hand_chosen = WinSubject.RIGHT_HAND      # Default
         # Will get the time step from the Settings
-        time_step = 500
+        time_step         = 500        
         routine_file_name = self.leap_cap_settings.getCaptureRoutine()
-        self.win_subject  = WinSubject.WinSubject(routine_file_name, time_step, WinSubject.RIGHT_HAND)
+        self.win_subject  = WinSubject.WinSubject(routine_file_name, time_step, hand_chosen)
         self.win_subject.show()
         self.subj_win_is_open = 1
 
