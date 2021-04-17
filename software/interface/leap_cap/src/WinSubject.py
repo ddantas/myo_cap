@@ -2,7 +2,7 @@
 """
 Created on Wed Mar 10 14:31:41 2021
 
-@author: asaph
+@author: Asaphe Magno
 """
 
 import sys
@@ -35,11 +35,11 @@ DEFAULT_WIN_SIZE      = (1024, 576)
 
 class WinSubject:
     
-    def __init__(self):                        
+    def __init__(self, routine_name):                        
         images_path                = WinSubject.getImagesDir()
         images_names               = WinSubject.getImagesNames(images_path)
         gesture_routine_path       = WinSubject.getGestureSeqPath()
-        gesture_and_time_seq       = WinSubject.getGestureSequence(gesture_routine_path, 'default.txt')           
+        gesture_and_time_seq       = WinSubject.getGestureSequence(gesture_routine_path, routine_name)           
         self.gesture_sequence      = gesture_and_time_seq[GESTURE]
         self.gesture_time_seq      = gesture_and_time_seq[GESTURE_TIME]
         self.routine_img_dict      = {}        
@@ -120,68 +120,29 @@ class WinSubject:
         if not(self.close):
             
             for event in pg.event.get():
-                    if event.type == pg.QUIT:
-                        pg.display.quit(); #sys.exit() if sys is imported
-                        self.close = True
-                        
+                    if event.type == pg.QUIT:      self.close = True;   pg.display.quit(); #sys.exit() if sys is imported
+                    
                     if event.type == pg.KEYDOWN:                                      
                         # left hand
-                        if event.key == pg.K_1:
-                            #return const.PINKY
-                            return 'PINKY'
-                        if event.key == pg.K_2:
-                            #return const.RING
-                            return 'RING'
-                        if event.key == pg.K_3:
-                            #return const.MIDDLE
-                            return 'MIDDLE'
-                        if event.key == pg.K_4:
-                            #return const.INDICATOR
-                            return 'INDICATOR'
-                        if event.key == pg.K_SPACE:
-                            #return const.THUMB                            
-                            self.nextGesture()       
-                            self.ui_subject.draw()
-                            return 'THUMB'
-                        
+                        if event.key == pg.K_1:     return 'PINKY'      #return const.PINKY                            
+                        if event.key == pg.K_2:     return 'RING'       #return const.RING                            
+                        if event.key == pg.K_3:     return 'MIDDLE'     #return const.MIDDLE
+                        if event.key == pg.K_4:     return 'INDICATOR'  #return const.INDICATOR                                                    
+                        if event.key == pg.K_SPACE: self.nextGesture(); self.ui_subject.draw();   return 'THUMB'  #return const.THUMB                              
                         # right hand
-                        if event.key == pg.K_SPACE:
-                            #return const.THUMB 
-                            self.nextGesture()       
-                            self.ui_subject.draw()      
-                            return 'THUMB'
-                        if event.key == pg.K_7:
-                            #return const.INDICATOR
-                            return 'INDICATOR'
-                        if event.key == pg.K_8:
-                            #return const.MIDDLE
-                            return 'MIDDLE'
-                        if event.key == pg.K_9:
-                            #return const.RING
-                            return 'RING'
-                        if event.key == pg.K_0:
-                            #return const.PINKY        
-                            return 'PINKY'
-                        
+                        if event.key == pg.K_SPACE: return 'THUMB'      #return const.THUMB 
+                        if event.key == pg.K_7:     return 'INDICATOR'  #return const.INDICATOR                                                        
+                        if event.key == pg.K_8:     return 'MIDDLE'     #return const.MIDDLE
+                        if event.key == pg.K_9:     return 'RING'       #return const.RING
+                        if event.key == pg.K_0:     return 'PINKY'      #return const.PINKY        
+                            
                     if(event.type == pg.VIDEORESIZE):
-                        new_win_size = pg.display.get_window_size()
-                        self.ui_subject.resize(new_win_size)
-                        
-                        # Some Tests
-                        self.ui_subject.SetGestureTimeProgress(0.95)
-                        self.ui_subject.SetExperimentTimeProgress(0.5)
-                        self.ui_subject.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,
-                                                                 0.6, 0.5, 0.4, 0.3, 0.2] )                                                
-                        self.ui_subject.SetHand(UiSubject.LEFT_HAND)
-                        
-                        self.ui_subject.draw()      
-                        
-            else:   
-                    return const.NO_KEY_PRESSED
-                           
-                
-        return const.CLOSE_SUBJECT_WIN                               
+                        new_win_size = pg.display.get_window_size();    self.ui_subject.resize(new_win_size);   self.ui_subject.draw()       
+                        self.tests() 
 
+            else:  return const.NO_KEY_PRESSED
+                       
+        return const.CLOSE_SUBJECT_WIN                               
     
     def getImagesDir():        
         images_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'images') , '')    
@@ -211,4 +172,9 @@ class WinSubject:
         gesture_seq_file.close()        
         return gesture_sequence, gesture_time_seq
 
+    def tests(self):
+        self.ui_subject.SetGestureTimeProgress(0.95)
+        self.ui_subject.SetExperimentTimeProgress(0.5)
+        self.ui_subject.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,  0.6, 0.5, 0.4, 0.3, 0.2] )                                                
+        self.ui_subject.SetHand(UiSubject.LEFT_HAND)
         

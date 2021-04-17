@@ -149,7 +149,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         AuxFunc.showMessage('warning!', 'Function in development!')
     
     def showSubjectWindow(self):        
-        self.win_subject = WinSubject.WinSubject()
+        routine_file_name = self.leap_cap_settings.getCaptureRoutine()
+        self.win_subject  = WinSubject.WinSubject(routine_file_name)
         self.win_subject.show()
         self.subj_win_is_open = 1
 
