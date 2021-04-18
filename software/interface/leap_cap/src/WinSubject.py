@@ -29,8 +29,19 @@ GESTURE               = 0
 GESTURE_TIME          = 1
 
 # Hand options
-RIGHT_HAND = 0
-LEFT_HAND  = 1
+RIGHT_HAND            = 0
+LEFT_HAND             = 1
+
+# Fingers options for keyboard input only
+PINKY                 = 0
+RING                  = 1
+MIDDLE                = 2
+INDICATOR             = 3
+THUMB                 = 4 
+
+# Fingers Joints options
+JOINT_PHALANG_PHALANG = 0
+JOINT_METACARP_FALANG = 1
   
 # Window parameters
 WINDOW_TITLE          = 'Subject'
@@ -39,7 +50,7 @@ DEFAULT_WIN_SIZE      = (1024, 576)
 
 class WinSubject:
     
-    def __init__(self, routine_name, time_step, hand_chosen):     
+    def __init__(self, routine_name, time_step, chosen_hand):     
         ## Gesture images parameters                   
         images_path                = WinSubject.getImagesDir()
         images_names               = WinSubject.getImagesNames(images_path)
@@ -62,10 +73,10 @@ class WinSubject:
         self.experiment_duration   = WinSubject.calcExperimentDuration(self.gesture_duration_seq)
         
         ## Joint Angles Bars
-        self.hand_chosen           = hand_chosen
+        self.chosen_hand           = chosen_hand
         
         ## UI parameters                   
-        self.ui_subject            = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, lst_imgs_to_disp, hand_chosen)    
+        self.ui_subject            = UiSubject.UiSubject(DEFAULT_WIN_SIZE, WINDOW_TITLE, lst_imgs_to_disp, self.chosen_hand)    
         self.close = False
  
     def show(self):        
@@ -155,8 +166,7 @@ class WinSubject:
                         if event.key == pg.K_0:     return 'PINKY'       #return const.PINKY        
                             
                     if(event.type == pg.VIDEORESIZE):
-                        new_win_size = pg.display.get_window_size();    self.ui_subject.resize(new_win_size);   self.ui_subject.draw()       
-                        self.tests() 
+                        new_win_size = pg.display.get_window_size();    self.ui_subject.resize(new_win_size);   self.tests();   self.ui_subject.draw()                                
 
             else:  return const.NO_KEY_PRESSED
                        
@@ -220,7 +230,33 @@ class WinSubject:
             if (self.current_gesture_index >= len(self.gesture_duration_seq) ): self.ui_subject.SetGestureTimeProgress(0);     
         else: self.updateGestureTimeBar()        
             
+    # Receives a list with ten values to display in the Joint Angles Bars. Values between 0 - 100.
+    # The first five values should be related to the joint between the phalanges bones. 
+    # The last five values should be related to the joint between metacarpal and phalange bones.
+    # The Exact order should be: 
+    # 0 - Thumb-Phalange_Phalange;  1 - Indicator-Phalange_Phalange;  2 - Middle-Phalange_Phalange;  3 - Ring-Phalange_Phalange;  4 - Pinky-Phalange_Phalange;
+    # 5 - Thumb-Metacapal-Phalange; 6 - Indicator-Metacapal-Phalange; 7 - Middle-Metacapal-Phalange; 8 - Ring-Metacapal-Phalange; 9 - Pinky-Metacapal-Phalange.  
+    # If the chosen hand it's the right hand, than the sequence received it's the same of the sequence displayed except by a factor of 100. 
+    # Otherwise it's necessary to also change the order of the fingers in the list. That operation it's made by this module internally.
+    def setJointAnglesValues(self, lst_joint_values):
+        if(self.chosen_hand == RIGHT_HAND): 
+            new_lst_joint_values = [None] * ( UiSubject.NUM_FINGERS * UiSubject.NUM_JOINTS )
+            for value_index in range( UiSubject.NUM_FINGERS * UiSubject.NUM_JOINTS ):                 
+                new_lst_joint_values[value_index] = lst_joint_values[value_index] / 100
+            self.ui_subject.SetJointAnglesProgress(new_lst_joint_values)            
+        else:
+            # list with the joint values reordered
+            new_lst_joint_values      = []
+            # Order reversal for metacapal_phalange_values
+            metacapal_phalange_values = lst_joint_values[:5]            
+            for finger_num in range(UiSubject.NUM_FINGERS): new_lst_joint_values.append( ( metacapal_phalange_values[ (UiSubject.NUM_FINGERS - 1) - finger_num ] ) / 100 )
+            # Order reversal for phalange_phalange_values            
+            phalange_phalange_values  = lst_joint_values[5:]            
+            for finger_num in range(UiSubject.NUM_FINGERS): new_lst_joint_values.append( ( phalange_phalange_values [ (UiSubject.NUM_FINGERS - 1) - finger_num ] ) / 100 )
+            # Sends the new list with the joint values reordered to the user interface.
+            self.ui_subject.SetJointAnglesProgress(new_lst_joint_values)            
+            
     def tests(self):
-        self.ui_subject.SetJointAnglesProgress( [0.2, 0.3, 0.4, 0.5, 0.6,  0.6, 0.5, 0.4, 0.3, 0.2] )                                                
-        self.ui_subject.SetHand(UiSubject.LEFT_HAND)
+        self.setJointAnglesValues( [10, 30, 50, 70, 90,  60, 50, 40, 30, 20] )
+        #self.ui_subject.SetHand(UiSubject.LEFT_HAND)
         

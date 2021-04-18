@@ -12,17 +12,6 @@ import PyGameLibExt as PGExt
 RIGHT_HAND = 0
 LEFT_HAND  = 1
 
-# Fingers options
-PINKY     = 0
-RING      = 1
-MIDDLE    = 2
-INDICATOR = 3
-THUMB     = 4
-
-# Fingers Joints options
-JOINT_FALANG_FALANG   = 0
-JOINT_METACARP_FALANG = 1
-
 # Fingers parameters
 NUM_FINGERS           = 5
 NUM_JOINTS            = 2
