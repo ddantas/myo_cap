@@ -11,14 +11,13 @@ import pygame as pg
 import PyGameLibExt as PGExt
 import UiSubject
 
-## Makes the Myograph directory visible to inclusions of shared classes and modules between the Myograph and Leapcap.
+## Makes the Myograph directory visible to inclusions of classes and modules shared between the Myograph and Leapcap.
 # Obtain the myograph path
 myograph_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]        
 # Adds the myograph path for future inclusions 
 sys.path.append(myograph_path)
 
 import Constants as const
-
 
 # Image parameters
 IMAGES_FORMAT         = '.png'
@@ -27,7 +26,7 @@ NUM_DISPLAYED_IMAGES  = 4
 
 # Gestures index definitions
 GESTURE               = 0
-GESTURE_TIME          = 1
+GESTURE_DURATION      = 1
 
 # Hand options
 RIGHT_HAND            = 0
@@ -50,7 +49,7 @@ DEFAULT_WIN_SIZE      = (1024, 576)
 
 
 ## WinSubject Class ############################################################################################################################
-## This class its resposible for manage the window subject behavior, instantiate the user interface of the window and load the gestures images.
+## This class its resposible for manage the window subject behavior, it instantiates the user interface of the window and load the gestures images.
 ## Besides provide automations used in the signals capture process. And to capture keys pressed in this window. 
 ## One extra feature of this class it's to load gesture sequences in a routine file. That file contains the gestures sequence and duration for 
 ## each gesture that will be showed in this window.
@@ -74,17 +73,17 @@ class WinSubject:
         # Tuple of gestures sequences and gestures duration sequence
         gesture_and_duration_seq   = WinSubject.getGestureSequence(gesture_routine_path, routine_name)                   
         self.gesture_sequence      = gesture_and_duration_seq[GESTURE]
-        self.gesture_duration_seq  = gesture_and_duration_seq[GESTURE_TIME]
+        self.gesture_duration_seq  = gesture_and_duration_seq[GESTURE_DURATION]
         # Dictionary to map image names to loaded image indexes.  
-        self.routine_img_dict      = {}        
+        self.imgs_dictionary       = {}        
         # Stores surfaces of all color images in the images_path and grayscale versions of this images. Surface it's a common Pygame class.
-        self.routine_img_surfaces  = WinSubject.loadRoutineImages(self.routine_img_dict, images_path, images_names)        
+        self.imgs_surfaces  = WinSubject.loadImages(self.imgs_dictionary, images_path, images_names)        
         # Index to the current more left gesture displayed. The gesture to be executed by the subject.
         self.current_gesture_index = 0
         # List with the names to the four gesture images to be displayed. 
         images_names_to_disp       = WinSubject.createLstImgNamesToDisplay(self.gesture_sequence, self.current_gesture_index)
         # List with references to the four current displayed gesture images. 
-        lst_imgs_to_disp           = WinSubject.createLstImgsToDisplay(images_names_to_disp, self.routine_img_dict, self.routine_img_surfaces)                
+        lst_imgs_to_disp           = WinSubject.createLstImgsToDisplay(images_names_to_disp, self.imgs_dictionary, self.imgs_surfaces)                
         
         ## Time bars parameters      
         self.time_step             = time_step
@@ -120,47 +119,47 @@ class WinSubject:
         self.ui_subject.close()
         
     # Method: Loads the color images located in images_path and creates grayscale versions of this images also as surfaces. Surface it's a common Pygame class.
-    #         In the process of images loading constructs a dictionary that maps image names to loaded image indexes. 
-    #         This dictionary will be used to locate images inside the variable "routine_img_surfaces" when surfaces of gestures need to be displayed in the window.
+    #         In the process of images loading, it constructs a dictionary that maps image names to loaded image indexes. 
+    #         This dictionary will be used to locate images inside the variable "imgs_surfaces" when surfaces of gestures need to be displayed in the window.
     #         Note: The grayscale surfaces have the same name of the original color image but with a "EC" sulfix. Example: "hand_open" -> "hand_openEC".    
     #
-    # Input : routine_img_dict     -> Dictionary to map image names to loaded image indexes.
-    #         images_path          -> Path to the gesture images folder. This path includes the myograph path.
-    #         routine_img_names    -> List with the names to the four gesture images to be displayed. 
+    # Input : imgs_dictionary -> Dictionary to map image names to loaded image indexes.
+    #         images_path     -> Path to the gesture images folder. This path includes the myograph path.
+    #         images_names    -> List with the names of the images inside the images routine path. 
     #
-    # Output: routine_img_surfaces -> Surfaces of all color images in the images_path and grayscale versions of this images. Besides a blank Surface for situations
-    #                                 when there are no more gesture images to fill all four images spaces reserved to gestures. 
-    def loadRoutineImages(routine_img_dict, images_path, routine_img_names):
-        num_images           = len(routine_img_names)
-        routine_img_surfaces = [None] * (num_images * 2 + 1)  # +1 because of the blank surface at the end of the list    
+    # Output: imgs_surfaces   -> Surfaces of all images in the images_path and grayscale versions of this images. Besides a blank Surface for situations
+    #                            when there are no more gesture images to fill all four images spaces reserved to gestures. 
+    def loadImages(imgs_dictionary, images_path, images_names):
+        num_images           = len(images_names)
+        imgs_surfaces = [None] * (num_images * 2 + 1)  # +1 because of the blank surface at the end of the list    
         for image_num in range(num_images):  
             # Adds the new color image into the dictionary
-            routine_img_dict[ routine_img_names[image_num] ] = image_num * 2
+            imgs_dictionary[ images_names[image_num] ] = image_num * 2
             # Loads the current image as a Pygame Surface
-            routine_img_surfaces[image_num * 2] = pg.image.load(images_path + routine_img_names[image_num] + IMAGES_FORMAT)                  
+            imgs_surfaces[image_num * 2] = pg.image.load(images_path + images_names[image_num] + IMAGES_FORMAT)                  
             
             # Copy the current color image
-            temp_surface = routine_img_surfaces[image_num * 2].copy()
+            temp_surface = imgs_surfaces[image_num * 2].copy()
             # Converts the current color image into a grayscale image
             PGExt.rgb2GrayScale(temp_surface)
             # Stores the grayscale of the current image in the next position of the list
-            routine_img_surfaces[image_num * 2 + 1] = temp_surface
+            imgs_surfaces[image_num * 2 + 1] = temp_surface
             # Adds the current grayscale image into the dictionary
-            routine_img_dict[ routine_img_names[image_num] + GRAYSCALE_SUFFIX ] = image_num * 2 + 1
+            imgs_dictionary[ images_names[image_num] + GRAYSCALE_SUFFIX ] = image_num * 2 + 1
         # Copies the last surface
-        blank_surface = routine_img_surfaces[num_images - 1].copy()
-        # Fills the surface with white
+        blank_surface = imgs_surfaces[num_images - 1].copy()
+        # Fills the surface with gray
         blank_surface.fill(PGExt.GRAY)
         # Stores the blank surface at the end of the list    
-        routine_img_surfaces[num_images * 2] = blank_surface
+        imgs_surfaces[num_images * 2] = blank_surface
         # Adds the blank surface index into the dictionary
-        routine_img_dict['Blank']   = num_images * 2 
-        routine_img_dict['BlankEC'] = num_images * 2 
+        imgs_dictionary['Blank']   = num_images * 2 
+        imgs_dictionary['BlankEC'] = num_images * 2 
             
-        return routine_img_surfaces    
+        return imgs_surfaces    
 
     # Method: This method creates a list with references to the four surfaces of the gestures that will be displayed in the window.
-    #         For the three left most images the surfaces referenced are grayscale version. 
+    #         For the three rightmost images the surfaces referenced are grayscale versions. 
     #         A blank Surface it's referenced when there are no more gesture images to fill all four images spaces reserved to    
     #         gestures.                         
     #
@@ -182,22 +181,23 @@ class WinSubject:
     #         A blank Surface it's used when there are no more gesture images to fill all four images spaces reserved to gestures.                            
     #
     # Input : images_names          -> List with all the images names located in the images_path.
-    #         routine_img_dict      -> Dictionary to map image names to loaded image indexes.
-    #         routine_img_surfaces  -> Surfaces of all color images in the images_path and grayscale versions of this images. Besides a blank Surface for situations
-    #                                  when there are no more gesture images to fill all four images spaces reserved to gestures. 
+    #         imgs_dictionary       -> Dictionary to map image names to loaded image indexes.
+    #         imgs_surfaces         -> Surfaces of all color images in the images_path and grayscale versions of this images. 
+    #                                  Besides a blank Surface for situations when there are no more gesture images to fill all 
+    #                                  four images spaces reserved to gestures. 
     #
     # Output: imgs_to_disp          -> List with references to the four gesture images that will be displayed in the Subject window. 
-    def createLstImgsToDisplay(images_names, routine_img_dict, routine_img_surfaces):        
+    def createLstImgsToDisplay(images_names, imgs_dictionary, imgs_surfaces):        
         imgs_to_disp          = [None] * NUM_DISPLAYED_IMAGES
         for image_num in range(NUM_DISPLAYED_IMAGES):  
             if(image_num == 0): # Colored image
                 # Finds out the index of the image in the list of routine surfaces using the dictionary
-                index = routine_img_dict[ images_names[image_num] ]                
+                index = imgs_dictionary[ images_names[image_num] ]                
             else: # Grayscale image
                 # Finds out the index of the image in the list of routine surfaces using the dictionary
-                index = routine_img_dict[ images_names[image_num] + GRAYSCALE_SUFFIX ]        
+                index = imgs_dictionary[ images_names[image_num] + GRAYSCALE_SUFFIX ]        
             # Stores the reference of the current image into the list of images to be displayed.    
-            imgs_to_disp[image_num] = routine_img_surfaces[index]                 
+            imgs_to_disp[image_num] = imgs_surfaces[index]                 
         return imgs_to_disp            
     
     # Method: Automation used in the signals capture process. It updates the gesture index and figures out the next four gesture surfaces 
@@ -210,7 +210,7 @@ class WinSubject:
         if(self.current_gesture_index < len(self.gesture_sequence)):
             self.current_gesture_index = self.current_gesture_index + 1
             images_names_to_disp       = WinSubject.createLstImgNamesToDisplay(self.gesture_sequence, self.current_gesture_index)
-            lst_imgs_to_disp           = WinSubject.createLstImgsToDisplay(images_names_to_disp, self.routine_img_dict, self.routine_img_surfaces)        
+            lst_imgs_to_disp           = WinSubject.createLstImgsToDisplay(images_names_to_disp, self.imgs_dictionary, self.imgs_surfaces)        
             self.ui_subject.SetDisplayedImages(PGExt.VERTICAL, lst_imgs_to_disp, PGExt.GRAY, PGExt.ASPECT_RATIO_FIXED)                           
         else: print('End of the gesture sequence.')
         
@@ -263,11 +263,11 @@ class WinSubject:
         gestures_lines       = gesture_seq_file.readlines()        
         gesture_sequence     = []
         gesture_duration_seq = []        
+        gesture_seq_file.close()        
         for line in gestures_lines:
             if not ( (line[0] == '#') or (line[0] == ' ') or (line[0] == '\n') ):
                 temp = line.replace('\n','').split(';') 
-                gesture_sequence.append( temp[0] );     gesture_duration_seq.append( int( temp[1] ) )                
-        gesture_seq_file.close()        
+                gesture_sequence.append( temp[0] );     gesture_duration_seq.append( int( temp[1] ) )                        
         return gesture_sequence, gesture_duration_seq
     
     def calcExperimentDuration(gesture_duration_seq):
