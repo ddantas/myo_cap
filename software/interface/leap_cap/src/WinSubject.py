@@ -49,8 +49,8 @@ DEFAULT_WIN_SIZE      = (1024, 576)
 
 
 ## WinSubject Class ############################################################################################################################
-## This class its resposible for manage the window subject behavior, it instantiates the user interface of the window and load the gestures images.
-## Besides provide automations used in the signals capture process. And to capture keys pressed in this window. 
+## This class is responsible to manage the window subject behavior, it instantiates the user interface of the window and load the gestures images.
+## Besides to provide automations used in the signals capture process. And to capture keys pressed in this window. 
 ## One extra feature of this class it's to load gesture sequences in a routine file. That file contains the gestures sequence and duration for 
 ## each gesture that will be showed in this window.
 class WinSubject:
@@ -214,6 +214,7 @@ class WinSubject:
             self.ui_subject.SetDisplayedImages(PGExt.VERTICAL, lst_imgs_to_disp, PGExt.GRAY, PGExt.ASPECT_RATIO_FIXED)                           
         else: print('End of the gesture sequence.')
         
+    # That method probably will be placed in a different file.    
     def getKey(self):
         
         if not(self.close):
@@ -241,11 +242,23 @@ class WinSubject:
             else:  return const.NO_KEY_PRESSED
                        
         return const.CLOSE_SUBJECT_WIN                               
-    
+        
+    # Method: Obtains the full path to the images gesture folder. That path includes the myograph path.
+    #
+    # Input : None
+    #
+    # Output: images_path       ->  String with the path to the gesture images folder.
     def getImagesDir():        
         images_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'images') , '')    
         return images_path
-    
+
+
+    # Method: Obtains the full path to the images gesture folder. That path includes the myograph path.
+    #
+    # Input : images_path           ->  String with the path to the gesture images folder.
+    #
+    # Output: images_file_lst       ->  List of Strings. List with the images names inside the images gesture folder.
+    #                               The names do not contain the file extension ".PNG".
     def getImagesNames(images_path):
         # Gets the file names of the images inside the 'images_path'
         images_file_lst = next(os.walk(images_path))[2] 
@@ -254,10 +267,23 @@ class WinSubject:
             images_file_lst[image_index] = images_file_lst[image_index].split('.')[0]
         return images_file_lst    
     
+    # Method: Obtains the full path to the gestures sequences folder. That path includes the myograph path.
+    #
+    # Input : None
+    #
+    # Output: gesture_routine_path  ->  String with the path to the gesture images folder.
     def getGestureSeqPath():
         gesture_routine_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'routine') , '')    
         return gesture_routine_path
     
+    # Method: Generates a list of the gestures sequence and other list with gestures sequence duration contained 
+    #         in a gestures sequence file. The name of the gestures sequence file needs to be passed to this method,
+    #         as well as the path to the gestures routines folder.          
+    #
+    # Input : None
+    #
+    # Output: gesture_sequence      -> List with the gestures sequence. The elements in this list are strigs.
+    #         gesture_duration_seq  -> List with the gestures sequence duration. The elements in this list are strigs.
     def getGestureSequence(gesture_routine_path, gesture_seq_name):
         gesture_seq_file     = open(gesture_routine_path + gesture_seq_name, 'r')
         gestures_lines       = gesture_seq_file.readlines()        
@@ -270,23 +296,49 @@ class WinSubject:
                 gesture_sequence.append( temp[0] );     gesture_duration_seq.append( int( temp[1] ) )                        
         return gesture_sequence, gesture_duration_seq
     
+    # Method: Calculates the experiment duration by summing the individual durations of the gestures of the current gesture sequence.
+    #
+    # Input : gesture_duration_seq  ->  List with one sequence of gestures durations in miliseconds.
+    #
+    # Output: experiment_duration   ->  Experiment duration in miliseconds.
     def calcExperimentDuration(gesture_duration_seq):
         experiment_duration = 0
         for gesture in range( len(gesture_duration_seq) ) :
             experiment_duration = experiment_duration + gesture_duration_seq[gesture]    
         return experiment_duration
     
+    # Method: Updates the gesture time bar progress with the value of the remaining time of the current gesture being executed.  
+    #
+    # Input : None.
+    #
+    # Output: None.
     def updateGestureTimeBar(self):
         percentage = self.gesture_time / self.gesture_duration_seq[self.current_gesture_index]
         self.ui_subject.SetGestureTimeProgress(1 - percentage)
     
+    # Method: Updates the experiment time bar progress with the value of the remaining time of the current experiment.  
+    #
+    # Input : None.
+    #
+    # Output: None.
     def updateExperimentTimeBar(self):
         percentage = self.experiment_time / self.experiment_duration
         self.ui_subject.SetExperimentTimeProgress(1 - percentage)
         
+    # Method: Method that automates the steps that need to be taken in each time step inside a experiment period.
+    #         That steps include: To verify if the experiment it's over;
+    #                             To update the current time inside a experiment(capture).  
+    #                             To update the the progress of the time bars.    
+    #                             To trigger the update of the gesture images.
+    #
+    # Input : None.
+    #
+    # Output: None.
     def nextTimeStep(self):                
         # The experiment it's over.
         if (self.current_gesture_index >= len(self.gesture_duration_seq) ): return 0            
+        
+        # The experiment continues.
         self.gesture_time     = self.gesture_time + self.time_step        
         if(self.gesture_time >= self.gesture_duration_seq[self.current_gesture_index]):
             # Update gesture time
@@ -299,15 +351,22 @@ class WinSubject:
             # If that was the last gesture, than update the gesture time bar to empty.
             if (self.current_gesture_index >= len(self.gesture_duration_seq) ): self.ui_subject.SetGestureTimeProgress(0);     
         else: self.updateGestureTimeBar()        
-            
-    # Receives a list with ten values to display in the Joint Angles Bars. Values between 0 - 100.
-    # The first five values should be related to the joint between the phalanges bones. 
-    # The last five values should be related to the joint between metacarpal and phalange bones.
-    # The Exact order should be: 
-    # 0 - Thumb-Phalange_Phalange;  1 - Indicator-Phalange_Phalange;  2 - Middle-Phalange_Phalange;  3 - Ring-Phalange_Phalange;  4 - Pinky-Phalange_Phalange;
-    # 5 - Thumb-Metacapal-Phalange; 6 - Indicator-Metacapal-Phalange; 7 - Middle-Metacapal-Phalange; 8 - Ring-Metacapal-Phalange; 9 - Pinky-Metacapal-Phalange.  
-    # If the chosen hand it's the right hand, than the sequence received it's the same of the sequence displayed except by a factor of 100. 
-    # Otherwise it's necessary to also change the order of the fingers in the list. That operation it's made by this module internally.
+                 
+    # Method: Receives a list with ten values of joint opening and send than to UI to display in the Joint Angles Bars. Values between 0 - 100.
+    #         This method standardizes the order of reception of the joints and finger values in this method and standardizes the order of 
+    #         transmission of the joints and finger values related to the current hand chosen to the UI method that updates the visual feedback. 
+    #         The first five values should be related to the joint between the phalanges bones. 
+    #         The last five values should be related to the joint between metacarpal and phalange bones.
+    #         The Exact order should be: 
+    #         0 - Thumb-Phalange_Phalange;  1 - Indicator-Phalange_Phalange;  2 - Middle-Phalange_Phalange;  3 - Ring-Phalange_Phalange;  4 - Pinky-Phalange_Phalange;
+    #         5 - Thumb-Metacapal-Phalange; 6 - Indicator-Metacapal-Phalange; 7 - Middle-Metacapal-Phalange; 8 - Ring-Metacapal-Phalange; 9 - Pinky-Metacapal-Phalange.  
+    #         If the chosen hand it's the right hand, than the sequence received it's the same of the sequence displayed except by a factor of 100. 
+    #         Otherwise it's necessary to also change the order of the fingers in the list. That operation it's made by this module internally.
+    #
+    # Input : lst_joint_values      -> List with ten joit angles openning to be displayed. The values need to be in the right order. That order it's
+    #                                  defined in the method documentation.
+    #
+    # Output: None.
     def setJointAnglesValues(self, lst_joint_values):
         if(self.chosen_hand == RIGHT_HAND): 
             new_lst_joint_values = [None] * ( UiSubject.NUM_FINGERS * UiSubject.NUM_JOINTS )
@@ -326,6 +385,7 @@ class WinSubject:
             # Sends the new list with the joint values reordered to the user interface.
             self.ui_subject.SetJointAnglesProgress(new_lst_joint_values)            
             
+    # That method will be removed when the capture code be completed.
     def tests(self):
         self.setJointAnglesValues( [10, 30, 50, 70, 90,  60, 50, 40, 30, 20] )
         #self.ui_subject.SetHand(UiSubject.LEFT_HAND)
