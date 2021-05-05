@@ -21,6 +21,14 @@ NUM_DISPLAYED_IMAGES  = 4
 DEFAULT_IMAGES_SIZE   = (310, 370)
 IMAGES_FORMAT         = '.png'
 
+
+## UiSubject Class ####################################################################################################################################################
+## This class is responsible to construct all the visual elements of the subject window and to provide a interface to set and get informations 
+## related to the user interface of the window. This class utilizes pygame and PygameLibExt libraries to constructs the UI 
+## of the subject window. The pygame library documentation can be accessed in the website: "https://www.pygame.org/docs/".
+## The PygameLibExt library was developed to complement the pygame capability to construct users interfaces similar to the window subject of this project(LeapCap). 
+## The PygameLibExt documentation can be found in the own library code. Questions related to the PygameLibExt can be sent to the email: "asaphemagnofeitosa@gmail.com".
+
 class UiSubject:
     
     # Method: Constructor for the UiSubject class.
@@ -308,7 +316,7 @@ class UiSubject:
     #
     # Input : None.
     #
-    # Output: Panel Object defined in PyGameLibExt that holds all the elements created. It also represents all the visual area inside the Subject window
+    # Output: Panel Object defined in PyGameLibExt that holds all the elements created. It also represents all the visual area inside the Subject window.
     def createMainPanel(self):
         # List of Elements that will be added to Main Panel.
         self.lst_elements       = [self.images_layout, self.time_bars_panel, self.joint_angles_layout, self.fingers_angles_layout]
@@ -321,10 +329,24 @@ class UiSubject:
         # Create the Main Panel that holds all the elements created.
         self.main_panel = PGExt.Panel( self.win_size, PGExt.ORIGIN, NUM_ELEMENTS, self.lst_elements, self.lst_sizes_elements, self.lst_pos_elements)        
     
+    # Method: Updates the four gesture images objects with new Surfaces passed to it. Many parameters can be changed in this operation.
+    #
+    # Input : orientation           -> [PGExt.VERTICAL|PGExt.HORIZONTAL]. Orientation for the image inside the frame.
+    #         lst_displayed_imgs    -> List with four surfaces that will be loaded into the gesture Image Objects.
+    #         frame_color           -> Color used in frame of a image. Works as background color.
+    #         keep_aspect_ratio     -> [PGExt.ASPECT_RATIO_FIXED|PGExt.ASPECT_RATIO_NOT_FIXED]. Flag to chose if the aspect ratio of the surface inside the frame will be kept.
+    #
+    # Output: None.
     def SetDisplayedImages(self, orientation, lst_displayed_imgs, frame_color, keep_aspect_ratio):    
         for image_num in range(NUM_DISPLAYED_IMAGES):                          
             self.disp_images[image_num].SetNewImage(orientation, lst_displayed_imgs[image_num], frame_color, keep_aspect_ratio)
     
+    # Method: Sets the the hand that will be used in the capture. The fingers letter sequence need to be consitent with the sequence of the fingers of the hand used in the experiment.
+    #         Thus, this method keep the sequence of the fingers presented coherent with the hand used in the experiment.
+    #
+    # Input : chosen_hand           -> [WinSubject.RIGHT_HAND|WinSubject.LEFT_HAND]. Hand that will be used in the experiment.
+    #
+    # Output: None.
     def SetHand(self, chosen_hand):
         if not(self.chosen_hand == chosen_hand):            
             # Get the current letters images inverting the order of ther letter images.
@@ -337,23 +359,61 @@ class UiSubject:
                 self.finger_letters_imgs[finger_number].SetNewImage(orientation, new_order_letters_imgs[finger_number], frame_color, keep_aspect_ratio)            
             self.chosen_hand = chosen_hand
             
+    # Method: Updates the progress data of the gesture time bar. 
+    #
+    # Input : percentage           -> [0.0 - 1.0]. Progress as a float type.
+    #
+    # Output: None.        
     def SetGestureTimeProgress(self, percentage):
         self.gesture_progress_bar.SetProgress(percentage) 
-        
+    
+    # Method: Gets the progress data of the gesture time bar. 
+    #
+    # Input : None.
+    #
+    # Output: percentage           -> [0.0 - 1.0]. Progress as a float type.
     def GetGestureTimeProgress(self):        
         return self.gesture_progress_bar.GetProgress() 
     
+    # Method: Updates the progress data of the experiment time bar. 
+    #
+    # Input : percentage           -> [0.0 - 1.0]. Progress as a float type.
+    #
+    # Output: None.        
     def SetExperimentTimeProgress(self, percentage):
         self.experiment_progress_bar.SetProgress(percentage) 
         
+    # Method: Gets the progress data of the experiment time bar. 
+    #
+    # Input : None.
+    #
+    # Output: percentage            -> [0.0 - 1.0]. Progress as a float type.    
     def GetExperimentTimeProgress(self):        
         return self.experiment_progress_bar.GetProgress() 
     
+    # Method: Updates the values of the joint angles progress bars inside the joint angles layout. 
+    #         The first five values should be related to the joint between the phalanges bones. Upper Line.
+    #         The last five values should be related to the joint between metacarpal and phalange bones. Lower Line.
+    #         The order of the elements inside the list will correspond to the same order of presentation in the window.
+    #
+    # Input : lst_percentages       -> List with percentages of progress for each joint of each finger. Values of the float type varying between [0.0 - 1.0]. 
+    #                                  The order of the elements it's explained in the "Method" section.
+    #
+    # Output: None.        
     def SetJointAnglesProgress(self, lst_percentages):
         for joint_number in range(NUM_JOINTS):
             for finger_number in range(NUM_FINGERS):      
                 self.joints_prog_bars[joint_number][finger_number].SetProgress( lst_percentages[ joint_number * NUM_FINGERS + finger_number] )                   
     
+    # Method: Gets the values of the joint angles progress bars inside the joint angles layout. 
+    #         The first five values should be related to the joint between the phalanges bones. Upper Line.
+    #         The last five values should be related to the joint between metacarpal and phalange bones. Lower Line.
+    #         The order of the elements inside the list will correspond to the same order of presentation in the window.
+    #
+    # Input : None.
+    #
+    # Output: lst_percentages       -> List with percentages of progress for each joint of each finger. Values of the float type varying between [0.0 - 1.0]. 
+    #                                  The order of the elements it's explained in the "Method" section.
     def GetJointAnglesProgress(self):        
         lst_percentages = []
         for joint_number in range(NUM_JOINTS):
@@ -361,21 +421,50 @@ class UiSubject:
                 lst_percentages.append( self.joints_prog_bars[joint_number][finger_number].GetProgress() )
         return lst_percentages
     
+    # Method: Resizes all elements inside the Main Panel. The objects constructed with PyGameLibExt that contain another methods of this lib are able to propagate 
+    #         resizing and repositioning actions and to provide the necessary information to accomplish this tasks to the objects contained in it.  
+    #
+    # Input : None.
+    #
+    # Output: None. 
     def resize(self, new_win_size):
         self.win_size = new_win_size
         self.main_panel.Resize(new_win_size)
-                        
+    
+    # Method: Obtains all the drawing parameters of the visual elements inside the window and send then to be drawn.
+    #         The obtaining of the drawing parameters it's made by calling of the method "GetDrawParam()" of the Main Panel.
+    #         That call triggers recursive calls that constructs the List of drawing parameters.
+    #
+    # Input : None.
+    #
+    # Output: None.                     
     def drawVisualElements(self):        
         # Get the draw parameters for each elements inside the main panel in the right order to be drawn.
         draw_param = self.main_panel.GetDrawParam(PGExt.ORIGIN)                  
         PGExt.Draw(self.win, draw_param)                
-        
+    
+    # Method: Obtains the perimeter drawing parameters of all the container elements inside the window and send then to be drawn.
+    #         This method it's very usefull in the construction, testing and modification of the this window. 
+    #         By provide a visual feedback of the dimensions and positioning of the elements inside this window.
+    #         The obtaining of the perimeter drawing parameters it's maded by calling of the method "GetContainersBorders" of the Main Panel.
+    #         That call triggers recursive calls that constructs the List of perimeters drawing parameters.
+    #
+    # Input : None.
+    #
+    # Output: None.    
     def drawContainersBorders(self):    
         # Get the border draw parameters for each Panel or Layout inside the main panel including itself.
         border_draw_param = self.main_panel.GetContainersBorders(PGExt.ORIGIN)    
         # Draw the borders of each Panel or Layout inside the main panel including itself.        
         PGExt.DrawContainersBorders(self.win, border_draw_param, PGExt.GREEN)                
-                    
+                
+    # Method: Automates the entire drawing process of the elements inside this window.
+    #         This is the method that should be called in the WinSubject file to draw or redraw the elements inside the window.
+    #         Note: To see the perimeters of the container objects inside the window, just uncomment the line "self.drawContainersBorders()".
+    #
+    # Input : None.
+    #
+    # Output: None.    
     def draw(self):            
         self.win.fill(PGExt.WHITE)       
         self.drawVisualElements()
@@ -383,7 +472,12 @@ class UiSubject:
         #self.drawContainersBorders()
         # Update the window with elements redrawed.        
         pg.display.flip()                
-            
+    
+    # Method: Closes the UiSubject window. That it the method that should be called in the WinSubject file when needed.
+    #
+    # Input : None.
+    #
+    # Output: None.         
     def close(self):
         pg.display.quit()
             
