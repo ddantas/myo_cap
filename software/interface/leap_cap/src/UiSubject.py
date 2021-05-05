@@ -147,10 +147,7 @@ class UiSubject:
     #         This panel will be contained in the Main Panel. 
     #         Note: Do not convert float pixels values into int values because that will reduce the final size and positions precision.
     #
-    # Input : size                  -> Tuple(width, height) in pixels. Size of the Layout that will be created.
-    #         image_layout_pos      -> Tuple(x pos, y pos) in pixels. Position of this Layout inside the main panel. The pos (0, 0) it's in the upper left corner. 
-    #         displayed_images      -> Images surfaces that will be added in this Layout.
-    #         spacer                -> Spacer used to provide the values of horizontal and vertical spacing between the gesture images.
+    # Input : None.
     #
     # Output: Panel Object defined in PyGameLibExt with the gesture and experiment time bars added to it. 
     def createTimeBarsPanel(self):
@@ -181,6 +178,14 @@ class UiSubject:
                                           lst_sizes_bars, lst_pos_bars )        
         return time_bars_panel
     
+    # Method: Creates a Layout object defined in PyGameLibExt to display the joint angles openning information of the fingers. This Layout will hold, resize and repositionate 
+    #         the progress bars that represents the joint angles openning. The joint angles progress bars are ProgressBar objects defined in PyGameLibExt and are created inside this method. 
+    #         The size and positions of the joint angles progress bars inside the panel are autamiticaly calculated by using regular spacing between the elements inside the layout. 
+    #         The regular spacing it's given by the the spacer object. This panel will be contained in the Main Panel.          
+    #
+    # Input : None.
+    #
+    # Output: Layout Object defined in PyGameLibExt with the joint angles progress bars added to it. 
     def createJointAnglesLayout(self):                           
         ## Create the Progress Bars for the Joint Angles.
         # Arbitrary size and position for the progress bars. This values will serve to instanciate the bars. 
@@ -212,7 +217,17 @@ class UiSubject:
                                             lst_joints_prog_bars, self.joint_ang_spacer, SPACERS_IN_BORDER)
         return joint_angles_layout
     
-    # Creates a list of Image objects(PyGameLibExt). Each element is one of five letters that represents each finger.
+    
+    # Method: Creates a list of Image objects(PyGameLibExt). Each element is one of five letters that represents each finger. This letters will be used in the figers letters layout to indicate 
+    #         that the vertical progress bars aligned to a letter corresponds to the figer represented by the letter.
+    #         The letters are of the Image object class, so they can be resized and positionated by the  fingers letters layout automaticaly.
+    #         The aspect ratio of Images Objects can be kept using the flag "PyGameLibExt.ASPECT_RATIO_FIXED", what makes this type more suttable to hold the letters visual representation.
+    #         The PyGame lib it's used to generate the letters, but a few more steps are necessary to guarantee the right size and proportion between the letters.
+    #         Thus, calculations are made to generate intermediate surfaces that have regular size and proportion. Besides a good resolution to support upscaling.      
+    #
+    # Input : None.
+    #
+    # Output: List with Image objects defined in PyGameLibExt that will be added into the fingers letters layout. 
     def createLetters(self):
         # Default: Right Hand. 
         lst_letters = ['T', 'I', 'M', 'R', 'P'];   font_size = 150
@@ -260,6 +275,13 @@ class UiSubject:
                                                       PGExt.WHITE, PGExt.ASPECT_RATIO_FIXED)                             
         return letters_imgs    
             
+    # Method: Creates a Layout object defined in PyGameLibExt to display the fingers letter information. This Layout will hold, resize and repositionate 
+    #         the fingers letters Image objects that represents the fingers of the hand. 
+    #         The size and positions of the fingers letters inside the panel are autamiticaly calculated by using regular spacing between the elements inside the layout. 
+    #
+    # Input : None.
+    #
+    # Output: Layout Object defined in PyGameLibExt with the fingers letters added to it. 
     def createFingersLettersLayout(self):  
         self.finger_letters_imgs = self.createLetters()
         NUM_COLUMNS_IN_LAYOUT    = NUM_FINGERS
@@ -269,6 +291,11 @@ class UiSubject:
                                               NUM_COLUMNS_IN_LAYOUT, self.finger_letters_imgs, self.joint_ang_spacer, SPACERS_IN_BORDER)
         return fingers_letters_layout
         
+    # Method: Instantiates all containers objects inside the Main panel. That action also triggers the creation of the visual elements inside this containers.
+    #
+    # Input : None.
+    #
+    # Output: None. 
     def createElements(self):                        
         self.disp_images   = self.LoadDisplayedImages(self.lst_displayed_imgs)                
         self.images_layout = self.createImagesLayout(self.image_layout_size, self.image_layout_pos, self.disp_images, self.default_spacer)        
@@ -276,6 +303,12 @@ class UiSubject:
         self.joint_angles_layout   = self.createJointAnglesLayout()
         self.fingers_angles_layout = self.createFingersLettersLayout()
         
+    # Method: Creates the Main panel adding all the elements that will be inside it.
+    #         That panel represents all the visual area inside the Subject window. Thus, all others elements need to be contained in it.
+    #
+    # Input : None.
+    #
+    # Output: Panel Object defined in PyGameLibExt that holds all the elements created. It also represents all the visual area inside the Subject window
     def createMainPanel(self):
         # List of Elements that will be added to Main Panel.
         self.lst_elements       = [self.images_layout, self.time_bars_panel, self.joint_angles_layout, self.fingers_angles_layout]
@@ -285,7 +318,7 @@ class UiSubject:
         self.lst_pos_elements   = [self.image_layout_pos, self.time_bars_panel_pos, self.joint_angles_layout_pos, self.fingers_letters_layout_pos]                
         # Number of Elements in the main panel
         NUM_ELEMENTS = 4
-        # Create the Main Panel that holds the Layouts created.
+        # Create the Main Panel that holds all the elements created.
         self.main_panel = PGExt.Panel( self.win_size, PGExt.ORIGIN, NUM_ELEMENTS, self.lst_elements, self.lst_sizes_elements, self.lst_pos_elements)        
     
     def SetDisplayedImages(self, orientation, lst_displayed_imgs, frame_color, keep_aspect_ratio):    
