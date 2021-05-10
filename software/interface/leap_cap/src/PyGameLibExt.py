@@ -457,12 +457,12 @@ class ProgressBar:
         return self.outer_local_pos  
         
     # Method: Returns a list of draw parameters of this progress bar object.   
-    #         Note: The global position of the image it's the result of the sum of the local position of 
-    #               this image with the position of the element that contais it(pos_offset). 
+    #         Note: The global position of the progress bar it's the result of the sum of the local position of 
+    #               this progress bar with the position of the element that contais it(pos_offset). 
     #               global position = pos_offset + local_pos.
     #         The list returned can be added to one other list and than passed to the "Draw" method inside this Lib. 
     # Input : pos_offset        -> Position Offset in pixels. It's used to calculate the global(in the window) position of this 
-    #                             image. It accumulates the offsets up to this Image.    
+    #                              image. It accumulates the offsets up to this progress bar.    
     # Output: list              -> List of draw parameters. 
     def GetDrawParam(self, pos_offset):
        
@@ -487,12 +487,27 @@ class Spacer:
         self.original_size = size
         self.size          = size
 
+    # Method: Sets a new size of the Spacer. 
+    #
+    # Input : size             -> (width, height). The external size for the progress bar. In pixels.
+    #
+    # Output: None.    
     def SetSize(self, new_size):               
         self.size = new_size
     
+    # Method: Gets the original size of the progress bar.
+    #
+    # Input : None.
+    #
+    # Output:  original_size   -> (width, height). The size of the original spacer in pixels. 
     def GetOrigSize(self):
         return self.original_size
     
+    # Method: Gets the size of the spacer.
+    #
+    # Input : None.
+    #
+    # Output: size             -> (width, height). The size of the spacer in pixels. 
     def GetSize(self):       
         return self.size
     
@@ -840,6 +855,19 @@ class Layout:
         # Returns a list with all draw parameters of all elements inside the layout concatenated     
         return list_draw_param
     
+    # Method: Obtains a list with the perimeter drawing parameters of this Layout and all Layouts and panels contained in this Layout.
+    #         This method it's very usefull in the construction, testing and modification of the user interfaces. 
+    #         The obtaining of the perimeter drawing parameters it's maded by calling the method "GetContainersBorders" of the Layouts and Panels.
+    #         This call triggers recursive calls that constructs the List of perimeters drawing parameters.
+    #         The list returned can be passed to the "DrawContainersBorders" method inside this Lib. 
+    #
+    # Input : pos_offset       -> Position Offset in pixels. It's used to calculate the global(in the window) position of the 
+    #                             elements. It accumulates the offsets up to this Layout.
+    #                             Note: The global position of one element it's the result of the sum of the local position of 
+    #                                   this element with the position of the element that contais it(pos_offset). 
+    #                                   global position = pos_offset + local_pos.       
+    #
+    # Output: list_draw_param  -> List of perimeter drawing parameters of this Layout and all Layouts and Panels inside this Layout. 
     def GetContainersBorders(self, pos_offset):
         # Update the position offset with the local position of this Layout.
         pos_offset      = ( pos_offset[HORIZONTAL] + self.local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.local_pos[VERTICAL]  )
@@ -1070,6 +1098,19 @@ class Panel:
         # Returns a list with all draw parameters of all elements inside the panel concatenated     
         return list_draw_param   
 
+    # Method: Obtains a list with the perimeter drawing parameters of this Panel and all Layouts and panels contained in this Panel.
+    #         This method it's very usefull in the construction, testing and modification of the user interfaces. 
+    #         The obtaining of the perimeter drawing parameters it's maded by calling the method "GetContainersBorders" of the Layouts and Panels.
+    #         This call triggers recursive calls that constructs the List of perimeters drawing parameters.
+    #         The list returned can be passed to the "DrawContainersBorders" method inside this Lib. 
+    #
+    # Input : pos_offset       -> Position Offset in pixels. It's used to calculate the global(in the window) position of the 
+    #                             elements. It accumulates the offsets up to this Panel.
+    #                             Note: The global position of one element it's the result of the sum of the local position of 
+    #                                   this element with the position of the element that contais it(pos_offset). 
+    #                                   global position = pos_offset + local_pos.       
+    #
+    # Output: list_draw_param  -> List of perimeter drawing parameters of this Panel and all Layouts and Panels inside this Panel. 
     def GetContainersBorders(self, pos_offset):
         # Update the position offset with the local position of this Panel.
         pos_offset      = ( pos_offset[HORIZONTAL] + self.local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.local_pos[VERTICAL]  )
@@ -1088,7 +1129,11 @@ class Panel:
         # itself border.
         return list_draw_param       
             
-### Global Methods ##############################################################################################################    
+### Global Methods #################################################################################################################   
+## This Methods performs common taks related to this library, like draw objects constructed with this lib and make color convertion  
+## of pygame surfaces. 
+
+
 def Draw(win, elem_draw_param):
     num_elem_total = len(elem_draw_param)
     for num_elem in range(num_elem_total):        
