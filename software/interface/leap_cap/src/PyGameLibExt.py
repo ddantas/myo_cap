@@ -1129,11 +1129,21 @@ class Panel:
         # itself border.
         return list_draw_param       
             
-### Global Methods #################################################################################################################   
-## This Methods performs common taks related to this library, like draw objects constructed with this lib and make color convertion  
+### Global Methods ##########################################################################################################################   
+## This Methods performs common taks related to this library, like to draw objects constructed with this lib and make color convertion  
 ## of pygame surfaces. 
 
-
+# Method: Draws visual elements(Image and Progress Bar objects). A list with draw parameters should be passed to this method. 
+#         The drawing process it's made by combining different methods of the pygame lib and parameters of the object that will be
+#         drawn. In the list passed to this method each element it's a list containing the drawing parameters for the object to be drawn.
+#         Depending the the type of the object differents parameters and methods are used.
+#         More type of objects can be supported by extending this method. Just write the specific code necessary to draw the new object 
+#         inside the for loop with a if statement. The size of the list returned is (number of elements to be drawn).              
+#
+# Input : elem_draw_param  -> List with elements draw parameters. Each elements it's a list containing the drawing parameters for the object to 
+#         be drawn.
+#
+# Output: None
 def Draw(win, elem_draw_param):
     num_elem_total = len(elem_draw_param)
     for num_elem in range(num_elem_total):        
@@ -1166,6 +1176,17 @@ def Draw(win, elem_draw_param):
             pg.draw.rect( win, border_color, (*border_position, *border_size), border_width ) 
             pg.draw.rect( win, progress_bar_color, (*progress_bar_position, *progress_bar_size) )    
         
+# Method: Draws the perimeters of containers objects(Layout and Painel objects) to provide a visual feedback of the size and positioning of this 
+#         objects. This method it's very usefull in the construction, testing and modification of the user interfaces. 
+#         A list with draw parameters should be passed to this method. The drawing process it's made by "pygame.draw.rect" method and perimeters 
+#         parameters of the container objects. In the list passed to this method each element it's a list containing the perimeter parameters 
+#         for the object to be drawn. The border color can be chosen.         
+#
+# Input : elem_draw_param  -> List with elements perimeter parameters. Each elements it's a list containing the drawing parameters for the perimeter
+#         of the object to be drawn.         
+#         border_color     -> Color for the drawing of the borders of the container type objects.
+#        
+# Output: None        
 def DrawContainersBorders(win, elem_draw_param, border_color):
     num_elem_total = len(elem_draw_param)
     for num_elem in range(num_elem_total):        
@@ -1177,6 +1198,15 @@ def DrawContainersBorders(win, elem_draw_param, border_color):
             border_width          = 1  
             pg.draw.rect( win, border_color, (*border_position, *border_size), border_width ) 
             
+# Method: Converts a pygame surface using a eight bits per color RGB into a equivalent gray scale version of the surface.
+#         The result it's a grayscale version using the same representation as RGB(eight bits  per color) but with the same value for each color.
+#         This improve the compatibility of the representation. The performance of this method it's not optimum, so it can be improved in the future 
+#         by replacing the code inside this method by one with better performance while keeping the compatibility of the code that utilises this method. 
+#         The resulting surface it's putted into the input surface.   
+#
+# Input : surface          -> pygame surface to be converted.
+#        
+# Output: None                 
 def rgb2GrayScale(surface):
     # Get the image original size
     image_size   = surface.get_rect().size
