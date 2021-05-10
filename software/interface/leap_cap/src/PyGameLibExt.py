@@ -290,9 +290,9 @@ class Image:
     #               this image with the position of the element that contais it(pos_offset). 
     #               global position = pos_offset + local_pos.
     #         The list returned can be added to one other list and than passed to the "Draw" method inside this Lib. 
-    # Input : pos_offset       -> Position Offset in pixels. It's used to calculate the global(in the window) position of this 
+    # Input : pos_offset        -> Position Offset in pixels. It's used to calculate the global(in the window) position of this 
     #                             image. It accumulates the offsets up to this Image.    
-    # Output: list             -> List of draw parameters. 
+    # Output: list              -> List of draw parameters. 
     def GetDrawParam(self, pos_offset):
        
         return ([ self.type_of_elem, self.frame_size  , ( pos_offset[HORIZONTAL] + self.frame_local_pos[HORIZONTAL] , pos_offset[VERTICAL] + self.frame_local_pos[VERTICAL] ),
@@ -392,35 +392,78 @@ class ProgressBar:
             inner_local_pos = ( outer_local_pos[HORIZONTAL] + self.border_to_bar_dist , outer_local_pos[VERTICAL] + self.border_to_bar_dist )      
             return inner_local_pos
                  
+    # Method: Sets the progress of the progress bar.
+    #
+    # Input : progress_perc    -> Float value [0.0 - 1.0]. The progress percentage for the progress bar.
+    #
+    # Output: None.
     def SetProgress(self, progress_perc):
         self.progress_perc = progress_perc   
         self.UpdateInnerBar()
     
+    # Method: Gets the progress of the progress bar.
+    #
+    # Input : None.
+    #
+    # Output: progress_perc    -> Float value [0.0 - 1.0]. The progress percentage of the progress bar.
     def GetProgress(self):
         return self.progress_perc
     
+    # Method: Updates the values of the position and size of the bar that indicates the progress(inner bar). 
+    #
+    # Input : None.
+    #
+    # Output: None.
     def UpdateInnerBar(self):
         self.inner_size      = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
         self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)        
                 
+    # Method: Sets a new size of the progress bar. 
+    #
+    # Input : outer_size       -> (width, height). The external size for the progress bar. In pixels.
+    #
+    # Output: None.    
     def SetSize(self, outer_size):     
         # Sets the new outer size for the progress bar 
         self.outer_size      = outer_size
         # Calculates and sets the new inner size for the progress bar 
         self.inner_size      = self.CalcInnerSize(self.orientation, self.outer_size, self.progress_perc)
-        
+    
+    # Method: Sets the local position of the progress bar.  
+    #
+    # Input : outer_local_pos  -> (x pos, y pos). The external position for the progress bar. In pixels.
+    #
+    # Output: None.   
     def SetLocalPos(self, outer_local_pos):        
         # Sets the new outer local position for the progress bar 
         self.outer_local_pos = outer_local_pos
         # Calculates and sets the new inner local position for the progress bar 
         self.inner_local_pos = self.CalcInnerLocalPos(self.orientation, self.outer_size, self.outer_local_pos, self.progress_perc)
-        
+    
+    # Method: Gets the size of the progress bar.
+    #
+    # Input : None.
+    #
+    # Output: outer_size       -> (width, height). The size of the progress bar in pixels. 
     def GetSize(self):       
         return self.outer_size
-        
+    
+    # Method: Gets the local position of the progress bar inside another object.  
+    #
+    # Input : None.
+    #
+    # Output: outer_local_pos  -> (x pos, y pos). The external position for the progress bar. In pixels.   
     def GetLocalPos(self):        
         return self.outer_local_pos  
         
+    # Method: Returns a list of draw parameters of this progress bar object.   
+    #         Note: The global position of the image it's the result of the sum of the local position of 
+    #               this image with the position of the element that contais it(pos_offset). 
+    #               global position = pos_offset + local_pos.
+    #         The list returned can be added to one other list and than passed to the "Draw" method inside this Lib. 
+    # Input : pos_offset        -> Position Offset in pixels. It's used to calculate the global(in the window) position of this 
+    #                             image. It accumulates the offsets up to this Image.    
+    # Output: list              -> List of draw parameters. 
     def GetDrawParam(self, pos_offset):
        
         return ([ self.type_of_elem, self.outer_size   , ( pos_offset[HORIZONTAL] + self.outer_local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.outer_local_pos[VERTICAL] ),
