@@ -1,11 +1,48 @@
 # -*- coding: utf-8 -*-
+
 """
 Created on Tue Feb  9 15:25:18 2021
 
 @author: Asaphe Magno
 """
 
+## PyGameLibExt ##################################################################################################################
+## The PygameLibExt library was developed to complement the pygame lib capability to construct users interfaces similar to the 
+## window subject of this project(LeapCap). Its main goal it's reduce the complexity and time to build, edit and manitain the 
+## user interface of the window Subject of the project LeapCap(available on: https://github.com/ddantas/myo_cap/). To accomplish 
+## this goal, two main types of classes were idealized: Visual Elements classes and Container classes. The Visual Elements classes
+## were meant to abstract visual objects commonly used in the interface and to be reusable. Container classes were meant to manage
+## all the complexity involved into the sizing, resizing and mapping of the visual objects added to then. Flexibility was a strong
+## guideline in the construction of the library to amplify its use. Thus, it's possible to combine many classes to obtain the 
+## desired result. The Image class in this lib can work with pygame surfaces, a commonly used type in the pygame lib, what makes
+## possible to combine many pygame features with this lib. A simple example it's to use a image loaded with pygame(surface) and to
+## include it in a image object of this lib to obtain auto-resizing, auto-positioning and fixed aspect ratio in a UI builded 
+## with this lib and pygame. Another example it's to use pygame lib to generate text as a surface and achive a better control of 
+## the text generated. The container classes implemented until this version are: Layout and Panel. Layout objects can greatly 
+## simplify the sizing and positioning of the elements added to it, since it manage the size and positions of its elements by
+## using regular spacing between its elements. Eliminating the size and position calculations of elements inside it. Panel objects 
+## provide more freedom to positionate the elements inside it, at the cost of a initial manual definition of the size position of 
+## the elements inside it. After the instantiation of layouts or panel objects the size and position of its objects are auto 
+## managed, dispensing manual calculations after window resize. Layout objects can have Layout or Panel objects added to it as 
+## well as Panel objects can have Panel or Layout objects added to it. There is no limit about how deep is the cascading.  
+## All visual and container objects have a local positioning instead of a global positioning. Thus, repositionate elements is 
+## much more simple and less propens to mistakes. 
+## All classes but Spacers have the methods: Resize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos().
+## That makes possible to trigger chain calls, since a container object can have more containers. What it's very usefull to obtain 
+## or to set hierarchically related informatios, like in the process to obtain the global positioning of one element.
+## Some Global Methods are available to performs common taks related to this library, like to draw objects constructed with this 
+## lib and to make color convertion of pygame surfaces. 
+## New features or classes can be developed to extend this library and will be highly appreciated.
+## The documentation of this library it's available in this own archive between the code. Questions related to the PygameLibExt 
+## can be sent to the email: "asaphemagnofeitosa@gmail.com".
+## The code makes frequently use of the pygame library. The pygame documentation can accessed in: "https://www.pygame.org/docs/".
+
+
+## Imports #######################################################################################################################
+
 import pygame as pg
+
+## Constants #####################################################################################################################
 
 # Colors Definition
 RED   = (255, 0, 0)
@@ -33,11 +70,7 @@ SPACER            = 2
 LAYOUT            = 3
 PANEL             = 4
 
-## All elements but Spacers have the methods: Resize(new_size); SetLocalPos(local_pos); GetSize(); GetLocalPos();
-## Spacers just have the contructor and the GetSize() methods.
-
-
-## Image Class ##################################################################################################################
+## Image Class ###################################################################################################################
 ## A Image it's a visual element used to manage common tasks related surfaces(similar to image) in a window.
 ## It can be added to a panel or layouts to receive auto resizing and positioning inside a window.
 ## It uses surfaces to increase considerably the compatibility with objects generated with the pygame lib, giving it greater 
@@ -301,7 +334,7 @@ class Image:
                                      self.frame_color  ])                        
 
 
-## Progress Bar Class ###########################################################################################################
+## Progress Bar Class ############################################################################################################
 ## A Progress Bar it's a visual element used to express progress or level of variables.
 ## It can be added to a panel or layouts to receive auto resizing and positioning inside a window.
 ## It can have horizontal or vertical orientation. Also have a color used in it's border and other used in the bar. 
@@ -470,7 +503,7 @@ class ProgressBar:
                                      self.inner_size   , ( pos_offset[HORIZONTAL] + self.inner_local_pos[HORIZONTAL], pos_offset[VERTICAL] + self.inner_local_pos[VERTICAL] ),
                                      self.border_color , self.bar_color  ])        
         
-## Spacer Class #################################################################################################################        
+## Spacer Class ##################################################################################################################     
 ## That class it's used to inform vertical and horizontal spancing between visual elements.
 ## It's not used as a visual element. So it won't be included in panels or layouts. Just will be used as a reference. 
 class Spacer:
@@ -511,7 +544,7 @@ class Spacer:
     def GetSize(self):       
         return self.size
     
-## Layout Class #################################################################################################################
+## Layout Class ##################################################################################################################
 ## That Class represents a layout inside a Window, Panel or even another Layout. 
 ## A Layout it's a structure that manages automatically the size and position of elements attached to it.
 ## Elements that can be attached are of the type: Image, Progress Bar, Panel, and Layout.  
@@ -887,7 +920,7 @@ class Layout:
         # itself border.
         return list_draw_param      
 
-### Panel Class #################################################################################################################
+### Panel Class ##################################################################################################################
 ## That Class represents a panel inside a Window, Panel or even another Panel. 
 ## A panel it's a structure that mananges the size and position of elements attached to it.
 ## Elements that can be included are of the type: Image, Progress Bar, Panel, and Layout.  
@@ -1129,7 +1162,7 @@ class Panel:
         # itself border.
         return list_draw_param       
             
-### Global Methods ##########################################################################################################################   
+### Global Methods ################################################################################################################################   
 ## This Methods performs common taks related to this library, like to draw objects constructed with this lib and make color convertion  
 ## of pygame surfaces. 
 
