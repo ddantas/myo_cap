@@ -149,8 +149,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         AuxFunc.showMessage('warning!', 'Function in development!')
     
     def showSubjectWindow(self):                
-        if(self.leap_cap_settings.getHand() == 'left'):  hand_chosen = WinSubject.LEFT_HAND      
-        else:                                            hand_chosen = WinSubject.RIGHT_HAND      # Default
+        if(self.leap_cap_settings.getHand() == 'Left' ):    hand_chosen = WinSubject.LEFT_HAND      
+        elif(self.leap_cap_settings.getHand() == 'Right'):  hand_chosen = WinSubject.RIGHT_HAND
+        else:      AuxFunc.showMessage('warning!', 'Hand side not recognized!')
         # Will get the time step from the Settings
         time_step         = 500        
         routine_file_name = self.leap_cap_settings.getCaptureRoutine()
@@ -250,7 +251,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
     def showGestureCaptureSettings(self):
         #self.stopCapture()
-        self.win_gesture_cap_settings = WinGestureCapSettings.WinGestureCapSettings()
+        self.win_gesture_cap_settings = WinGestureCapSettings.WinGestureCapSettings(self.leap_cap_settings)
         self.win_gesture_cap_settings.show()
         
     def showWinFuncGenSettings(self):
@@ -341,7 +342,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
-            AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )  
+            AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was not synchronized.' )  
             
             
             
