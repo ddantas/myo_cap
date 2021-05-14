@@ -33,7 +33,28 @@ class TextFile():
     
     def writeMetadataLine(self, msg, value):
         self.meta_data_lines.append('# %s: %s \n' % (msg, value))
+        
+    def getHeaderLine(self, line_number):
+        return self.header_lines[line_number]
 
+    def getHeaderLines(self):
+        return self.header_line  
+   
+    def getMetaDataLine(self, line_number):
+        return self.meta_data_lines[line_number]
+    
+    def getMetaDataLines(self):
+        return self.meta_data_lines
+
+    def getDataHeaderLine(self):
+        return self.data_header_line
+    
+    def getDataLine(self, line_number):
+        return self.meta_data_lines[line_number]
+    
+    def getDataLines(self):
+        return self.meta_data_lines
+    
     def saveFile(self, file_name):
         try:
             output = open(DATA_PATH + file_name, 'a')
