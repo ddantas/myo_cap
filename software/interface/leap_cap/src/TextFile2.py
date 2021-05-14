@@ -13,12 +13,16 @@ import AuxFunctions as AuxFunc
 
 DATA_PATH = 'data/'
 
+# Metadata indexes
+METADATA_NAME  = 0
+METADATA_VALUE = 1
+
 class TextFile():
 
     def __init__(self):
         # File Parameters
         self.header_lines     = []
-        self.meta_data_lines  = []
+        self.metadata_lines   = []
         self.data_header_line = ''
         self.data_lines       = []
         
@@ -32,28 +36,41 @@ class TextFile():
         self.header_lines.append('## %s \n' % (msg))
     
     def writeMetadataLine(self, msg, value):
-        self.meta_data_lines.append('# %s: %s \n' % (msg, value))
+        self.metadata_lines.append('# %s: %s \n' % (msg, value))
         
     def getHeaderLine(self, line_number):
         return self.header_lines[line_number]
 
     def getHeaderLines(self):
         return self.header_line  
-   
-    def getMetaDataLine(self, line_number):
-        return self.meta_data_lines[line_number]
     
-    def getMetaDataLines(self):
-        return self.meta_data_lines
+    # Method: Extracts and splits the parameter name and the parameter value information and return them as strings in metadata_line list.
+    #         Note: The parameter value will need to be converted when it be interpreted. 
+    #
+    # Input : line           -> Type: String. A file line containing metadata.
+    #
+    # Output: metadata_line  -> [parameter name|parameter value]. A list containing the extracted data as strings.
+    def extractMetadata(line):        
+        # Removes the unwanted chars.
+        line = line.replace('# ','').replace(':','') 
+        # Splits the parameter name from the parameter value and stores the strings in metadata_line list.
+        metadata_line = line.replace('# ','').replace(':','') 
+        return metadata_line
+           
+    def getMetadataLine(self, line_number):
+        return self.metadata_lines[line_number]
+    
+    def getMetadataLines(self):
+        return self.metadata_lines
 
     def getDataHeaderLine(self):
         return self.data_header_line
     
     def getDataLine(self, line_number):
-        return self.meta_data_lines[line_number]
+        return self.data_lines[line_number]
     
     def getDataLines(self):
-        return self.meta_data_lines
+        return self.data_lines
     
     def saveFile(self, file_name):
         try:
@@ -76,15 +93,15 @@ class TextFile():
         SECOND_CHAR = 1
         
         # Clear the file parameters.
-        self.header_lines = [];   self.meta_data_lines = [];   self.data_header_line = '';   self.data_lines = []   
+        self.header_lines = [];   self.metadata_lines = [];   self.data_header_line = '';   self.data_lines = []   
         try:
             # Opens the file and iterates through the lines. 
             with open(file_dir_and_name, 'r') as file:
                 for line in file:
                     # True if it's a header line.
                     if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == '#':    self.header_lines.append(line)                                                                    
-                    # True if it's a meta data line.
-                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.meta_data_lines.append(line)
+                    # True if it's a meta data line. Appends the extracted data from the line as a list of two strings to the metata_lines.
+                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.metadata_lines.append( TextFile.extractMetadata(line) )
                     # True if it's a data header line.
                     if line[FIRST_CHAR] == '['                             :    self.data_header_line.append(line)
                     # True if it's a data line.
