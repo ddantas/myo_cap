@@ -17,64 +17,68 @@ class TextFile():
 
     def __init__(self):
         # File Parameters
-        self.header = []
-        self.data_header = ''
-        self.data = []
+        self.header_lines     = []
+        self.meta_data_lines  = []
+        self.data_header_line = ''
+        self.data_lines       = []
         
         # Log Parameters
-        self.id = 0
+        self.id   = 0
         self.line = []
 
-## File Methods ######################################################################################################    
+## File Methods ##############################################################################################################################    
 
     def writeHeaderLine(self, msg):
-        self.header.append('## %s \n' % (msg))
+        self.header_lines.append('## %s \n' % (msg))
     
     def writeMetadataLine(self, msg, value):
-        self.header.append('# %s: %s \n' % (msg, value))
+        self.meta_data_lines.append('# %s: %s \n' % (msg, value))
 
     def saveFile(self, file_name):
         try:
             output = open(DATA_PATH + file_name, 'a')
-            output.writelines(self.header)
-            output.write(str(self.data_header + '\n'))
-            output.writelines(self.data)
+            output.writelines(self.header_lines)
+            output.write(str(self.data_header_line + '\n'))
+            output.writelines(self.data_lines)
             output.close()
         except Exception as e:
            print(e)
 
-    # Method: Opens a text file and classify its lines putting them into the corresponding file variables: header; data_header; data. 
+    # Method: Opens a text file and classify its lines putting them into the corresponding file variables: header_lines; data_header_line; data_lines. 
     #
     # Input : file_dir_and_name    -> Directory to the text file with the file name.
     #
     # Output: None.
     def openFile(self, file_dir_and_name):
-        # Clear the file parameters.
-        self.header = [];   self.data_header = '';  self.data = []
         # Char indexes
         FIRST_CHAR  = 0
-        SECOND_CHAR = 1        
+        SECOND_CHAR = 1
+        
+        # Clear the file parameters.
+        self.header_lines = [];   self.meta_data_lines = [];   self.data_header_line = '';   self.data_lines = []   
         try:
             # Opens the file and iterates through the lines. 
             with open(file_dir_and_name, 'r') as file:
                 for line in file:
                     # True if it's a header line.
-                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == '#':    self.header.append(line)                                                                    
+                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == '#':    self.header_lines.append(line)                                                                    
+                    # True if it's a meta data line.
+                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.meta_data_lines.append(line)
                     # True if it's a data header line.
-                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.data_header.append(line)
+                    if line[FIRST_CHAR] == '['                             :    self.data_header_line.append(line)
                     # True if it's a data line.
-                    if line[FIRST_CHAR] != '#' and line[SECOND_CHAR] != '' :    self.data.append(line)                        
+                    if line[FIRST_CHAR] != '#' and line[SECOND_CHAR] != '' and line[SECOND_CHAR] != '[':    self.data_lines.append(line)                        
         except:
             AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
             
             
-## Log Methods #######################################################################################################
+## Log Methods ###############################################################################################################################
 
     def initFile(self, format, name_cols):
-        if len(self.data_header):
-            self.data_header = self.data_header + ';' + name_cols
+        if len(self.data_header_line):
+            self.data_header_line = self.data_header_line + ';' + name_cols
         else:
-            self.data_header = '# ' + name_cols
+            self.data_header_line = '# ' + name_cols
         self.line[self.id] = []        
         self.line[self.id].append([])
         self.line[self.id].append(format)
@@ -91,12 +95,12 @@ class TextFile():
                     aux = '%s;%s' % (aux, value[1] % tuple(value[0]))
                 else:
                     aux = value[1] % tuple(value[0])
-            self.data.append(aux + '\n')
+            self.data_lines.append(aux + '\n')
         except Exception as e:
             print(e)
 
     def getLog(self, pos):
-        return np.fromstring(self.data[pos], dtype=np.uint16, sep=';')
+        return np.fromstring(self.data_lines[pos], dtype=np.uint16, sep=';')
     
     def getLogLength(self):
-        return len(self.data)
+        return len(self.data_lines)
