@@ -27,8 +27,8 @@
 ##
 ## EMG function generator settings
 ##
-# funcGenFreq: 2
-# stressTime: 4
+# funcGenFreq: 4
+# stressTime: 8
 ##
 ## Gesture capture settings
 ##

@@ -17,6 +17,7 @@ import TextFile2
 SETTINGS_PATH  = myograph_import_path + '\\leap_cap\\src\\config\\'
 FILE_NAME      = 'settings'
 
+# Type of parameters definition
 LIST_INT32_PARAM  = ['sampleRate', 'channelsPerBoard', 'nBoards', 'bitsPerSample', 'swipe', 'hTick', 'baudrate', 'pktSize', 'pktComp', 'funcGenFreq', 'stressTime']
 LIST_FLOAT_PARAM  = ['vMin', 'vMax', 'vTick']
 LIST_STRING_PARAM = ['emulationData', 'emulationFlag', 'device', 'routine', 'hand']
@@ -29,25 +30,19 @@ class LeapCapSettings():
         self.settings = {}
             
     def applyTypes(self):
-        return 0 
+        # Convert all int parameters from string to int.
+        for num_param in range( len(LIST_INT32_PARAM) ):       self.settings[ LIST_INT32_PARAM[num_param] ] = int  ( self.settings[ LIST_INT32_PARAM[num_param] ] )     
+        # Convert all float parameters from string to float.
+        for num_param in range( len(LIST_FLOAT_PARAM) ):       self.settings[ LIST_FLOAT_PARAM[num_param] ] = float( self.settings[ LIST_FLOAT_PARAM[num_param] ] )     
+        # There is no need to converto string parameters from string to string.
     
     def load(self):
-        try:
-            
-            self.txt_file.openFile( SETTINGS_PATH + FILE_NAME )   
-            self.settings = self.txt_file.metadata_dict.copy() 
-            
-            self.applyTypes()
-            
-            print( self.txt_file.header_lines )
-            #print( self.txt_file.metadata_lines )
-            print('\n')
-            print( self.txt_file.metadata_dict )
-            print('\n')
-            print( self.txt_file.data_lines )                 
 
-        except:
-            return False
+        self.txt_file.openFile( SETTINGS_PATH + FILE_NAME )   
+        self.settings = self.txt_file.metadata_dict.copy() 
+        # Apply type convertions to the parameters
+        self.applyTypes()
+
 
     def save(self):
         try:
