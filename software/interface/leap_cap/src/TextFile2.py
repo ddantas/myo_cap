@@ -36,8 +36,8 @@ class TextFile():
     def writeHeaderLine(self, msg):
         self.header_lines.append('## %s \n' % (msg))
     
-    def writeMetadataLine(self, msg, value):
-        self.metadata_lines.append('# %s: %s \n' % (msg, value))
+    def writeMetadataLine(self, param, value):
+        self.metadata_lines.append('# %s: %s \n' % (param, str(value) ))
         
     def getHeaderLine(self, line_number):
         return self.header_lines[line_number]
