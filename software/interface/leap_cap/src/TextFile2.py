@@ -23,9 +23,9 @@ class TextFile():
         # File Parameters
         self.header_lines     = []
         self.metadata_lines   = []
+        self.metadata_dict    = {}
         self.data_header_line = ''
         self.data_lines       = []
-        self.metadata_dict    = {}
         
         # Log Parameters
         self.id   = 0
@@ -96,7 +96,7 @@ class TextFile():
         SECOND_CHAR = 1
         
         # Clear the file parameters.
-        self.header_lines = [];   self.metadata_lines = [];   self.data_header_line = '';   self.data_lines = []   
+        self.header_lines = [];   self.metadata_lines = [];   self.data_header_line = '';   self.data_lines = [];    self.metadata_dict = {}   
         try:
             # Opens the file and iterates through the lines. 
             with open(file_dir_and_name, 'r') as file:

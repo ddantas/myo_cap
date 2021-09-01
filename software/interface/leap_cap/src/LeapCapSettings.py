@@ -12,49 +12,40 @@ myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspa
 # adds the myograph path for future inclusions 
 sys.path.append(myograph_import_path)
 
-import Settings
 import TextFile2
 
 SETTINGS_PATH  = myograph_import_path + '\\leap_cap\\src\\config\\'
 FILE_NAME      = 'settings'
 
+LIST_INT32_PARAM  = ['sampleRate', 'channelsPerBoard', 'nBoards', 'bitsPerSample', 'swipe', 'hTick', 'baudrate', 'pktSize', 'pktComp', 'funcGenFreq', 'stressTime']
+LIST_FLOAT_PARAM  = ['vMin', 'vMax', 'vTick']
+LIST_STRING_PARAM = ['emulationData', 'emulationFlag', 'device', 'routine', 'hand']
 
-class LeapCapSettings(Settings.Settings):
+class LeapCapSettings():
     
     def __init__(self):
-        # calling superclass constructor
-        super(LeapCapSettings, self).__init__()
         # global objects
         self.txt_file = TextFile2.TextFile()     
-        #self.settings = {}
-        
+        self.settings = {}
+            
+    def applyTypes(self):
+        return 0 
+    
     def load(self):
         try:
             
             self.txt_file.openFile( SETTINGS_PATH + FILE_NAME )   
             self.settings = self.txt_file.metadata_dict.copy() 
             
+            self.applyTypes()
+            
             print( self.txt_file.header_lines )
             #print( self.txt_file.metadata_lines )
+            print('\n')
             print( self.txt_file.metadata_dict )
-            print( self.txt_file.data_lines )     
-            
-            
-            # settings_file = open(SETTINGS_PATH, 'r')
-            # settings_out = settings_file.readlines()
-                        
-            # for line in settings_out:
-            #    if (line[1] == ' '):
-            #        line = line.replace(':', '').replace('\n', '').split(' ')                    
-            #        if(str(line[1]) == 'vMin' or str(line[1]) == 'vMax' or str(line[1]) == 'vTick'):
-            #            self.settings[str(line[1])] = float(line[2])
-            #        elif(str(line[1]) == 'emulationFlag' or str(line[1]) == 'emulationData' or 
-            #             str(line[1]) == 'device' or str(line[1]) == 'routine' or str(line[1]) == 'hand') :
-            #            self.settings[line[1]] = line[2]
-            #        else:
-            #            self.settings[str(line[1])] = int(line[2])
-            #settings_file.close()
-            #return True
+            print('\n')
+            print( self.txt_file.data_lines )                 
+
         except:
             return False
 
@@ -104,6 +95,8 @@ class LeapCapSettings(Settings.Settings):
         except:
             return False
 
+## LeapCap Exclusive get and set methods ############################################
+
     def getSettingsPath(self):
         return SETTINGS_PATH        
 
@@ -122,6 +115,7 @@ class LeapCapSettings(Settings.Settings):
     def getHand(self):
         return self.settings['hand'] 
     
+    
     def setEmulationFlag(self,value):
         self.settings['emulationFlag'] = value
         
@@ -136,3 +130,93 @@ class LeapCapSettings(Settings.Settings):
         
     def setHand(self,value):
         self.settings['hand'] = value  
+
+## MyoCap and LeapCap common get and set methods ####################################
+
+    def getPktSize(self):
+        return self.settings['pktSize']
+
+    def getPktComp(self):
+        return self.settings['pktComp']
+    
+    def getFuncGenFreq(self):
+        return self.settings['funcGenFreq']
+
+    def getStressTime(self):
+        return self.settings['stressTime']
+
+    def getSampleRate(self):
+        return self.settings['sampleRate']
+
+    def getChannelsPerBoard(self):
+        return self.settings['channelsPerBoard']
+
+    def getNBoards(self):
+        return self.settings['nBoards']
+
+    def getBitsPerSample(self):
+        return self.settings['bitsPerSample']
+
+    def getBaudrate(self):
+        return self.settings['baudrate']
+
+    def getSwipe(self):
+        return self.settings['swipe']
+
+    def getVTick(self):
+        return self.settings['vTick']
+
+    def getHTick(self):
+        return self.settings['hTick']
+
+    def getVMin(self):
+        return self.settings['vMin']
+
+    def getVMax(self):
+        return self.settings['vMax']
+
+    def getTotChannels(self):
+        return self.settings['channelsPerBoard'] * self.settings['nBoards']
+    
+
+    def setPktSize(self, value):
+        self.settings['pktSize'] = value
+
+    def setPktComp(self, value):
+        self.settings['pktComp'] = value
+
+    def setBaudrate(self, value):
+        self.settings['baudrate'] = value
+
+    def setFuncGenFreq(self, value):
+        self.settings['funcGenFreq'] = value
+
+    def setStressTime(self, value):
+        self.settings['stressTime'] = value
+
+    def setSampleRate(self, value):
+        self.settings['sampleRate'] = value
+
+    def setChannelsPerBoard(self, value):
+        self.settings['channelsPerBoard'] = value
+
+    def setNBoards(self, value):
+        self.settings['nBoards'] = value
+
+    def setBitsPerSample(self, value):
+        self.settings['bitsPerSample'] = value
+
+    def setSwipe(self, value):
+        self.settings['swipe'] = value
+
+    def setVTick(self, value):
+        self.settings['vTick'] = value
+
+    def setHTick(self, value):
+        self.settings['hTick'] = value
+
+    def setVMin(self, value):
+        self.settings['vMin'] = value
+
+    def setVMax(self, value):
+        self.settings['vMax'] = value
