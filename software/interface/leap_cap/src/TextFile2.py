@@ -90,7 +90,7 @@ class TextFile():
     # Input : file_dir_and_name    -> Directory to the text file with the file name.
     #
     # Output: None.
-    def openFile(self, file_dir_and_name):
+    def loadFile(self, file_dir_and_name):
         # Char indexes
         FIRST_CHAR  = 0
         SECOND_CHAR = 1
