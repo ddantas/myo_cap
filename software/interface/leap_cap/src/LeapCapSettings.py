@@ -13,8 +13,10 @@ myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspa
 sys.path.append(myograph_import_path)
 
 import Settings
+import TextFile2
 
-SETTINGS_PATH = myograph_import_path + '\leap_cap\src\config\settings'
+SETTINGS_PATH  = myograph_import_path + '\\leap_cap\\src\\config\\'
+FILE_NAME      = 'settings'
 
 
 class LeapCapSettings(Settings.Settings):
@@ -23,23 +25,36 @@ class LeapCapSettings(Settings.Settings):
         # calling superclass constructor
         super(LeapCapSettings, self).__init__()
         # global objects
+        self.txt_file = TextFile2.TextFile()     
+        #self.settings = {}
         
     def load(self):
         try:
-            settings_file = open(SETTINGS_PATH, 'r')
-            settings_out = settings_file.readlines()
-            for line in settings_out:
-                if (line[1] == ' '):
-                    line = line.replace(':', '').replace('\n', '').split(' ')                    
-                    if(str(line[1]) == 'vMin' or str(line[1]) == 'vMax' or str(line[1]) == 'vTick'):
-                        self.data[str(line[1])] = float(line[2])
-                    elif(str(line[1]) == 'emulationFlag' or str(line[1]) == 'emulationData' or 
-                         str(line[1]) == 'device' or str(line[1]) == 'routine' or str(line[1]) == 'hand') :
-                        self.data[line[1]] = line[2]
-                    else:
-                        self.data[str(line[1])] = int(line[2])
-            settings_file.close()
-            return True
+            
+            self.txt_file.openFile( SETTINGS_PATH + FILE_NAME )   
+            self.settings = self.txt_file.metadata_dict.copy() 
+            
+            print( self.txt_file.header_lines )
+            #print( self.txt_file.metadata_lines )
+            print( self.txt_file.metadata_dict )
+            print( self.txt_file.data_lines )     
+            
+            
+            # settings_file = open(SETTINGS_PATH, 'r')
+            # settings_out = settings_file.readlines()
+                        
+            # for line in settings_out:
+            #    if (line[1] == ' '):
+            #        line = line.replace(':', '').replace('\n', '').split(' ')                    
+            #        if(str(line[1]) == 'vMin' or str(line[1]) == 'vMax' or str(line[1]) == 'vTick'):
+            #            self.settings[str(line[1])] = float(line[2])
+            #        elif(str(line[1]) == 'emulationFlag' or str(line[1]) == 'emulationData' or 
+            #             str(line[1]) == 'device' or str(line[1]) == 'routine' or str(line[1]) == 'hand') :
+            #            self.settings[line[1]] = line[2]
+            #        else:
+            #            self.settings[str(line[1])] = int(line[2])
+            #settings_file.close()
+            #return True
         except:
             return False
 
@@ -93,31 +108,31 @@ class LeapCapSettings(Settings.Settings):
         return SETTINGS_PATH        
 
     def getEmulationFlag(self):
-        return self.data['emulationFlag'] 
+        return self.settings['emulationFlag'] 
         
     def getEmulationData(self):
-        return self.data['emulationData'] 
+        return self.settings['emulationData'] 
         
     def getDeviceType(self):
-        return self.data['device'] 
+        return self.settings['device'] 
         
     def getCaptureRoutine(self):
-        return self.data['routine'] 
+        return self.settings['routine'] 
         
     def getHand(self):
-        return self.data['hand'] 
+        return self.settings['hand'] 
     
     def setEmulationFlag(self,value):
-        self.data['emulationFlag'] = value
+        self.settings['emulationFlag'] = value
         
     def setEmulationData(self,value):
-        self.data['emulationData'] = value
+        self.settings['emulationData'] = value
         
     def setDeviceType(self,value):
-        self.data['device'] = value 
+        self.settings['device'] = value 
         
     def setCaptureRoutine(self,value):
-        self.data['routine'] = value 
+        self.settings['routine'] = value 
         
     def setHand(self,value):
-        self.data['hand'] = value  
+        self.settings['hand'] = value  

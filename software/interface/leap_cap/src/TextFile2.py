@@ -9,7 +9,7 @@ Created on Thu May 13 19:45:40 2021
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import AuxFunctions as AuxFunc
+# import AuxFunctions as AuxFunc
 
 DATA_PATH = 'data/'
 
@@ -25,6 +25,7 @@ class TextFile():
         self.metadata_lines   = []
         self.data_header_line = ''
         self.data_lines       = []
+        self.metadata_dict    = {}
         
         # Log Parameters
         self.id   = 0
@@ -42,19 +43,21 @@ class TextFile():
         return self.header_lines[line_number]
 
     def getHeaderLines(self):
-        return self.header_line  
+        return self.header_lines  
     
-    # Method: Extracts and splits the parameter name and the parameter value information and return them as strings in metadata_line list.
+    # Method: Extracts and splits the parameter name and the parameter value information and return them as strings in metadata_lines list.
     #         Note: The parameter value will need to be converted when it be interpreted. 
     #
     # Input : line           -> Type: String. A file line containing metadata.
     #
     # Output: metadata_line  -> [parameter name|parameter value]. A list containing the extracted data as strings.
-    def extractMetadata(line):        
+    def extractMetadata(self, line):        
         # Removes the unwanted chars.
-        line = line.replace('# ','').replace(':','') 
+        line = line.replace('# ','').replace(':','').replace('\n', '')
         # Splits the parameter name from the parameter value and stores the strings in metadata_line list.
-        metadata_line = line.replace('# ','').replace(':','') 
+        metadata_line = line.split(' ')         
+        # Adds the metadata to the metadata_dict dictionary
+        self.metadata_dict[ metadata_line[METADATA_NAME] ] = metadata_line[METADATA_VALUE]                
         return metadata_line
            
     def getMetadataLine(self, line_number):
@@ -72,9 +75,9 @@ class TextFile():
     def getDataLines(self):
         return self.data_lines
     
-    def saveFile(self, file_name):
+    def saveFile(self, data_path, file_name):
         try:
-            output = open(DATA_PATH + file_name, 'a')
+            output = open(data_path + file_name, 'a')
             output.writelines(self.header_lines)
             output.write(str(self.data_header_line + '\n'))
             output.writelines(self.data_lines)
@@ -101,14 +104,14 @@ class TextFile():
                     # True if it's a header line.
                     if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == '#':    self.header_lines.append(line)                                                                    
                     # True if it's a meta data line. Appends the extracted data from the line as a list of two strings to the metata_lines.
-                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.metadata_lines.append( TextFile.extractMetadata(line) )
+                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.metadata_lines.append( self.extractMetadata(line) )
                     # True if it's a data header line.
                     if line[FIRST_CHAR] == '['                             :    self.data_header_line.append(line)
                     # True if it's a data line.
                     if line[FIRST_CHAR] != '#' and line[SECOND_CHAR] != '' and line[SECOND_CHAR] != '[':    self.data_lines.append(line)                        
         except:
-            AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
-            
+            # AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
+            print('Incompatible File')
             
 ## Log Methods ###############################################################################################################################
 
