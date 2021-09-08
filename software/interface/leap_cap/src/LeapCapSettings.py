@@ -13,6 +13,7 @@ myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspa
 sys.path.append(myograph_import_path)
 
 import TextFile
+import Settings
 
 SETTINGS_PATH  = myograph_import_path + '\\leap_cap\\src\\config\\'
 FILE_NAME      = 'settings'
@@ -22,31 +23,15 @@ LIST_INT32_PARAM  = ['sampleRate', 'channelsPerBoard', 'nBoards', 'bitsPerSample
 LIST_FLOAT_PARAM  = ['vMin', 'vMax', 'vTick']
 LIST_STRING_PARAM = ['emulationData', 'emulationFlag', 'device', 'routine', 'hand']
 
-class LeapCapSettings():
+
+class LeapCapSettings(Settings.Settings):
     
     def __init__(self):
+        # calling superclass constructor
+        super(LeapCapSettings, self).__init__()
         # global objects
         self.settings = {}
-            
-    def applyTypes(self):
-        # Convert all int parameters from string to int.
-        for num_param in range( len(LIST_INT32_PARAM) ):       self.settings[ LIST_INT32_PARAM[num_param] ] = int  ( self.settings[ LIST_INT32_PARAM[num_param] ] )     
-        # Convert all float parameters from string to float.
-        for num_param in range( len(LIST_FLOAT_PARAM) ):       self.settings[ LIST_FLOAT_PARAM[num_param] ] = float( self.settings[ LIST_FLOAT_PARAM[num_param] ] )     
-        # There is no need to convert string parameters from string to string.
-    
-    def load(self):
-        # Instatiates a TextFile object to manipulate a text file.
-        txt_file = TextFile.TextFile()
-        # Opens the settings text file
-        txt_file.loadFile( SETTINGS_PATH + FILE_NAME )   
-        # Gets the loaded metadata as a dictionary
-        self.settings = txt_file.metadata_dict.copy()
-        # Apply type convertions to the parameters
-        self.applyTypes()
-        # Success flag
-        return True
-
+           
     # Method: Save the program settings. That method shold be called only when the method load() was already called or when all settings parameters were previously 
     #         defined in the settings dictionary variable. The output file name and path are defined as constants in the begining of the file.
     # Input : None
@@ -150,93 +135,3 @@ class LeapCapSettings():
         
     def setHand(self,value):
         self.settings['hand'] = value  
-
-## MyoCap and LeapCap common get and set methods ####################################
-
-    def getPktSize(self):
-        return self.settings['pktSize']
-
-    def getPktComp(self):
-        return self.settings['pktComp']
-    
-    def getFuncGenFreq(self):
-        return self.settings['funcGenFreq']
-
-    def getStressTime(self):
-        return self.settings['stressTime']
-
-    def getSampleRate(self):
-        return self.settings['sampleRate']
-
-    def getChannelsPerBoard(self):
-        return self.settings['channelsPerBoard']
-
-    def getNBoards(self):
-        return self.settings['nBoards']
-
-    def getBitsPerSample(self):
-        return self.settings['bitsPerSample']
-
-    def getBaudrate(self):
-        return self.settings['baudrate']
-
-    def getSwipe(self):
-        return self.settings['swipe']
-
-    def getVTick(self):
-        return self.settings['vTick']
-
-    def getHTick(self):
-        return self.settings['hTick']
-
-    def getVMin(self):
-        return self.settings['vMin']
-
-    def getVMax(self):
-        return self.settings['vMax']
-
-    def getTotChannels(self):
-        return self.settings['channelsPerBoard'] * self.settings['nBoards']
-    
-
-    def setPktSize(self, value):
-        self.settings['pktSize'] = value
-
-    def setPktComp(self, value):
-        self.settings['pktComp'] = value
-
-    def setBaudrate(self, value):
-        self.settings['baudrate'] = value
-
-    def setFuncGenFreq(self, value):
-        self.settings['funcGenFreq'] = value
-
-    def setStressTime(self, value):
-        self.settings['stressTime'] = value
-
-    def setSampleRate(self, value):
-        self.settings['sampleRate'] = value
-
-    def setChannelsPerBoard(self, value):
-        self.settings['channelsPerBoard'] = value
-
-    def setNBoards(self, value):
-        self.settings['nBoards'] = value
-
-    def setBitsPerSample(self, value):
-        self.settings['bitsPerSample'] = value
-
-    def setSwipe(self, value):
-        self.settings['swipe'] = value
-
-    def setVTick(self, value):
-        self.settings['vTick'] = value
-
-    def setHTick(self, value):
-        self.settings['hTick'] = value
-
-    def setVMin(self, value):
-        self.settings['vMin'] = value
-
-    def setVMax(self, value):
-        self.settings['vMax'] = value

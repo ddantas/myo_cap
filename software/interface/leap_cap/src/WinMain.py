@@ -218,9 +218,10 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
         '''
            
-    def loadSettings(self):
+    def loadSettings(self):        
         if(self.leap_cap_settings.load()):
             AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!')
+            self.graph.configureGraph()
         else:
             AuxFunc.showMessage('warning!', 'Problem in load settings!')
     
