@@ -193,7 +193,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         if( hasattr(self, 'log_id') ):
             self.stopCapture()
             self.file_name = self.writeHeader()
-            self.textfile.saveFile(self.file_name)
+            self.textfile.saveFile_Old(self.file_name)
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
         else:
