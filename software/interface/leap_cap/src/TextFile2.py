@@ -2,7 +2,7 @@
 """
 Created on Thu May 13 19:45:40 2021
 
-@author: asaph
+@author: Asaphe Magno
 """
 
 
@@ -26,6 +26,7 @@ class TextFile():
         self.metadata_dict    = {}
         self.data_header_line = ''
         self.data_lines       = []
+        self.file_lines       = []
         
         # Log Parameters
         self.id   = 0
@@ -33,11 +34,25 @@ class TextFile():
 
 ## File Methods ##############################################################################################################################    
 
+
+    # Method: Cleans the file parameters.
+    # Input : None
+    # Output: None
+    def cleanFileParam(self):
+        self.header_lines = [];   self.metadata_lines = [];   self.data_header_line = '';   
+        self.data_lines   = [];   self.metadata_dict  = {};   self.file_lines       = []
+        
     def writeHeaderLine(self, msg):
+        # Stores the header line into the header_lines variable.
         self.header_lines.append('## %s \n' % (msg))
+        # Stores the header line into the file_lines variable.
+        self.file_lines.append('## %s \n' % (msg))
     
     def writeMetadataLine(self, param, value):
+        # Stores the metadata line into the metadata_lines variable.
         self.metadata_lines.append('# %s: %s \n' % (param, str(value) ))
+        # Stores the metadata line into the file_lines variable.
+        self.file_lines.append('# %s: %s \n' % (param, str(value) ))
         
     def getHeaderLine(self, line_number):
         return self.header_lines[line_number]
@@ -75,15 +90,13 @@ class TextFile():
     def getDataLines(self):
         return self.data_lines
     
-    def saveFile(self, data_path, file_name):
+    def saveFile(self, file_dir_and_name):                
         try:
-            output = open(data_path + file_name, 'a')
-            output.writelines(self.header_lines)
-            output.write(str(self.data_header_line + '\n'))
-            output.writelines(self.data_lines)
-            output.close()
-        except Exception as e:
-           print(e)
+            file = open(file_dir_and_name, 'w')
+            file.writelines(self.file_lines)
+            file.close()
+        except Exception as error:
+           print(error)
 
     # Method: Opens a text file and classify its lines putting them into the corresponding file variables: header_lines; data_header_line; data_lines. 
     #
@@ -95,12 +108,15 @@ class TextFile():
         FIRST_CHAR  = 0
         SECOND_CHAR = 1
         
-        # Clear the file parameters.
-        self.header_lines = [];   self.metadata_lines = [];   self.data_header_line = '';   self.data_lines = [];    self.metadata_dict = {}   
+        # Cleans the file parameters.
+        self.cleanFileParam()        
         try:
-            # Opens the file and iterates through the lines. 
-            with open(file_dir_and_name, 'r') as file:
+            # Opens the file. 
+            with open(file_dir_and_name, 'r') as file:                
+                # Iterates through the lines. 
                 for line in file:
+                    # Stores the line of the file into the file_lines variable.
+                    self.file_lines.append(line)
                     # True if it's a header line.
                     if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == '#':    self.header_lines.append(line)                                                                    
                     # True if it's a meta data line. Appends the extracted data from the line as a list of two strings to the metata_lines.
@@ -109,6 +125,8 @@ class TextFile():
                     if line[FIRST_CHAR] == '['                             :    self.data_header_line.append(line)
                     # True if it's a data line.
                     if line[FIRST_CHAR] != '#' and line[SECOND_CHAR] != '' and line[SECOND_CHAR] != '[':    self.data_lines.append(line)                        
+                # Closes the file    
+                file.close()
         except:
             # AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
             print('Incompatible File')
