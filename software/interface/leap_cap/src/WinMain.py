@@ -93,7 +93,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         # setup graph configurations
         self.updateInfoGraph()
         
-        
         # setup combo box for serial ports
         for port in self.board.listPorts():
             self.ui_main.combo_port.addItem(port)
@@ -213,17 +212,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 ## Settings menu methods #############################################################################################################################
 
     def loadSettings(self):        
-        if(self.leap_cap_settings.load()):
-            AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!')
-            self.graph.configureGraph()
-        else:
-            AuxFunc.showMessage('warning!', 'Problem in load settings!')
+        if(self.leap_cap_settings.load()):   AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!');  self.graph.configureGraph()            
+        else:                                AuxFunc.showMessage('warning!', 'Problem in loading settings!')
     
     def saveSettings(self):
-        if(self.leap_cap_settings.save()):
-            AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
-        else:
-            AuxFunc.showMessage('warning!', 'Problem in save settings!')
+        if(self.leap_cap_settings.save()):   AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
+        else:                                AuxFunc.showMessage('warning!', 'Problem in saving settings!')
 
     # to check if it is possible do not pass graph as a parammeter to WinCaptureSettings
     def showEMGWinCaptureSettings(self):
