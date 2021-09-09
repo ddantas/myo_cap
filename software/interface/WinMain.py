@@ -70,8 +70,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.button_save_capture.clicked.connect(self.saveCapture)
                 
         # setup combo box for serial ports
-        for port in self.board.listPorts():
-            self.ui_main.combo_port.addItem(port)
+        for port in self.board.listPorts():      self.ui_main.combo_port.addItem(port)
         
         # Sync the Boar With the Interface Settings     
         # Uncomment the Next two Lines
@@ -95,11 +94,11 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
             self.graph.configureGraph()
         else:
-            AuxFunc.showMessage('Error!', 'Insert an settings file at ' + Settings.SETTINGS_PATH)
+            AuxFunc.showMessage('Error!', 'Insert an valid settings file at: ' + Settings.SETTINGS_PATH)
 
     def saveSettings(self):
         if self.settings.save():
-            AuxFunc.showMessage('Settings stored!', 'Settings stored at ' + self.settings.getSettingsPath())
+            AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath())
         else:
             AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
 
@@ -111,7 +110,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.stopCapture()
         self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
         self.win_capture_settings.show()
-        self.board.getBitsPerSample()
 
     def showWinCommSettings(self):
         self.stopCapture()

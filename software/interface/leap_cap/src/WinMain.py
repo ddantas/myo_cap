@@ -46,7 +46,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_main_loop.start()  
         # subject windows is open
         self.subj_win_is_open = 0
-                
+
+## UI setup methods #############################################################################################################################                
         
     def setupWidgets(self):
         # setup menu
@@ -81,16 +82,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.ui_main.action_square.triggered.connect(self.setSquare)
         self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
         self.ui_main.action_stresstest.triggered.connect(self.showWinStresstest)
-        
-                
+                        
         # setup buttons
         self.ui_main.button_subject_window.clicked.connect(self.showSubjectWindow)
         self.ui_main.button_start_capture.clicked.connect(self.startCapture)
         self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
         self.ui_main.button_show_capture.clicked.connect(self.showCapture)
         self.ui_main.button_save_capture.clicked.connect(self.saveCapture)
-        
-        
+                
         # setup graph configurations
         self.updateInfoGraph()
         
@@ -109,16 +108,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             ' | Vmax: ' + str(self.leap_cap_settings.getVMax()) + ' | Vtick: ' + str(self.leap_cap_settings.getVTick()) +
             ' | Htick: ' + str(self.leap_cap_settings.getHTick()) + ' | Show channels: ' + str(self.leap_cap_settings.getTotChannels()))
         
-    # In development    
-    def mainLoop(self):        
-        # Get the key pressed and handle actions on the subject window
-        if(self.subj_win_is_open):
-            key_pressed = self.win_subject.getKey() 
-            if((key_pressed == const.CLOSE_SUBJECT_WIN)):
-                self.subj_win_is_open = 0
-                del self.win_subject
-            if( (key_pressed != const.NO_KEY_PRESSED) and (key_pressed != const.CLOSE_SUBJECT_WIN) ):
-                 print('The key pressed was %s' % key_pressed)       
+## File menu methods #############################################################################################################################
+
+    # to implement
+    def openCSV(self, file_name):
+        AuxFunc.showMessage('warning!', 'Will be implemented!')
+        
+    def openCSVEMG(file_name):
+        AuxFunc.showMessage('warning!', 'Function in development!')             
 
     def showWinSelectFile(self):
         self.source = self.ui_main.combo_data_source.currentText()
@@ -129,25 +126,20 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.openCSV(self.file_name)
         else:
             AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')  
-    
-    # to implement
-    def openCSV(self, file_name):
-        AuxFunc.showMessage('warning!', 'Will be implemented!')
-    
+            
     # to implement
     def saveCapture(self):
-        AuxFunc.showMessage('warning!', 'Will be implemented!')
-
+        AuxFunc.showMessage('warning!', 'Will be implemented!')        
+        
     # to implement                
     def loadEMGSignal(self):
         options = PyQt5.QtWidgets.QFileDialog.Options()
         options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
         self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select EMG capture file', '', 'CSV files (*.csv)', options=options)
         self.openCSVEMG(self.file_name)        
-        
-    def openCSVEMG(file_name):
-        AuxFunc.showMessage('warning!', 'Function in development!')
-    
+
+## Capture menu methods #############################################################################################################################
+
     def showSubjectWindow(self):                
         if(self.leap_cap_settings.getHand() == 'Left' ):    hand_chosen = WinSubject.LEFT_HAND      
         elif(self.leap_cap_settings.getHand() == 'Right'):  hand_chosen = WinSubject.RIGHT_HAND
@@ -217,7 +209,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.graph.createPlots()
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
         '''
-           
+
+## Settings menu methods #############################################################################################################################
+
     def loadSettings(self):        
         if(self.leap_cap_settings.load()):
             AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!')
@@ -254,7 +248,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         #self.stopCapture()
         self.win_gesture_cap_settings = WinGestureCapSettings.WinGestureCapSettings(self.leap_cap_settings)
         self.win_gesture_cap_settings.show()
-        
+
+## Function generator menu methods ##################################################################################################################
+
     def showWinFuncGenSettings(self):
         #self.stopCapture()
         self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.leap_cap_settings, self.board)
@@ -313,8 +309,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         #self.stopCapture()
         self.win_stress_test = WinStresstest.WinStresstest(self.leap_cap_settings, self.board, self)
         self.win_stress_test.show()
-
         
+## Application methods #############################################################################################################################
+
     def syncBoard(self):      
         
         if self.board.getCommStatus() == True:
@@ -344,9 +341,20 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
             AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was not synchronized.' )  
-            
-            
-            
+
+    # In development    
+    def mainLoop(self):        
+        # Get the key pressed and handle actions on the subject window
+        if(self.subj_win_is_open):
+            key_pressed = self.win_subject.getKey() 
+            if((key_pressed == const.CLOSE_SUBJECT_WIN)):
+                self.subj_win_is_open = 0
+                del self.win_subject
+            if( (key_pressed != const.NO_KEY_PRESSED) and (key_pressed != const.CLOSE_SUBJECT_WIN) ):
+                 print('The key pressed was %s' % key_pressed)       
+
+## Main file code #############################################################################################################################
+
 if __name__ == '__main__':
     app = PyQt5.QtWidgets.QApplication([])    
     app.aboutToQuit.connect(app.deleteLater)
