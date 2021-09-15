@@ -9,7 +9,7 @@ Created on Thu May 13 19:45:40 2021
 # -*- coding: utf-8 -*-
 import os
 import numpy as np
-# import AuxFunctions as AuxFunc
+import AuxFunctions as AuxFunc
 
 DATA_PATH = 'data/'
 
@@ -67,12 +67,14 @@ class TextFile():
     #
     # Output: metadata_line  -> [parameter name|parameter value]. A list containing the extracted data as strings.
     def extractMetadata(self, line):        
+        # Stores the metadata line
+        metadata_line = line
         # Removes the unwanted chars.
         line = line.replace('# ','').replace(':','').replace('\n', '')
         # Splits the parameter name from the parameter value and stores the strings in metadata_line list.
-        metadata_line = line.split(' ')         
+        line = line.split(' ')         
         # Adds the metadata to the metadata_dict dictionary
-        self.metadata_dict[ metadata_line[METADATA_NAME] ] = metadata_line[METADATA_VALUE]                
+        self.metadata_dict[ line[METADATA_NAME] ] = line[METADATA_VALUE]                
         return metadata_line
            
     def getMetadataLine(self, line_number):
@@ -114,30 +116,31 @@ class TextFile():
             # Opens the file. 
             with open(file_dir_and_name, 'r') as file:
                 # Data header not readed yet.
-                data_header_readed = False                
+                data_header_readed = False   
+                #print(file.readlines())
                 # Iterates through the lines. 
-                for line in file:
+                for line in file:                     
                     # Stores the line of the file into the file_lines variable.
                     self.file_lines.append(line)
                     # True if it's a header line.
                     if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == '#':    self.header_lines.append(line)                                                                    
                     # True if it's a meta data line. Appends the extracted data from the line as a list of two strings to the metata_lines.
-                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.metadata_lines.append( self.extractMetadata(line) )
-                    # True if it's a data header line.
-                    if line[FIRST_CHAR] != '#' and line[FIRST_CHAR] != '' and data_header_readed == False:    self.data_header_line.append(line);  data_header_readed = True
+                    if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.metadata_lines.append( self.extractMetadata(line) )                    
                     # True if it's a data line.
-                    if line[FIRST_CHAR] != '#' and line[FIRST_CHAR] != '' and data_header_readed == True :    self.data_lines.append(line)                        
+                    if line[FIRST_CHAR] != '#' and line[FIRST_CHAR] != '' and     data_header_readed:   self.data_lines.append(line)                        
+                    # True if it's a data header line.
+                    if line[FIRST_CHAR] != '#' and line[FIRST_CHAR] != '' and not data_header_readed:   self.data_header_line = line;      data_header_readed = True
                 # Closes the file    
                 file.close()
         except:
-            # AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
-            print('Incompatible File')
+            AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
+            
             
 ## Log Methods ###############################################################################################################################
 
     def initFile(self, format, name_cols):                
         if len(self.data_header_line):            self.data_header_line = self.data_header_line + ';' + name_cols
-        else:                                     self.data_header_line = '# ' + name_cols
+        else:                                     self.data_header_line = name_cols
         self.line.append('')            
         self.line[self.id] = []        
         self.line[self.id].append([])
