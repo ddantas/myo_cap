@@ -112,7 +112,9 @@ class TextFile():
         self.cleanFileParam()        
         try:
             # Opens the file. 
-            with open(file_dir_and_name, 'r') as file:                
+            with open(file_dir_and_name, 'r') as file:
+                # Data header not readed yet.
+                data_header_readed = False                
                 # Iterates through the lines. 
                 for line in file:
                     # Stores the line of the file into the file_lines variable.
@@ -122,9 +124,9 @@ class TextFile():
                     # True if it's a meta data line. Appends the extracted data from the line as a list of two strings to the metata_lines.
                     if line[FIRST_CHAR] == '#' and line[SECOND_CHAR] == ' ':    self.metadata_lines.append( self.extractMetadata(line) )
                     # True if it's a data header line.
-                    if line[FIRST_CHAR] == '['                             :    self.data_header_line.append(line)
+                    if line[FIRST_CHAR] != '#' and line[FIRST_CHAR] != '' and data_header_readed == False:    self.data_header_line.append(line);  data_header_readed = True
                     # True if it's a data line.
-                    if line[FIRST_CHAR] != '#' and line[SECOND_CHAR] != '' and line[SECOND_CHAR] != '[':    self.data_lines.append(line)                        
+                    if line[FIRST_CHAR] != '#' and line[FIRST_CHAR] != '' and data_header_readed == True :    self.data_lines.append(line)                        
                 # Closes the file    
                 file.close()
         except:
