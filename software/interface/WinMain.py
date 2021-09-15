@@ -327,8 +327,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.ui_main.button_start_capture.setEnabled(True)
 
 
-    def setSawtooth(self):
-        
+    def setSawtooth(self):        
         self.stopCapture()
         if self.board.getCommStatus() == False:
             self.board.openComm(self.ui_main.combo_port.currentText())
@@ -344,8 +343,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.ui_main.button_start_capture.setEnabled(True)
             
             
-    def logIdGenerator(self):
-        
+    def logIdGenerator(self):        
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
         self.log_id = self.textfile.initFile(format, name_cols)

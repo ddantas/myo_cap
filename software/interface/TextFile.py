@@ -7,7 +7,7 @@ Created on Thu May 13 19:45:40 2021
 
 
 # -*- coding: utf-8 -*-
-
+import os
 import numpy as np
 # import AuxFunctions as AuxFunc
 
@@ -30,7 +30,7 @@ class TextFile():
         
         # Log Parameters
         self.id   = 0
-        self.line = []
+        self.line = []        
 
 ## File Methods ##############################################################################################################################    
 
@@ -133,11 +133,10 @@ class TextFile():
             
 ## Log Methods ###############################################################################################################################
 
-    def initFile(self, format, name_cols):
-        if len(self.data_header_line):
-            self.data_header_line = self.data_header_line + ';' + name_cols
-        else:
-            self.data_header_line = '# ' + name_cols
+    def initFile(self, format, name_cols):                
+        if len(self.data_header_line):            self.data_header_line = self.data_header_line + ';' + name_cols
+        else:                                     self.data_header_line = '# ' + name_cols
+        self.line.append('')            
         self.line[self.id] = []        
         self.line[self.id].append([])
         self.line[self.id].append(format)
@@ -167,10 +166,11 @@ class TextFile():
     # Old saveFile method. For compatibility with myocap software only. Will be removed in the future. 
     def saveFile_Old(self, file_name):
         try:
-            output = open(DATA_PATH + file_name, 'a')
-            output.writelines(self.header)
-            output.write(str(self.data_header + '\n'))
-            output.writelines(self.data)
+            if not os.path.exists(DATA_PATH):    os.makedirs(DATA_PATH)    
+            output = open(DATA_PATH + file_name, 'w')
+            output.writelines(self.file_lines)
+            output.write(str(self.data_header_line + '\n'))
+            output.writelines(self.data_lines)
             output.close()
         except Exception as e:
            print(e)
