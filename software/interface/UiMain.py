@@ -225,9 +225,52 @@ class UiMain:
         # Uncomment the Next two Lines
         self.combo_port.setCurrentIndex(-1)
         self.combo_port.currentIndexChanged.connect( self.win_main.syncBoard )
-        # Comment the Next Line
-        #self.board.openComm('COM3')
-        #self.sync_board_settings ()
-
+        
         # setup graph configurations
         self.updateInfoGraph(self.win_main.settings)
+        
+    def startCaptureClicked(self):
+        self.button_start_capture.setEnabled(False)
+        self.action_start_capture.setEnabled(False)
+        self.action_show_capture.setEnabled(False)
+        self.button_show_capture.setEnabled(False)
+        
+    def stopCaptureClicked(self):
+        self.button_start_capture.setEnabled(True)
+        self.action_start_capture.setEnabled(True)
+        self.action_show_capture.setEnabled(True)
+        self.button_show_capture.setEnabled(True)
+        
+    def showCaptureClicked(self):
+        self.button_start_capture.setEnabled(False)
+        self.action_start_capture.setEnabled(False)
+        self.button_stop_capture.setEnabled(False)
+        self.action_stop_capture.setEnabled(False)
+        self.button_save_capture.setEnabled(False)
+        self.action_save_capture.setEnabled(False)
+        self.action_show_capture.setEnabled(False)
+        self.button_show_capture.setEnabled(False)        
+        
+    def showCaptureUnClicked(self):
+        self.button_start_capture.setEnabled(True)
+        self.action_start_capture.setEnabled(True)
+        self.button_stop_capture.setEnabled(True)
+        self.action_stop_capture.setEnabled(True)
+        self.button_save_capture.setEnabled(True)
+        self.action_save_capture.setEnabled(True)
+        self.action_show_capture.setEnabled(True)
+        self.button_show_capture.setEnabled(True)
+        
+    def adcClicked(self)                       : self.action_sine.setChecked(False);    self.action_square.setChecked  (False);      self.action_sawtooth.setChecked(False)        
+
+    def sineWaveClicked(self):      
+        if not self.action_sine.isChecked()    : self.adcClicked()
+        else                                   : self.action_sine.setChecked (True);    self.action_square.setChecked  (False);      self.action_sawtooth.setChecked(False)
+        
+    def squareWaveClicked(self):
+        if not self.action_square.isChecked()  : self.adcClicked()
+        else                                   : self.action_sine.setChecked(False);    self.action_square.setChecked   (True);      self.action_sawtooth.setChecked(False)        
+        
+    def sawtoothWaveClicked(self):    
+        if not self.action_sawtooth.isChecked(): self.adcClicked()
+        else                                   : self.action_sine.setChecked(False);    self.action_square.setChecked  (False);      self.action_sawtooth.setChecked(True)        

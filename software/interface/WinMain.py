@@ -93,9 +93,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.log_pos = 0
         self.graph.createPlots()
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
+        self.ui_main.showCaptureClicked()
 
-    def startCapture(self):
-           
+    def startCapture(self):           
         self.source = self.ui_main.combo_data_source.currentText()
         self.graph.createPlots()
         if self.source == 'Serial':
@@ -111,34 +111,20 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
         elif self.source == 'File':
             self.log_pos = 0
-            self.timer_capture.start(1000.0/self.settings.getSampleRate())
-        
-        self.ui_main.button_start_capture.setEnabled(False)
-        self.ui_main.action_start_capture.setEnabled(False)
-        self.ui_main.action_show_capture.setEnabled(False)
-        self.ui_main.button_show_capture.setEnabled(False)
+            self.timer_capture.start(1000.0/self.settings.getSampleRate())        
+        self.ui_main.startCaptureClicked()
         
         
-    def stopCapture(self):
-        
+    def stopCapture(self):        
         # Stop the Timer
-        self.timer_capture.stop()
-        
+        self.timer_capture.stop()        
         # Check if the Serial Port is open
         if self.board.getCommStatus():
             self.board.stop()
-            if self.board.stop() == 'ok':   
-                                         
-                self.ui_main.button_start_capture.setEnabled(True)
-                self.ui_main.action_start_capture.setEnabled(True)
-                self.ui_main.action_show_capture.setEnabled(True)
-                self.ui_main.button_show_capture.setEnabled(True)   
-                                         
-            else:
-                AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
+            if self.board.stop() == 'ok':   self.ui_main.stopCaptureClicked()                                         
+            else                        :   AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
 
-    def saveCapture(self):
-        
+    def saveCapture(self):        
         # Checks if a Start Capture was alredy executed
         if( hasattr(self, 'log_id') ):
             self.stopCapture()
@@ -152,8 +138,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     
     def mainLoop(self):
         
-        if self.source == 'Serial':
-            
+        if self.source == 'Serial':            
         # receive samples from board          
             # Unpacked Transmission 
             if ( int( self.settings.getPktComp() ) == const.UNPACKED ):                         
@@ -169,6 +154,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.log_pos += 1
             else:
                 self.timer_capture.stop()
+                self.ui_main.showCaptureUnClicked()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
         else:
@@ -180,10 +166,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.timer_capture.stop()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
-                self.ui_main.button_start_capture.setEnabled(True)
-                self.ui_main.action_start_capture.setEnabled(True)
-                self.ui_main.action_show_capture.setEnabled(True)
-                self.ui_main.button_show_capture.setEnabled(True)
+                self.ui_main.stopCaptureClicked()
                         
         # Check if some Sample was Acquired        
         if len(pkt_samples):
@@ -244,56 +227,24 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
             AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )        
-        
-    def setSine(self):
-        self.stopCapture()
-        if self.board.getCommStatus() == False:
-            self.board.openComm(self.ui_main.combo_port.currentText())
-            
-        if self.ui_main.action_sine.isChecked() == True:
-            self.ui_main.action_square.setChecked(False)
-            self.ui_main.action_sawtooth.setChecked(False)
-            self.ui_main.button_start_capture.setEnabled(True)          
-            # sets the wave form to sine
-            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
-               self.board.setFucGenFreq(self.settings.getFuncGenFreq()) 
-            self.board.setSineWaveMode()
-        else:   
-                self.board.setAdcMode()
-                self.ui_main.button_start_capture.setEnabled(True)
-        
+    
+    def setSine(self):                
+        if self.board.getCommStatus() == False:             self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_sine.isChecked() == True:    self.board.setSineWaveMode();     self.ui_main.sineWaveClicked()
+        else:                                               self.board.setAdcMode();              
 
     def setSquare(self):
-        self.stopCapture()
-        if self.board.getCommStatus() == False:
-                self.board.openComm(self.ui_main.combo_port.currentText())
-        if  self.ui_main.action_square.isChecked() == True:
-            self.ui_main.action_sine.setChecked(False)
-            self.ui_main.action_sawtooth.setChecked(False)
-            # sets the wave form to square
-            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
-               self.board.setFucGenFreq(self.settings.getFuncGenFreq())
-            self.board.setSquareWaveMode()
-        else: 
-            self.board.setAdcMode()
-            self.ui_main.button_start_capture.setEnabled(True)
-
+        if self.board.getCommStatus() == False:             self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_square.isChecked() == True:  self.board.setSquareWaveMode();   self.ui_main.squareWaveClicked()
+        else:                                               self.board.setAdcMode();         
 
     def setSawtooth(self):        
-        self.stopCapture()
-        if self.board.getCommStatus() == False:
-            self.board.openComm(self.ui_main.combo_port.currentText())
-        if self.ui_main.action_sawtooth.isChecked() == True:
-            self.ui_main.action_square.setChecked(False)
-            self.ui_main.action_sine.setChecked(False) 
-            # sets the wave form to sawtooth
-            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
-               self.board.setFucGenFreq(self.settings.getFuncGenFreq())
-            self.board.setSawtoothWaveMode()
-        else: 
-            self.board.setAdcMode()
-            self.ui_main.button_start_capture.setEnabled(True)
-            
+        if self.board.getCommStatus() == False:             self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_sawtooth.isChecked() == True:  self.board.setSawtoothWaveMode();   self.ui_main.sawtoothWaveClicked()
+        else:                                               self.board.setAdcMode();                  
             
     def logIdGenerator(self):        
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
