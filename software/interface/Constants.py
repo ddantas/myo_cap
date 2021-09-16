@@ -17,7 +17,6 @@ MAX_CODE = 64
 SHIFT    = 60
 
 # Fingers in left hand
-
 THUMB = 1
 INDICATOR = 2
 MIDDLE = 3

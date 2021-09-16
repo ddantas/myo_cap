@@ -9,7 +9,7 @@ FILE_NAME     = 'settings'
 # Type of parameters definition
 LIST_INT32_PARAM  = ['sampleRate', 'channelsPerBoard', 'nBoards', 'bitsPerSample', 'swipe', 'hTick', 'baudrate', 'pktSize', 'pktComp', 'funcGenFreq', 'stressTime']
 LIST_FLOAT_PARAM  = ['vMin', 'vMax', 'vTick']
-
+LIST_STRING_PARAM = ['emulationData', 'emulationFlag', 'device', 'routine', 'hand']
 
 class Settings():
     
@@ -134,7 +134,7 @@ class Settings():
 
     def getTotChannels(self):
         return self.settings['channelsPerBoard'] * self.settings['nBoards']
-    
+
 
     def setPktSize(self, value):
         self.settings['pktSize'] = value
@@ -176,4 +176,4 @@ class Settings():
         self.settings['vMin'] = value
 
     def setVMax(self, value):
-        self.settings['vMax'] = value
+        self.settings['vMax'] = value        
