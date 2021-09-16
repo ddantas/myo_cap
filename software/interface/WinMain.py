@@ -36,59 +36,11 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         # setup text file
         self.textfile = TextFile.TextFile()
         # setup widgets
-        self.setupWidgets()
+        self.ui_main.setupWidgets()
         # setup timer
         self.timer_capture = PyQt5.QtCore.QTimer()
         self.timer_capture.timeout.connect(self.mainLoop)
-        
-
-    def setupWidgets(self):
-        # setup menu
-        self.ui_main.action_exit.triggered.connect(self.close)
-        self.ui_main.action_start_capture.triggered.connect(self.startCapture)
-        self.ui_main.action_stop_capture.triggered.connect(self.stopCapture)
-        self.ui_main.action_show_capture.triggered.connect(self.showCapture)
-        self.ui_main.action_load_settings.triggered.connect(self.loadSettings)
-        self.ui_main.action_save_settings.triggered.connect(self.saveSettings)
-        self.ui_main.action_display_settings.triggered.connect(self.showWinDisplaySettings)
-        self.ui_main.action_capture_settings.triggered.connect(self.showWinCaptureSettings)
-        self.ui_main.action_comm_settings.triggered.connect(self.showWinCommSettings)
-        self.ui_main.action_funcgen_settings.triggered.connect(self.showWinFuncGenSettings)
-        self.ui_main.action_stresstest.triggered.connect(self.showWinStresstest)
-        self.ui_main.action_sine.triggered.connect(self.setSine)
-        self.ui_main.action_square.triggered.connect(self.setSquare)
-        self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
-        self.ui_main.action_load_capture.triggered.connect(self.showWinSelectFile)
-        self.ui_main.action_save_capture.triggered.connect(self.saveCapture)
-        # setup buttons
-        self.ui_main.button_select_file.clicked.connect(self.showWinSelectFile)
-        self.ui_main.button_display_settings.clicked.connect(self.showWinDisplaySettings)
-        self.ui_main.button_capture_settings.clicked.connect(self.showWinCaptureSettings)
-        self.ui_main.button_start_capture.clicked.connect(self.startCapture)
-        self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
-        self.ui_main.button_show_capture.clicked.connect(self.showCapture)
-        self.ui_main.button_save_capture.clicked.connect(self.saveCapture)
-                
-        # setup combo box for serial ports
-        for port in self.board.listPorts():      self.ui_main.combo_port.addItem(port)
-        
-        # Sync the Boar With the Interface Settings     
-        # Uncomment the Next two Lines
-        self.ui_main.combo_port.setCurrentIndex(-1)
-        self.ui_main.combo_port.currentIndexChanged.connect( self.syncBoard )
-        # Comment the Next Line
-        #self.board.openComm('COM3')
-        #self.sync_board_settings ()
-
-        # setup graph configurations
-        self.updateInfoGraph()
-
-    def updateInfoGraph(self):
-        self.ui_main.info_graph.setText(
-            'Swipe: ' + str(self.settings.getSwipe()) + ' | Vmin: ' + str(self.settings.getVMin()) +
-            ' | Vmax: ' + str(self.settings.getVMax()) + ' | Vtick: ' + str(self.settings.getVTick()) +
-            ' | Htick: ' + str(self.settings.getHTick()) + ' | Show channels: ' + str(self.settings.getTotChannels()))
-
+       
     def loadSettings(self):
         if self.settings.load():
             AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
