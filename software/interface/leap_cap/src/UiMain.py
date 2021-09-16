@@ -244,3 +244,35 @@ class UiMain:
         # Sync the Boar With the Interface Settings     
         self.combo_port.setCurrentIndex(-1)
         self.combo_port.currentIndexChanged.connect( self.win_main.syncBoard )            
+        
+    def startCaptureClicked(self):
+        self.button_start_capture.setEnabled(False)
+        self.action_start_capture.setEnabled(False)
+        self.action_show_capture.setEnabled(False)
+        self.button_show_capture.setEnabled(False)
+        
+    def stopCaptureClicked(self):
+        self.button_start_capture.setEnabled(True)
+        self.action_start_capture.setEnabled(True)
+        self.action_show_capture.setEnabled(True)
+        self.button_show_capture.setEnabled(True)
+        
+    def showCaptureClicked(self):
+        self.button_start_capture.setEnabled(False)
+        self.action_start_capture.setEnabled(False)
+        self.button_stop_capture.setEnabled(False)
+        self.action_stop_capture.setEnabled(False)
+        self.button_save_capture.setEnabled(False)
+        self.action_save_capture.setEnabled(False)
+        self.action_show_capture.setEnabled(False)
+        self.button_show_capture.setEnabled(False)        
+        
+    def showCaptureUnClicked(self):
+        self.button_start_capture.setEnabled(True)
+        self.action_start_capture.setEnabled(True)
+        self.button_stop_capture.setEnabled(True)
+        self.action_stop_capture.setEnabled(True)
+        self.button_save_capture.setEnabled(True)
+        self.action_save_capture.setEnabled(True)
+        self.action_show_capture.setEnabled(True)
+        self.button_show_capture.setEnabled(True)

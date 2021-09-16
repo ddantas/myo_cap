@@ -113,10 +113,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())
         '''
-        self.ui_main.button_start_capture.setEnabled(False)
-        self.ui_main.action_start_capture.setEnabled(False)
-        self.ui_main.action_show_capture.setEnabled(False)
-        self.ui_main.button_show_capture.setEnabled(False)
+        self.ui_main.startCaptureClicked()
         
     # to check    
     def stopCapture(self):        
@@ -131,25 +128,23 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.stop()
             if self.board.stop() == 'ok':   
         '''                                         
-        self.ui_main.button_start_capture.setEnabled(True)
-        self.ui_main.action_start_capture.setEnabled(True)
-        self.ui_main.action_show_capture.setEnabled(True)
-        self.ui_main.button_show_capture.setEnabled(True)   
+        self.ui_main.stopCaptureClicked()   
         '''                                 
             else:
                 AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
         '''
     # to check
-    def showCapture(self):        
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        
+    def showCapture(self):                        
         '''
         self.source = 'Log'
         self.log_pos = 0
         self.graph.createPlots()
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
         '''
-
+        self.ui_main.showCaptureClicked()
+        AuxFunc.showMessage('warning!', 'Function in development!')
+        self.ui_main.showCaptureUnClicked()
+        
 ## Settings menu methods #############################################################################################################################
 
     def loadSettings(self):        
