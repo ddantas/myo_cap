@@ -276,3 +276,17 @@ class UiMain:
         self.action_save_capture.setEnabled(True)
         self.action_show_capture.setEnabled(True)
         self.button_show_capture.setEnabled(True)
+        
+    def adcClicked(self)                       : self.action_sine.setChecked(False);    self.action_square.setChecked  (False);      self.action_sawtooth.setChecked(False)        
+
+    def sineWaveClicked(self):      
+        if not self.action_sine.isChecked()    : self.adcClicked()
+        else                                   : self.action_sine.setChecked (True);    self.action_square.setChecked  (False);      self.action_sawtooth.setChecked(False)
+        
+    def squareWaveClicked(self):
+        if not self.action_square.isChecked()  : self.adcClicked()
+        else                                   : self.action_sine.setChecked(False);    self.action_square.setChecked   (True);      self.action_sawtooth.setChecked(False)        
+        
+    def sawtoothWaveClicked(self):
+        if not self.action_sawtooth.isChecked(): self.adcClicked()
+        else                                   : self.action_sine.setChecked(False);    self.action_square.setChecked  (False);      self.action_sawtooth.setChecked(True)

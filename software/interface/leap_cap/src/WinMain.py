@@ -23,7 +23,6 @@ import AuxFunctions as AuxFunc
 import Constants    as const
 
 
-
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def __init__(self):        
@@ -157,7 +156,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     # to check if it is possible do not pass graph as a parammeter to WinCaptureSettings
     def showEMGWinCaptureSettings(self):
-        #self.stopCapture()
+        self.stopCapture()
         self.win_emg_capture_settings = WinCaptureSettings.WinCaptureSettings(self.leap_cap_settings, self.graph, self.board)
         self.win_emg_capture_settings.show()  
         
@@ -166,7 +165,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.win_emg_display_settings.show()
 
     def showEMGWinCommSettings(self):
-        #self.stopCapture()
+        self.stopCapture()
         self.win_emg_comm_settings = WinCommSettings.WinCommSettings(self.leap_cap_settings, self.board)
         self.win_emg_comm_settings.show()        
         
@@ -175,66 +174,35 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         AuxFunc.showMessage('warning!', 'Function in development!')
         
     def showGestureCaptureSettings(self):
-        #self.stopCapture()
+        self.stopCapture()
         self.win_gesture_cap_settings = WinGestureCapSettings.WinGestureCapSettings(self.leap_cap_settings)
         self.win_gesture_cap_settings.show()
 
 ## Function generator menu methods ##################################################################################################################
 
     def showWinFuncGenSettings(self):
-        #self.stopCapture()
+        self.stopCapture()
         self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.leap_cap_settings, self.board)
         self.win_funcgen_settings.show()
         
-    def setSine(self):
-        #self.stopCapture()
-        #uxFunc.showMessage('warning!', 'Function in development!')        
-        if self.board.getCommStatus() == False:
-            self.board.openComm(self.ui_main.combo_port.currentText())
-            
-        if self.ui_main.action_sine.isChecked() == True:
-            self.ui_main.action_square.setChecked(False)
-            self.ui_main.action_sawtooth.setChecked(False)
-            self.ui_main.button_start_capture.setEnabled(True)          
-            # sets the wave form to sine
-            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
-               self.board.setFucGenFreq(self.settings.getFuncGenFreq()) 
-            self.board.setSineWaveMode()
-        else:   
-                self.board.setAdcMode()
-                self.ui_main.button_start_capture.setEnabled(True)      
+    def setSine(self):                
+        if self.board.getCommStatus() == False:             self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_sine.isChecked() == True:    self.board.setSineWaveMode();   self.ui_main.sineWaveClicked()
+        else:                                               self.board.setAdcMode();                        
 
     def setSquare(self):
-        #self.stopCapture()
-        if self.board.getCommStatus() == False:
-                self.board.openComm(self.ui_main.combo_port.currentText())
-        if  self.ui_main.action_square.isChecked() == True:
-            self.ui_main.action_sine.setChecked(False)
-            self.ui_main.action_sawtooth.setChecked(False)
-            # sets the wave form to square
-            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
-               self.board.setFucGenFreq(self.settings.getFuncGenFreq())
-            self.board.setSquareWaveMode()
-        else: 
-            self.board.setAdcMode()
-            self.ui_main.button_start_capture.setEnabled(True)
+        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_square.isChecked() == True:   self.board.setSquareWaveMode();   self.ui_main.squareWaveClicked()
+        else:                                                self.board.setAdcMode()
 
-    def setSawtooth(self):
+    def setSawtooth(self):        
+        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_sawtooth.isChecked() == True: self.board.setSawtoothWaveMode(); self.ui_main.sawtoothWaveClicked()
+        else:                                                self.board.setAdcMode()
         
-        if self.board.getCommStatus() == False:
-            self.board.openComm(self.ui_main.combo_port.currentText())
-        if self.ui_main.action_sawtooth.isChecked() == True:
-            self.ui_main.action_square.setChecked(False)
-            self.ui_main.action_sine.setChecked(False) 
-            # sets the wave form to sawtooth
-            if self.board.getFucGenFreq() != self.settings.getFuncGenFreq():
-               self.board.setFucGenFreq(self.settings.getFuncGenFreq())
-            self.board.setSawtoothWaveMode()
-        else: 
-            self.board.setAdcMode()
-            self.ui_main.button_start_capture.setEnabled(True)
-
- 
     def showWinStresstest(self):
         #self.stopCapture()
         self.win_stress_test = WinStresstest.WinStresstest(self.leap_cap_settings, self.board, self)
@@ -242,24 +210,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
 ## Application methods #############################################################################################################################
 
-    def syncBoard(self):      
-        
-        if self.board.getCommStatus() == True:
-            self.board.closeComm()
-
+    def syncBoard(self):              
+        if self.board.getCommStatus() == True:            self.board.closeComm()
         self.board.openComm(self.ui_main.combo_port.currentText())
-
-        
+        # Communication test
         if self.board.stop() == 'ok':
-            if self.ui_main.action_sine.isChecked():
-                self.board.setSineWaveMode()
-            elif self.ui_main.action_square.isChecked():
-                self.board.setSquareWaveMode()
-            elif self.ui_main.action_sawtooth.isChecked():
-                self.board.setSawtoothWaveMode()
-            else:
-                self.board.setAdcMode()
-
+            # Sets the waveform transmitted from the board
+            if self.ui_main.action_sine.isChecked()      :   self.board.setSineWaveMode()
+            elif self.ui_main.action_square.isChecked()  :   self.board.setSquareWaveMode()                
+            elif self.ui_main.action_sawtooth.isChecked():   self.board.setSawtoothWaveMode()             
+            else                                         :   self.board.setAdcMode()            
             self.board.setFucGenFreq(self.settings.getFuncGenFreq())
             self.board.setBitsPerSample(self.settings.getBitsPerSample())
             self.board.setChannelsperBoard(self.settings.getChannelsPerBoard())
@@ -267,10 +227,10 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.setPacketSize(self.settings.getPktSize())
             self.board.setSampleRate(self.settings.getSampleRate())
             self.board.setTransmissionMode( int( self.settings.getPktComp() ) )
-
+            
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
-            AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was not synchronized.' )  
+            AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )    
 
     # In development    
     def mainLoop(self):        
