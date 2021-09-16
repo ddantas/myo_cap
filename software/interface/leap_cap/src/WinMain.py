@@ -39,7 +39,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         # setup board
         self.board = Tiva.Tiva(self.leap_cap_settings)
         # setup widgets
-        self.setupWidgets()
+        self.ui_main.setupWidgets()
         # setup main loop timer
         self.timer_main_loop = PyQt5.QtCore.QTimer()
         self.timer_main_loop.timeout.connect(self.mainLoop)
@@ -47,66 +47,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         # subject windows is open
         self.subj_win_is_open = 0
 
-## UI setup methods #############################################################################################################################                
-        
-    def setupWidgets(self):
-        # setup menu
-        
-        # menu file
-        self.ui_main.action_load_capture.triggered.connect(self.showWinSelectFile)
-        self.ui_main.action_exit.triggered.connect(self.close)
-        self.ui_main.action_save_capture.triggered.connect(self.saveCapture)
-        self.ui_main.action_load_emg_signal.triggered.connect(self.loadEMGSignal)
-        
-        #menu capture
-        self.ui_main.action_subject_window.triggered.connect(self.showSubjectWindow)
-        
-        self.ui_main.action_start_capture.triggered.connect(self.startCapture)
-        self.ui_main.action_stop_capture.triggered.connect(self.stopCapture)
-        self.ui_main.action_show_capture.triggered.connect(self.showCapture)
-        
-        # menu settings
-        self.ui_main.action_load_settings.triggered.connect(self.loadSettings)
-        self.ui_main.action_save_settings.triggered.connect(self.saveSettings)
-        
-        self.ui_main.action_emg_capture_settings.triggered.connect(self.showEMGWinCaptureSettings)
-        self.ui_main.action_emg_display_settings.triggered.connect(self.showEMGWinDisplaySettings)
-        self.ui_main.action_emg_comm_settings.triggered.connect(self.showEMGWinCommSettings)
-        self.ui_main.action_emg_emulation.triggered.connect(self.showEMGEmulation)
-  
-        self.ui_main.action_gesture_capture_settings.triggered.connect(self.showGestureCaptureSettings)
-        
-        # menu function generator
-        self.ui_main.action_funcgen_settings.triggered.connect(self.showWinFuncGenSettings)
-        self.ui_main.action_sine.triggered.connect(self.setSine)
-        self.ui_main.action_square.triggered.connect(self.setSquare)
-        self.ui_main.action_sawtooth.triggered.connect(self.setSawtooth)
-        self.ui_main.action_stresstest.triggered.connect(self.showWinStresstest)
-                        
-        # setup buttons
-        self.ui_main.button_subject_window.clicked.connect(self.showSubjectWindow)
-        self.ui_main.button_start_capture.clicked.connect(self.startCapture)
-        self.ui_main.button_stop_capture.clicked.connect(self.stopCapture)
-        self.ui_main.button_show_capture.clicked.connect(self.showCapture)
-        self.ui_main.button_save_capture.clicked.connect(self.saveCapture)
-                
-        # setup graph configurations
-        self.updateInfoGraph()
-        
-        # setup combo box for serial ports
-        for port in self.board.listPorts():
-            self.ui_main.combo_port.addItem(port)
-    
-        # Sync the Boar With the Interface Settings     
-        self.ui_main.combo_port.setCurrentIndex(-1)
-        self.ui_main.combo_port.currentIndexChanged.connect( self.syncBoard )            
 
-    def updateInfoGraph(self):
-        self.ui_main.info_graph.setText(
-            'Swipe: ' + str(self.leap_cap_settings.getSwipe()) + ' | Vmin: ' + str(self.leap_cap_settings.getVMin()) +
-            ' | Vmax: ' + str(self.leap_cap_settings.getVMax()) + ' | Vtick: ' + str(self.leap_cap_settings.getVTick()) +
-            ' | Htick: ' + str(self.leap_cap_settings.getHTick()) + ' | Show channels: ' + str(self.leap_cap_settings.getTotChannels()))
-        
 ## File menu methods #############################################################################################################################
 
     # to implement

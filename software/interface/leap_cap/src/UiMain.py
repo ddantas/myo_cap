@@ -170,6 +170,11 @@ class UiMain:
         self.info_graph.setAlignment(PyQt5.QtCore.Qt.AlignCenter)
         self.info_graph.setFixedWidth(400)
 
+    def updateInfoGraph(self, settings):
+        self.info_graph.setText(            'Swipe: '    + str( settings.getSwipe() ) + ' | Vmin: '          + str( settings.getVMin() ) +
+                                            ' | Vmax: '  + str( settings.getVMax() )  + ' | Vtick: '         + str( settings.getVTick() ) +
+                                            ' | Htick: ' + str( settings.getHTick() ) + ' | Show channels: ' + str( settings.getTotChannels() ) )
+
     def posWidgets(self):
         # menu bar position
         self.grid_widget.setMenuBar(self.menu_bar)
@@ -188,3 +193,54 @@ class UiMain:
         graph_row = 1
         graph_colspan = 10 # number of taskbar widgets
         self.grid_widget.addWidget(self.graph, graph_row, 0, 1, graph_colspan)
+
+    def setupWidgets(self):
+        # setup menu
+        
+        # menu file
+        self.action_load_capture.triggered.connect(self.win_main.showWinSelectFile)
+        self.action_exit.triggered.connect(self.win_main.close)
+        self.action_save_capture.triggered.connect(self.win_main.saveCapture)
+        self.action_load_emg_signal.triggered.connect(self.win_main.loadEMGSignal)
+        
+        #menu capture
+        self.action_subject_window.triggered.connect(self.win_main.showSubjectWindow)
+        
+        self.action_start_capture.triggered.connect(self.win_main.startCapture)
+        self.action_stop_capture.triggered.connect(self.win_main.stopCapture)
+        self.action_show_capture.triggered.connect(self.win_main.showCapture)
+        
+        # menu settings
+        self.action_load_settings.triggered.connect(self.win_main.loadSettings)
+        self.action_save_settings.triggered.connect(self.win_main.saveSettings)
+        
+        self.action_emg_capture_settings.triggered.connect(self.win_main.showEMGWinCaptureSettings)
+        self.action_emg_display_settings.triggered.connect(self.win_main.showEMGWinDisplaySettings)
+        self.action_emg_comm_settings.triggered.connect(self.win_main.showEMGWinCommSettings)
+        self.action_emg_emulation.triggered.connect(self.win_main.showEMGEmulation)
+  
+        self.action_gesture_capture_settings.triggered.connect(self.win_main.showGestureCaptureSettings)
+        
+        # menu function generator
+        self.action_funcgen_settings.triggered.connect(self.win_main.showWinFuncGenSettings)
+        self.action_sine.triggered.connect(self.win_main.setSine)
+        self.action_square.triggered.connect(self.win_main.setSquare)
+        self.action_sawtooth.triggered.connect(self.win_main.setSawtooth)
+        self.action_stresstest.triggered.connect(self.win_main.showWinStresstest)
+                        
+        # setup buttons
+        self.button_subject_window.clicked.connect(self.win_main.showSubjectWindow)
+        self.button_start_capture.clicked.connect(self.win_main.startCapture)
+        self.button_stop_capture.clicked.connect(self.win_main.stopCapture)
+        self.button_show_capture.clicked.connect(self.win_main.showCapture)
+        self.button_save_capture.clicked.connect(self.win_main.saveCapture)
+                
+        # setup graph configurations
+        self.updateInfoGraph(self.win_main.leap_cap_settings)
+        
+        # setup combo box for serial ports
+        for port in self.win_main.board.listPorts():        self.combo_port.addItem(port)            
+    
+        # Sync the Boar With the Interface Settings     
+        self.combo_port.setCurrentIndex(-1)
+        self.combo_port.currentIndexChanged.connect( self.win_main.syncBoard )            
