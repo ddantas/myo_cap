@@ -20,8 +20,7 @@ import Constants as const
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
-    def __init__(self):
-        
+    def __init__(self):        
         # supeclass constructor
         super(WinMain, self).__init__()
         # setup settings

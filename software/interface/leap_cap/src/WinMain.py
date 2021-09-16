@@ -116,7 +116,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
     # to check    
     def stopCapture(self):        
-
         #AuxFunc.showMessage('warning!', 'Function in development!')
         '''
         # Stop the Timer
@@ -220,13 +219,13 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             elif self.ui_main.action_square.isChecked()  :   self.board.setSquareWaveMode()                
             elif self.ui_main.action_sawtooth.isChecked():   self.board.setSawtoothWaveMode()             
             else                                         :   self.board.setAdcMode()            
-            self.board.setFucGenFreq(self.settings.getFuncGenFreq())
-            self.board.setBitsPerSample(self.settings.getBitsPerSample())
-            self.board.setChannelsperBoard(self.settings.getChannelsPerBoard())
-            self.board.setNumAcquisBoards(self.settings.getNBoards())
-            self.board.setPacketSize(self.settings.getPktSize())
-            self.board.setSampleRate(self.settings.getSampleRate())
-            self.board.setTransmissionMode( int( self.settings.getPktComp() ) )
+            self.board.setFucGenFreq(self.leap_cap_settings.getFuncGenFreq())
+            self.board.setBitsPerSample(self.leap_cap_settings.getBitsPerSample())
+            self.board.setChannelsperBoard(self.leap_cap_settings.getChannelsPerBoard())
+            self.board.setNumAcquisBoards(self.leap_cap_settings.getNBoards())
+            self.board.setPacketSize(self.leap_cap_settings.getPktSize())
+            self.board.setSampleRate(self.leap_cap_settings.getSampleRate())
+            self.board.setTransmissionMode( int( self.leap_cap_settings.getPktComp() ) )
             
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
