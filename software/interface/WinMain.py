@@ -40,44 +40,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_capture = PyQt5.QtCore.QTimer()
         self.timer_capture.timeout.connect(self.mainLoop)
        
-    def loadSettings(self):
-        if self.settings.load():
-            AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
-            self.graph.configureGraph()
-        else:
-            AuxFunc.showMessage('Error!', 'Insert an valid settings file at: ' + Settings.SETTINGS_PATH)
-
-    def saveSettings(self):
-        if self.settings.save():
-            AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath())
-        else:
-            AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
-
-    def showWinDisplaySettings(self):
-        self.win_display_settings = WinDisplaySettings.WinDisplaySettings(self, self.settings, self.graph)
-        self.win_display_settings.show()
-
-    def showWinCaptureSettings(self):
-        self.stopCapture()
-        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
-        self.win_capture_settings.show()
-
-    def showWinCommSettings(self):
-        self.stopCapture()
-        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
-        self.win_comm_settings.show()
-
-    def showWinFuncGenSettings(self):
-        self.stopCapture()
-        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board)
-        self.win_funcgen_settings.show()
-
-    def showWinStresstest(self):
-        self.stopCapture()
-        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
-        self.win_stress_test.show()
-
-    def showWinSelectFile(self):
+## File menu methods ########################################################################################################################################
+        
+    def loadCapture(self):
         self.source = self.ui_main.combo_data_source.currentText()
         if self.source == 'File':
             options = PyQt5.QtWidgets.QFileDialog.Options()
@@ -87,12 +52,18 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:
             AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
 
-    def showCapture(self):
-        self.source = 'Log'
-        self.log_pos = 0
-        self.graph.createPlots()
-        self.timer_capture.start(1000.0/self.settings.getSampleRate())
-        self.ui_main.showCaptureClicked()
+    def saveCapture(self):        
+        # Checks if a Start Capture was alredy executed
+        if( hasattr(self, 'log_id') ):
+            self.stopCapture()
+            self.file_name = self.writeHeader()
+            self.textfile.saveFile_Old(self.file_name)
+            AuxFunc.showMessage('Capture saved!', self.file_name)
+        
+        else:
+            AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
+
+## Capture menu methods #####################################################################################################################################
 
     def startCapture(self):           
         self.source = self.ui_main.combo_data_source.currentText()
@@ -114,8 +85,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())        
         #-----------------------------------------------------------------------------------------------------------------------------
-        self.ui_main.startCaptureClicked()
-        
+        self.ui_main.startCaptureClicked()        
         
     def stopCapture(self):        
         # Stop the Timer
@@ -126,18 +96,74 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             if self.board.stop() == 'ok':   self.ui_main.stopCaptureClicked()                                         
             else                        :   AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
 
-    def saveCapture(self):        
-        # Checks if a Start Capture was alredy executed
-        if( hasattr(self, 'log_id') ):
-            self.stopCapture()
-            self.file_name = self.writeHeader()
-            self.textfile.saveFile_Old(self.file_name)
-            AuxFunc.showMessage('Capture saved!', self.file_name)
+    def showCapture(self):
+        self.source = 'Log'
+        self.log_pos = 0
+        self.graph.createPlots()
+        self.timer_capture.start(1000.0/self.settings.getSampleRate())
+        self.ui_main.showCaptureClicked()
         
+## Settings menu methods ####################################################################################################################################        
+
+    def loadSettings(self):
+        if self.settings.load():
+            AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
+            self.graph.configureGraph()
         else:
-            AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
-     
-    
+            AuxFunc.showMessage('Error!', 'Insert an valid settings file at: ' + Settings.SETTINGS_PATH)
+
+    def saveSettings(self):
+        if self.settings.save():
+            AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath())
+        else:
+            AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
+            
+    def showWinCaptureSettings(self):
+        self.stopCapture()
+        self.win_capture_settings = WinCaptureSettings.WinCaptureSettings(self.settings, self.graph, self.board)
+        self.win_capture_settings.show()        
+
+    def showWinDisplaySettings(self):
+        self.win_display_settings = WinDisplaySettings.WinDisplaySettings(self, self.settings, self.graph)
+        self.win_display_settings.show()
+
+    def showWinCommSettings(self):
+        self.stopCapture()
+        self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
+        self.win_comm_settings.show()
+        
+## Function generator menu methods ##########################################################################################################################        
+
+    def showWinFuncGenSettings(self):
+        self.stopCapture()
+        self.win_funcgen_settings = WinFuncGenSettings.WinFuncGenSettings(self.settings, self.board)
+        self.win_funcgen_settings.show()
+
+    def setSine(self):                
+        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_sine.isChecked() == True:     self.board.setSineWaveMode();     self.ui_main.sineWaveClicked()
+        else:                                                self.board.setAdcMode()
+
+    def setSquare(self):
+        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_square.isChecked() == True:   self.board.setSquareWaveMode();   self.ui_main.squareWaveClicked()
+        else:                                                self.board.setAdcMode()
+
+    def setSawtooth(self):        
+        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
+        self.stopCapture()            
+        if self.ui_main.action_sawtooth.isChecked() == True: self.board.setSawtoothWaveMode(); self.ui_main.sawtoothWaveClicked()
+        else:                                                self.board.setAdcMode()
+
+    def showWinStresstest(self):
+        self.stopCapture()
+        self.win_stress_test = WinStresstest.WinStresstest(self.settings, self.board, self)
+        self.win_stress_test.show()
+
+## Application methods #############################################################################################################################
+         
     def mainLoop(self):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Samples acquisition -----------------------------------------------------------------------------------------------------------------------
@@ -179,6 +205,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         if len(pkt_samples) and (self.source == 'Serial'):
             
             num_instants = 1
+            # More than one instant for each request.
             if( self.settings.getPktComp() == const.PACKED ):    num_instants = self.board.unpacker.num_instants            
             
             # Sliding window of samples
@@ -195,10 +222,11 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         # Checks if some sample was acquired.        
         if len(pkt_samples):
             
-            # Debug: display on terminal
+            # Debug: Displays the acquired samples on terminal.
             if(const.DEBUG):     print( "List of Samples: " + str(pkt_samples) )
 
             num_instants = 1
+            # More than one instant for each request.
             if( self.settings.getPktComp() == const.PACKED and self.source == 'Serial' ):    num_instants = self.board.unpacker.num_instants
             
             # Sliding window of samples
@@ -231,23 +259,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:
             AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )        
     
-    def setSine(self):                
-        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
-        self.stopCapture()            
-        if self.ui_main.action_sine.isChecked() == True:     self.board.setSineWaveMode();     self.ui_main.sineWaveClicked()
-        else:                                                self.board.setAdcMode()
-
-    def setSquare(self):
-        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
-        self.stopCapture()            
-        if self.ui_main.action_square.isChecked() == True:   self.board.setSquareWaveMode();   self.ui_main.squareWaveClicked()
-        else:                                                self.board.setAdcMode()
-
-    def setSawtooth(self):        
-        if self.board.getCommStatus() == False:              self.board.openComm(self.ui_main.combo_port.currentText())
-        self.stopCapture()            
-        if self.ui_main.action_sawtooth.isChecked() == True: self.board.setSawtoothWaveMode(); self.ui_main.sawtoothWaveClicked()
-        else:                                                self.board.setAdcMode()
+    
             
     def logIdGenerator(self):        
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)

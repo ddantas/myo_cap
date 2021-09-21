@@ -207,10 +207,10 @@ class UiMain:
         self.action_sine.triggered.connect(self.win_main.setSine)
         self.action_square.triggered.connect(self.win_main.setSquare)
         self.action_sawtooth.triggered.connect(self.win_main.setSawtooth)
-        self.action_load_capture.triggered.connect(self.win_main.showWinSelectFile)
+        self.action_load_capture.triggered.connect(self.win_main.loadCapture)
         self.action_save_capture.triggered.connect(self.win_main.saveCapture)
         # setup buttons
-        self.button_select_file.clicked.connect(self.win_main.showWinSelectFile)
+        self.button_select_file.clicked.connect(self.win_main.loadCapture)
         self.button_display_settings.clicked.connect(self.win_main.showWinDisplaySettings)
         self.button_capture_settings.clicked.connect(self.win_main.showWinCaptureSettings)
         self.button_start_capture.clicked.connect(self.win_main.startCapture)
