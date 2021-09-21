@@ -40,7 +40,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_capture = PyQt5.QtCore.QTimer()
         self.timer_capture.timeout.connect(self.mainLoop)
        
-## File menu methods ########################################################################################################################################
+## File menu methods ###################################################################################################################################################
         
     def loadCapture(self):
         self.source = self.ui_main.combo_data_source.currentText()
@@ -49,8 +49,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
             self.openCSV(self.file_name)
-        else:
-            AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
+        else:   AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
 
     def saveCapture(self):        
         # Checks if a Start Capture was alredy executed
@@ -60,10 +59,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.textfile.saveFile_Old(self.file_name)
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
-        else:
-            AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
+        else:   AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
 
-## Capture menu methods #####################################################################################################################################
+## Capture menu methods ################################################################################################################################################
 
     def startCapture(self):           
         self.source = self.ui_main.combo_data_source.currentText()
@@ -75,11 +73,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 if self.board.start() == 'ok':
                     self.logIdGenerator()
                     self.timer_capture.start(0)
-                else:
-                    AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')
-                    return -1
-            else:
-                AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
+                else:      AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.');      return -1
+            else:          AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
         #-----------------------------------------------------------------------------------------------------------------------------
         elif self.source == 'File':
             self.log_pos = 0
@@ -103,20 +98,15 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.timer_capture.start(1000.0/self.settings.getSampleRate())
         self.ui_main.showCaptureClicked()
         
-## Settings menu methods ####################################################################################################################################        
+## Settings menu methods ###############################################################################################################################################        
 
     def loadSettings(self):
-        if self.settings.load():
-            AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath())
-            self.graph.configureGraph()
-        else:
-            AuxFunc.showMessage('Error!', 'Insert an valid settings file at: ' + Settings.SETTINGS_PATH)
+        if self.settings.load():    AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath());    self.graph.configureGraph()            
+        else                   :    AuxFunc.showMessage('Error!', 'Insert an valid settings file at: ' + Settings.SETTINGS_PATH)
 
     def saveSettings(self):
-        if self.settings.save():
-            AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath())
-        else:
-            AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
+        if self.settings.save():    AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath());
+        else                   :    AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
             
     def showWinCaptureSettings(self):
         self.stopCapture()
@@ -132,7 +122,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.win_comm_settings = WinCommSettings.WinCommSettings(self.settings, self.board)
         self.win_comm_settings.show()
         
-## Function generator menu methods ##########################################################################################################################        
+## Function generator menu methods #####################################################################################################################################        
 
     def showWinFuncGenSettings(self):
         self.stopCapture()
@@ -258,9 +248,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             AuxFunc.showMessage('Warnig!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' port was synchronized.' )
         else:
             AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )        
-    
-    
-            
+                    
     def logIdGenerator(self):        
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
