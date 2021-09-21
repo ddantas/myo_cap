@@ -97,6 +97,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def startCapture(self):           
         self.source = self.ui_main.combo_data_source.currentText()
         self.graph.createPlots()
+        #-----------------------------------------------------------------------------------------------------------------------------         
         if self.source == 'Serial':
             self.board.openComm(self.ui_main.combo_port.currentText())
             if self.board.test():               
@@ -108,9 +109,11 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                     return -1
             else:
                 AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
+        #-----------------------------------------------------------------------------------------------------------------------------
         elif self.source == 'File':
             self.log_pos = 0
             self.timer_capture.start(1000.0/self.settings.getSampleRate())        
+        #-----------------------------------------------------------------------------------------------------------------------------
         self.ui_main.startCaptureClicked()
         
         
@@ -136,16 +139,16 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
      
     
     def mainLoop(self):
-        
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        # Samples acquisition -----------------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------------------------------------
         if self.source == 'Serial':            
         # receive samples from board          
             # Unpacked Transmission 
-            if ( int( self.settings.getPktComp() ) == const.UNPACKED ):                         
-                pkt_samples = self.board.receiveStrPkt()
+            if ( self.settings.getPktComp() == const.UNPACKED ):     pkt_samples = self.board.receiveStrPkt()
             # Packed Transmission    
-            else:                         
-                pkt_samples = self.board.receive()         
-            
+            else:   pkt_samples = self.board.receive()         
+        #--------------------------------------------------------------------------------------------------------------------------------------------    
         elif self.source == 'Log':
             # receive samples from log
             if self.log_pos < self.textfile.getLogLength():
@@ -156,7 +159,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.ui_main.showCaptureUnClicked()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
-        else:
+        #--------------------------------------------------------------------------------------------------------------------------------------------                
+        elif self.source == 'File':
             # receive samples csv file
             if self.log_pos < len(self.log):
                 pkt_samples = self.log[self.log_pos]
@@ -165,37 +169,45 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.timer_capture.stop()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []
-                self.ui_main.stopCaptureClicked()
-                        
-        # Check if some Sample was Acquired        
+                self.ui_main.stopCaptureClicked()                
+                
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        # Log of samples ----------------------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        
+        # Checks if some sample was acquired and if this is a capture through the serial port.        
+        if len(pkt_samples) and (self.source == 'Serial'):
+            
+            num_instants = 1
+            if( self.settings.getPktComp() == const.PACKED ):    num_instants = self.board.unpacker.num_instants            
+            
+            # Sliding window of samples
+            for instant_index in range(num_instants):
+                # calculate the offset of the instant.
+                instant_offset = self.settings.getTotChannels() * instant_index
+                # save to log
+                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
+                
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        # Display of samples ------------------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+
+        # Checks if some sample was acquired.        
         if len(pkt_samples):
             
-            if(const.DEBUG):
-                print( "List of Samples: " + str(pkt_samples) )
+            # Debug: display on terminal
+            if(const.DEBUG):     print( "List of Samples: " + str(pkt_samples) )
+
+            num_instants = 1
+            if( self.settings.getPktComp() == const.PACKED and self.source == 'Serial' ):    num_instants = self.board.unpacker.num_instants
             
-            if (  ( int( self.settings.getPktComp() ) == const.PACKED ) and (self.source == 'Serial')  ):
-                
-                # send samples from packet to graph
-                for instant_index in range(self.board.unpacker.num_instants):
-                    
+            # Sliding window of samples
+            for instant_index in range(num_instants):
                     # calculate the offset of the instant.
                     instant_offset = self.settings.getTotChannels() * instant_index
-                    
-                    # save to log
-                    self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
-                    
                     # plot a instant of Samples                    
                     self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
-                    
-            # When reading from a File or a Log, the Samples are ploted in a batch with (total number of channels) long.
-            else:
-                    if self.source == 'Serial':
-                        # save to log
-                        self.textfile.saveLog(self.log_id, pkt_samples)
-                    
-                    # Plot a instant of Sample
-                    self.graph.plotSamples( np.array( pkt_samples)  )
-                
+        #--------------------------------------------------------------------------------------------------------------------------------------------
 
     def syncBoard(self):              
         if self.board.getCommStatus() == True:            self.board.closeComm()
@@ -240,8 +252,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def logIdGenerator(self):        
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
-        self.log_id = self.textfile.initFile(format, name_cols)
-                
+        self.log_id = self.textfile.initFile(format, name_cols)                
 
     def writeHeader(self):        
         date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')

@@ -172,7 +172,7 @@ class TextFile():
     def saveFile_Old(self, file_name):
         try:
             if not os.path.exists(DATA_PATH):    os.makedirs(DATA_PATH)    
-            output = open(DATA_PATH + file_name, 'w')
+            output = open(DATA_PATH + file_name, 'a')
             output.writelines(self.file_lines)
             output.write(str(self.data_header_line + '\n'))
             output.writelines(self.data_lines)
