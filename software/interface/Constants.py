@@ -29,6 +29,7 @@ NO_KEY_PRESSED = 0
 # Close subject window
 CLOSE_SUBJECT_WIN = 255
 
-
-
+# Files names and directories
+SETTINGS_PATH      = 'config\\'
+SETTINGS_FILE_NAME = 'settings'
 

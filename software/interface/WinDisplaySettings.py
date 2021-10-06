@@ -49,6 +49,6 @@ class WinDisplaySettings(PyQt5.QtWidgets.QMainWindow):
         # update graph
         self.graph.configureGraph()
         # update graph informations at main window
-        self.win_main.updateInfoGraph()
+        self.win_main.ui_main.updateInfoGraph(self.settings)
         # close window
         self.close()

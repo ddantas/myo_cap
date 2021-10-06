@@ -2,9 +2,7 @@
 
 import datetime
 import TextFile
-
-SETTINGS_PATH = 'config\\'
-FILE_NAME     = 'settings'
+import Constants    as const
 
 # Type of parameters definition
 LIST_INT32_PARAM  = ['sampleRate', 'channelsPerBoard', 'nBoards', 'bitsPerSample', 'swipe', 'hTick', 'baudrate', 'pktSize', 'pktComp', 'funcGenFreq', 'stressTime']
@@ -24,11 +22,11 @@ class Settings():
         for num_param in range( len(LIST_FLOAT_PARAM) ):       self.settings[ LIST_FLOAT_PARAM[num_param] ] = float( self.settings[ LIST_FLOAT_PARAM[num_param] ] )     
         # There is no need to convert string parameters from string to string.
     
-    def load(self):
+    def load(self, path, file_name):
         # Instatiates a TextFile object to manipulate a text file.
         txt_file = TextFile.TextFile()
         # Opens the settings text file
-        txt_file.loadFile( SETTINGS_PATH + FILE_NAME )   
+        txt_file.loadFile( path + file_name )   
         # Gets the loaded metadata as a dictionary
         self.settings = txt_file.metadata_dict.copy()
         # Apply type convertions to the parameters
@@ -40,7 +38,7 @@ class Settings():
     #         defined in the settings dictionary variable. The output file name and path are defined as constants in the begining of the file.
     # Input : None
     # Output: None
-    def save(self):        
+    def save(self, path, file_name):        
         # Instatiates a TextFile object to manipulate a text file.
         txt_file = TextFile.TextFile()     
         
@@ -82,13 +80,13 @@ class Settings():
         txt_file.writeMetadataLine('stressTime', self.settings['stressTime'] )                
         
         # Saves the text lines stored in the text_file object into the settings file. 
-        txt_file.saveFile( SETTINGS_PATH + FILE_NAME )
+        txt_file.saveFile( path + file_name )
         
         # Success flag
         return True
         
     def getSettingsPath(self):
-        return SETTINGS_PATH
+        return const.SETTINGS_PATH
 
     def getPktSize(self):
         return self.settings['pktSize']

@@ -25,7 +25,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         super(WinMain, self).__init__()
         # setup settings
         self.settings = Settings.Settings()
-        self.settings.load()
+        self.settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)
         # setup graph widget
         self.graph = WidgetGraph.WidgetGraph(self.settings)
         # setup main user interface
@@ -101,11 +101,13 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 ## Settings menu methods ###############################################################################################################################################        
 
     def loadSettings(self):
-        if self.settings.load():    AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath());    self.graph.configureGraph()            
+        if self.settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME):    
+                                    AuxFunc.showMessage('Settings loaded!', 'Settings loaded from ' + self.settings.getSettingsPath());    self.graph.configureGraph()            
         else                   :    AuxFunc.showMessage('Error!', 'Insert an valid settings file at: ' + Settings.SETTINGS_PATH)
 
     def saveSettings(self):
-        if self.settings.save():    AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath());
+        if self.settings.save(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME):    
+                                    AuxFunc.showMessage('Settings stored!', 'Settings stored at: ' + self.settings.getSettingsPath());
         else                   :    AuxFunc.showMessage('Error!', 'Check the path ' + Settings.SETTINGS_PATH)
             
     def showWinCaptureSettings(self):
