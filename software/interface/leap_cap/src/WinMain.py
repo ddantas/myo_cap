@@ -7,6 +7,8 @@ myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspa
 # adds the myograph path for future inclusions 
 sys.path.append(myograph_import_path)
 
+import numpy as np
+import datetime as dt
 import PyQt5
 import UiMain
 import LeapCapSettings
@@ -21,7 +23,7 @@ import WinFuncGenSettings
 import WinStresstest
 import AuxFunctions as AuxFunc
 import Constants    as const
-
+import TextFile
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
@@ -30,29 +32,35 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         super(WinMain, self).__init__()
         # setup LeapCap settings 
         self.leap_cap_settings = LeapCapSettings.LeapCapSettings()
-        self.leap_cap_settings.load() 
+        self.leap_cap_settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME) 
         # setup graph widget
         self.graph = WidgetGraph.WidgetGraph(self.leap_cap_settings)
         # setup main user interface
         self.ui_main = UiMain.UiMain(self, self.graph)
         # setup board
         self.board = Tiva.Tiva(self.leap_cap_settings)
+        # setup text file
+        self.textfile = TextFile.TextFile()
         # setup widgets
         self.ui_main.setupWidgets()
+        # setup subject window polling timer
+        self.timer_win_subj_polling = PyQt5.QtCore.QTimer()
+        self.timer_win_subj_polling.timeout.connect(self.winSubjGetKey)
+        self.timer_win_subj_polling.start(100)  
+        self.subj_win_is_open = 0
         # setup main loop timer
         self.timer_main_loop = PyQt5.QtCore.QTimer()
-        self.timer_main_loop.timeout.connect(self.mainLoop)
-        self.timer_main_loop.start()  
-        # subject windows is open
-        self.subj_win_is_open = 0
+        self.timer_main_loop.timeout.connect(self.mainLoop)        
+        # subject windows is open        
 
 
 ## File menu methods #############################################################################################################################
 
-    # to implement
+    # Probably it won't be implemented
     def openCSV(self, file_name):
         AuxFunc.showMessage('warning!', 'Will be implemented!')
-        
+    
+    # Probably it won't be implemented
     def openCSVEMG(file_name):
         AuxFunc.showMessage('warning!', 'Function in development!')             
 
@@ -62,20 +70,33 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             options = PyQt5.QtWidgets.QFileDialog.Options()
             options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
+            # Will change
             self.openCSV(self.file_name)
         else:
             AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')  
             
-    # to implement
-    def saveCapture(self):
-        AuxFunc.showMessage('warning!', 'Will be implemented!')        
+    # to modify to accommodate the gesture devices needs.
+    def saveCapture(self):        
+        # Checks if a Start Capture was alredy executed
+        if( hasattr(self, 'log_id') ):
+            self.stopCapture()            
+            date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')        
+            self.file_name = date_time + '.csv'
+            self.settings.save( const.LOG_PATH, self.file_name)
+            self.textfile.saveFile_Old(self.file_name)
+            AuxFunc.showMessage('Capture saved!', self.file_name)
         
-    # to implement                
+        else:   AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')  
+        
+    # To modify to be compliant with LeapCap log.
     def loadEMGSignal(self):
-        options = PyQt5.QtWidgets.QFileDialog.Options()
-        options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
-        self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select EMG capture file', '', 'CSV files (*.csv)', options=options)
-        self.openCSVEMG(self.file_name)        
+        self.source = self.ui_main.combo_data_source.currentText()
+        if self.source == 'File':
+            options = PyQt5.QtWidgets.QFileDialog.Options()
+            options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
+            self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
+            self.openCSV(self.file_name)
+        else:   AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
 
 ## Capture menu methods #############################################################################################################################
 
@@ -91,66 +112,53 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.subj_win_is_open = 1
 
     # to check  
-    def startCapture(self):      
-
-        #AuxFunc.showMessage('warning!', 'Function in development!')
-        '''   
+    def startCapture(self):           
         self.source = self.ui_main.combo_data_source.currentText()
-        #self.graph.createPlots()
+        self.graph.createPlots()
+        #-----------------------------------------------------------------------------------------------------------------------------         
         if self.source == 'Serial':
             self.board.openComm(self.ui_main.combo_port.currentText())
             if self.board.test():               
                 if self.board.start() == 'ok':
-                    #self.logIdGenerator()
-                    self.timer_capture.start(0)
-                else:
-                    AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.')
-                    return -1
-            else:
-                AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
+                    self.logIdGenerator()
+                    self.timer_main_loop.start(0)
+                else:      AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.');      return -1
+            else:          AuxFunc.showMessage('Error!', 'Could not connect to the board!\nCheck the conection.')
+        #-----------------------------------------------------------------------------------------------------------------------------
         elif self.source == 'File':
             self.log_pos = 0
-            self.timer_capture.start(1000.0/self.settings.getSampleRate())
-        '''
+            self.timer_main_loop.start(1000.0/self.settings.getSampleRate())        
+        #-----------------------------------------------------------------------------------------------------------------------------
         self.ui_main.startCaptureClicked()
         
     # to check    
     def stopCapture(self):        
-        #AuxFunc.showMessage('warning!', 'Function in development!')
-        '''
         # Stop the Timer
-        self.timer_capture.stop()
-        
+        self.timer_main_loop.stop()        
         # Check if the Serial Port is open
         if self.board.getCommStatus():
             self.board.stop()
-            if self.board.stop() == 'ok':   
-        '''                                         
-        self.ui_main.stopCaptureClicked()   
-        '''                                 
-            else:
-                AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
-        '''
+            if self.board.stop() == 'ok':   self.ui_main.stopCaptureClicked()                                         
+            else                        :   AuxFunc.showMessage('Error!', 'Could not stop capture!\nTry to stop again or check the conection to the board.')
+            
     # to check
-    def showCapture(self):                        
-        '''
+    def showCapture(self):
         self.source = 'Log'
         self.log_pos = 0
         self.graph.createPlots()
-        self.timer_capture.start(1000.0/self.settings.getSampleRate())
-        '''
-        self.ui_main.showCaptureClicked()
-        AuxFunc.showMessage('warning!', 'Function in development!')
-        self.ui_main.showCaptureUnClicked()
+        self.timer_main_loop.start(1000.0/self.settings.getSampleRate())
+        self.ui_main.showCaptureClicked()        
         
 ## Settings menu methods #############################################################################################################################
 
     def loadSettings(self):        
-        if(self.leap_cap_settings.load()):   AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!');  self.graph.configureGraph()            
+        if(self.leap_cap_settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+                                             AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!');  self.graph.configureGraph()            
         else:                                AuxFunc.showMessage('warning!', 'Problem in loading settings!')
     
     def saveSettings(self):
-        if(self.leap_cap_settings.save()):   AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
+        if(self.leap_cap_settings.save(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+                                             AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
         else:                                AuxFunc.showMessage('warning!', 'Problem in saving settings!')
 
     # to check if it is possible do not pass graph as a parammeter to WinCaptureSettings
@@ -231,16 +239,98 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:
             AuxFunc.showMessage('Error!', 'The Board on the ' + self.ui_main.combo_port.currentText()  + ' did not be synchronized.' )    
 
-    # In development    
-    def mainLoop(self):        
-        # Get the key pressed and handle actions on the subject window
+    # Get the key pressed and handle actions on the subject window.
+    # This Method need to be constantly called to keep the subject window alive.
+    def winSubjGetKey(self):
         if(self.subj_win_is_open):
             key_pressed = self.win_subject.getKey() 
             if((key_pressed == const.CLOSE_SUBJECT_WIN)):
                 self.subj_win_is_open = 0
                 del self.win_subject
             if( (key_pressed != const.NO_KEY_PRESSED) and (key_pressed != const.CLOSE_SUBJECT_WIN) ):
-                 print('The key pressed was %s' % key_pressed)       
+                 print('The key pressed was %s' % key_pressed)
+
+    def logIdGenerator(self):        
+        name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
+        format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
+        self.log_id = self.textfile.initFile(format, name_cols)   
+        
+    # In development    
+    def mainLoop(self):          
+
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        # Samples acquisition -----------------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        if self.source == 'Serial':            
+        # receive samples from board          
+            # Unpacked Transmission 
+            if ( self.settings.getPktComp() == const.UNPACKED ):     pkt_samples = self.board.receiveStrPkt()
+            # Packed Transmission    
+            else:   pkt_samples = self.board.receive()         
+        #--------------------------------------------------------------------------------------------------------------------------------------------    
+        elif self.source == 'Log':
+            # receive samples from log
+            if self.log_pos < self.textfile.getLogLength():
+                pkt_samples = self.textfile.getLog(self.log_pos)
+                self.log_pos += 1
+            else:
+                self.timer_main_loop.stop()
+                self.ui_main.showCaptureUnClicked()
+                AuxFunc.showMessage('Finish!', 'All data was plotted.')
+                pkt_samples = []
+        #--------------------------------------------------------------------------------------------------------------------------------------------                
+        elif self.source == 'File':
+            # receive samples csv file
+            if self.log_pos < len(self.log):
+                pkt_samples = self.log[self.log_pos]
+                self.log_pos += 1
+            else:
+                self.timer_main_loop.stop()
+                AuxFunc.showMessage('Finish!', 'All data was plotted.')
+                pkt_samples = []
+                self.ui_main.stopCaptureClicked()                
+                
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        # Log of samples ----------------------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        
+        # Checks if some sample was acquired and if this is a capture through the serial port.        
+        if len(pkt_samples) and (self.source == 'Serial'):
+            
+            num_instants = 1
+            # More than one instant for each request.
+            if( self.settings.getPktComp() == const.PACKED ):    num_instants = self.board.unpacker.num_instants            
+            
+            # Sliding window of samples
+            for instant_index in range(num_instants):
+                # calculate the offset of the instant.
+                instant_offset = self.settings.getTotChannels() * instant_index
+                # save to log
+                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
+                
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+        # Display of samples ------------------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------------------------------------
+
+        # Checks if some sample was acquired.        
+        if len(pkt_samples):
+            
+            # Debug: Displays the acquired samples on terminal.
+            if(const.DEBUG):     print( "List of Samples: " + str(pkt_samples) )
+
+            num_instants = 1
+            # More than one instant for each request.
+            if( self.settings.getPktComp() == const.PACKED and self.source == 'Serial' ):    num_instants = self.board.unpacker.num_instants
+            
+            # Sliding window of samples
+            for instant_index in range(num_instants):
+                    # calculate the offset of the instant.
+                    instant_offset = self.settings.getTotChannels() * instant_index
+                    # plot a instant of Samples                    
+                    self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
+        #--------------------------------------------------------------------------------------------------------------------------------------------        
+               
+        
 
 ## Main file code #############################################################################################################################
 
