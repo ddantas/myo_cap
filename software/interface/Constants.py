@@ -33,3 +33,5 @@ CLOSE_SUBJECT_WIN = 255
 SETTINGS_PATH      = 'config\\'
 SETTINGS_FILE_NAME = 'settings'
 
+LOG_PATH           = 'data\\'
+

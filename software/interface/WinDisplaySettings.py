@@ -2,7 +2,6 @@
 
 import PyQt5
 import UiDisplaySettings
-import sys
 
 class WinDisplaySettings(PyQt5.QtWidgets.QMainWindow):
 
