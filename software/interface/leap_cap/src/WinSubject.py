@@ -263,7 +263,15 @@ class WinSubject:
 
             else:  return const.NO_KEY_PRESSED
                        
-        return const.CLOSE_SUBJECT_WIN                               
+        return const.CLOSE_SUBJECT_WIN                    
+    
+    # Method: Obtains the current gesture being displayed in the subject window.
+    #
+    # Input : None
+    #
+    # Output: current_gesture   ->  Current gesture being displayed in the subject window as a string.
+    def getCurrentGesture(self):
+        return self.gesture_sequence[self.current_gesture_index]           
         
     # Method: Obtains the full path to the images gesture folder. That path includes the myograph path.
     #
@@ -375,6 +383,7 @@ class WinSubject:
         else: self.updateGestureTimeBar()        
         # Updates the UI  
         self.ui_subject.draw();
+        
          
     # Method: Receives a list with ten values of joint opening and send than to UI to display in the Joint Angles Bars. Values between 0 - 100.
     #         This method standardizes the order of reception of the joints and finger values in this method and standardizes the order of 
