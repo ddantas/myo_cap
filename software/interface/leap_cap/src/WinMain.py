@@ -105,7 +105,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         elif(self.leap_cap_settings.getHand() == 'Right'):  hand_chosen = WinSubject.RIGHT_HAND
         else:      AuxFunc.showMessage('warning!', 'Hand side not recognized!')
         # Will get the time step from the Settings
-        time_step         = 500        
+        time_step         = 50        
         routine_file_name = self.leap_cap_settings.getCaptureRoutine()
         self.win_subject  = WinSubject.WinSubject(routine_file_name, time_step, hand_chosen)
         self.win_subject.show()
@@ -113,6 +113,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     # to check  
     def startCapture(self):           
+        if(self.subj_win_is_open):     self.win_subject.startTimer() 
         self.source = self.ui_main.combo_data_source.currentText()
         self.graph.createPlots()
         #-----------------------------------------------------------------------------------------------------------------------------         
@@ -133,7 +134,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         
     # to check    
     def stopCapture(self):        
-        # Stop the Timer
+        # Stops the winsubject timer
+        if(self.subj_win_is_open):     self.win_subject.stopTimer()
+        # Stops the Timer
         self.timer_main_loop.stop()        
         # Check if the Serial Port is open
         if self.board.getCommStatus():

@@ -10,6 +10,7 @@ import os
 import pygame as pg
 import PyGameLibExt as PGExt
 import UiSubject
+import PyQt5
 
 ## Makes the Myograph directory visible to inclusions of classes and modules shared between the Myograph and Leapcap.
 # Obtain the myograph path
@@ -102,6 +103,27 @@ class WinSubject:
         # Flag to avoid code execution after this window being closed. 
         self.close = False
  
+        ## Timer
+        self.timer = PyQt5.QtCore.QTimer()
+        self.timer.timeout.connect(self.nextTimeStep)        
+ 
+    
+    # Method: Starts the Winsubject timer.
+    #
+    # Input : None
+    #
+    # Output: None
+    def startTimer(self):        
+        self.timer.start(self.time_step)
+    
+    # Method: Stops the WinSubject timer.
+    #
+    # Input : None
+    #
+    # Output: None
+    def stopTimer(self):        
+        self.timer.stop()        
+        
     # Method: Draws and show the User Interface of this Window.
     #
     # Input : None
@@ -351,7 +373,9 @@ class WinSubject:
             # If that was the last gesture, than update the gesture time bar to empty.
             if (self.current_gesture_index >= len(self.gesture_duration_seq) ): self.ui_subject.SetGestureTimeProgress(0);     
         else: self.updateGestureTimeBar()        
-                 
+        # Updates the UI  
+        self.ui_subject.draw();
+         
     # Method: Receives a list with ten values of joint opening and send than to UI to display in the Joint Angles Bars. Values between 0 - 100.
     #         This method standardizes the order of reception of the joints and finger values in this method and standardizes the order of 
     #         transmission of the joints and finger values related to the current hand chosen to the UI method that updates the visual feedback. 
