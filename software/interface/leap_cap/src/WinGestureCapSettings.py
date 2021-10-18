@@ -8,9 +8,9 @@ Created on Sun Jan  3 12:43:45 2021
 import os
 import sys
 # obtain the myograph path
-myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
+MYOGRAPH_PATH = os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 # adds the myograph path for future inclusions 
-sys.path.append(myograph_import_path)
+sys.path.append(MYOGRAPH_PATH)
 
 import PyQt5
 import UiGestureCapSettings
@@ -53,7 +53,7 @@ class WinGestureCapSettings(PyQt5.QtWidgets.QMainWindow):
         
         # Loads the hand side from the settings object
         hand_side = self.settings.getHand()
-        if (hand_side == 'Left'):  self.ui_gesture_cap_settings.combo_hand.setCurrentIndex(LEFT_HAND )
+        if (hand_side == 'Left'):  self.ui_gesture_cap_settings.combo_hand.setCurrentIndex(LEFT_HAND)
         if (hand_side == 'Right'): self.ui_gesture_cap_settings.combo_hand.setCurrentIndex(RIGHT_HAND)        
         
 

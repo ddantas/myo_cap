@@ -14,9 +14,9 @@ import PyQt5
 
 ## Makes the Myograph directory visible to inclusions of classes and modules shared between the Myograph and Leapcap.
 # Obtain the myograph path
-myograph_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]        
+MYOGRAPH_PATH = os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )        
 # Adds the myograph path for future inclusions 
-sys.path.append(myograph_path)
+sys.path.append(MYOGRAPH_PATH)
 
 import Constants as const
 
@@ -279,7 +279,7 @@ class WinSubject:
     #
     # Output: images_path       ->  String with the path to the gesture images folder.
     def getImagesDir():        
-        images_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'images') , '')    
+        images_path = os.path.join(MYOGRAPH_PATH, 'leap_cap', 'images', '')
         return images_path
 
 
@@ -303,7 +303,7 @@ class WinSubject:
     #
     # Output: gesture_routine_path  ->  String with the path to the gesture images folder.
     def getGestureSeqPath():
-        gesture_routine_path = os.path.join( os.path.join( os.path.join(myograph_path, 'leap_cap') , 'routine') , '')    
+        gesture_routine_path = os.path.join(MYOGRAPH_PATH, 'leap_cap', 'routine', '')    
         return gesture_routine_path
     
     # Method: Generates a list of the gestures sequence and other list with gestures sequence duration contained 

@@ -3,9 +3,9 @@
 import os
 import sys
 # obtain the myograph path
-myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
+MYOGRAPH_PATH = os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 # adds the myograph path for future inclusions 
-sys.path.append(myograph_import_path)
+sys.path.append(MYOGRAPH_PATH)
 
 import numpy as np
 import datetime as dt
@@ -25,6 +25,8 @@ import AuxFunctions as AuxFunc
 import Constants    as const
 import TextFile
 
+LEAPCAP_SETTINGS_PATH  = os.path.join( MYOGRAPH_PATH, 'leap_cap', 'src', 'config', '')
+
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
     def __init__(self):        
@@ -32,7 +34,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         super(WinMain, self).__init__()
         # setup LeapCap settings 
         self.leap_cap_settings = LeapCapSettings.LeapCapSettings()
-        self.leap_cap_settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME) 
+        self.leap_cap_settings.load(os.path.join( LEAPCAP_SETTINGS_PATH), const.SETTINGS_FILE_NAME)
         # setup graph widget
         self.graph = WidgetGraph.WidgetGraph(self.leap_cap_settings)
         # setup main user interface
@@ -155,12 +157,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 ## Settings menu methods #############################################################################################################################
 
     def loadSettings(self):        
-        if(self.leap_cap_settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+        if(self.leap_cap_settings.load(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
                                              AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!');  self.graph.configureGraph()            
         else:                                AuxFunc.showMessage('warning!', 'Problem in loading settings!')
     
     def saveSettings(self):
-        if(self.leap_cap_settings.save(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+        if(self.leap_cap_settings.save(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
                                              AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
         else:                                AuxFunc.showMessage('warning!', 'Problem in saving settings!')
 

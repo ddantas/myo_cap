@@ -8,14 +8,14 @@ import datetime
 import os
 import sys
 # obtain the myograph path
-myograph_import_path = os.path.split( os.path.split( os.path.split(os.path.abspath(__file__))[0] )[0] )[0]
+MYOGRAPH_PATH = os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 # adds the myograph path for future inclusions 
-sys.path.append(myograph_import_path)
+sys.path.append(MYOGRAPH_PATH)
 
 import TextFile
 import Settings
 
-SETTINGS_PATH  = myograph_import_path + '\\leap_cap\\src\\config\\'
+LEAPCAP_SETTINGS_PATH  = os.path.join( MYOGRAPH_PATH, 'leap_cap', 'src', 'config', '')
 FILE_NAME      = 'settings'
 
 # Type of parameters definition
@@ -95,7 +95,7 @@ class LeapCapSettings(Settings.Settings):
         txt_file.writeMetadataLine('hand', self.settings['hand'] ) 
         
         # Saves the text lines stored in the text_file object into the settings file. 
-        txt_file.saveFile( SETTINGS_PATH + FILE_NAME )
+        txt_file.saveFile( LEAPCAP_SETTINGS_PATH + FILE_NAME )
         
         # Success flag
         return True
@@ -103,7 +103,7 @@ class LeapCapSettings(Settings.Settings):
 ## LeapCap Exclusive get and set methods ############################################
 
     def getSettingsPath(self):
-        return SETTINGS_PATH        
+        return LEAPCAP_SETTINGS_PATH        
 
     def getEmulationFlag(self):
         return self.settings['emulationFlag'] 
@@ -118,6 +118,9 @@ class LeapCapSettings(Settings.Settings):
         return self.settings['routine'] 
         
     def getHand(self):
+        print('--------------')
+        print(self.settings)
+        print('--------------')
         return self.settings['hand'] 
     
     
