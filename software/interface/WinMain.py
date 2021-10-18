@@ -181,14 +181,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         #--------------------------------------------------------------------------------------------------------------------------------------------                
         elif self.source == 'File':
             # receive samples csv file
-            if self.log_pos < len(self.log):
-                pkt_samples = self.log[self.log_pos]
+            if self.log_pos < self.textfile.getLogLength():
+                pkt_samples = self.textfile.getLog(self.log_pos)
                 self.log_pos += 1
             else:
                 self.timer_capture.stop()
+                self.ui_main.stopCaptureClicked()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
-                pkt_samples = []
-                self.ui_main.stopCaptureClicked()                
+                pkt_samples = []                
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Log of samples ----------------------------------------------------------------------------------------------------------------------------
