@@ -5,6 +5,8 @@ Created on Wed Jul  1 13:09:27 2020
 @author: Asaphe Magno
 """
 
+import os
+
 # Activate ou Deactivate the DEBUG
 DEBUG = 0
 
@@ -30,8 +32,8 @@ NO_KEY_PRESSED = 0
 CLOSE_SUBJECT_WIN = 255
 
 # Files names and directories
-SETTINGS_PATH      = 'config\\'
+SETTINGS_PATH      = os.path.join( 'config', '' )
 SETTINGS_FILE_NAME = 'settings'
 
-LOG_PATH           = 'data\\'
+LOG_PATH           = os.path.join('data', '')
 
