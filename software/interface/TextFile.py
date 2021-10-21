@@ -10,8 +10,7 @@ Created on Thu May 13 19:45:40 2021
 import os
 import numpy as np
 import AuxFunctions as AuxFunc
-
-DATA_PATH = 'data/'
+import Constants as const
 
 # Metadata indexes
 METADATA_NAME  = 0
@@ -171,8 +170,8 @@ class TextFile():
     # Old saveFile method. For compatibility with myocap software only. Will be removed in the future. 
     def saveFile_Old(self, file_name):
         try:
-            if not os.path.exists(DATA_PATH):    os.makedirs(DATA_PATH)    
-            output = open(DATA_PATH + file_name, 'a')
+            if not os.path.exists(const.LOG_PATH):    os.makedirs(const.LOG_PATH)    
+            output = open(const.LOG_PATH + file_name, 'a')
             output.writelines(self.file_lines)
             output.write(str(self.data_header_line + '\n'))
             output.writelines(self.data_lines)
