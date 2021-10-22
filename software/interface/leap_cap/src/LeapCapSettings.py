@@ -118,11 +118,7 @@ class LeapCapSettings(Settings.Settings):
         return self.settings['routine'] 
         
     def getHand(self):
-        print('--------------')
-        print(self.settings)
-        print('--------------')
         return self.settings['hand'] 
-    
     
     def setEmulationFlag(self,value):
         self.settings['emulationFlag'] = value
