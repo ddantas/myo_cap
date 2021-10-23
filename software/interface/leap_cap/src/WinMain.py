@@ -23,6 +23,7 @@ import WinFuncGenSettings
 import WinStresstest
 import AuxFunctions as AuxFunc
 import Constants    as const
+import Settings
 import TextFile
 
 LEAPCAP_SETTINGS_PATH  = os.path.join( MYOGRAPH_PATH, 'leap_cap', 'src', 'config', '')
@@ -34,7 +35,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         super(WinMain, self).__init__()
         # setup LeapCap settings 
         self.leap_cap_settings = LeapCapSettings.LeapCapSettings()
-        self.leap_cap_settings.load(os.path.join( LEAPCAP_SETTINGS_PATH), const.SETTINGS_FILE_NAME)
+        self.leap_cap_settings.load(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)
         # setup graph widget
         self.graph = WidgetGraph.WidgetGraph(self.leap_cap_settings)
         # setup main user interface
@@ -43,6 +44,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.board = Tiva.Tiva(self.leap_cap_settings)
         # setup text file
         self.textfile = TextFile.TextFile()
+        # setup settings
+        self.settings = Settings.Settings()
+        self.settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)
         # setup widgets
         self.ui_main.setupWidgets()
         # setup subject window polling timer
@@ -286,14 +290,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         #--------------------------------------------------------------------------------------------------------------------------------------------                
         elif self.source == 'File':
             # receive samples csv file
-            if self.log_pos < len(self.log):
-                pkt_samples = self.log[self.log_pos]
+            if self.log_pos < self.textfile.getLogLength():
+                pkt_samples = self.textfile.getLog(self.log_pos)
                 self.log_pos += 1
             else:
-                self.timer_main_loop.stop()
+                self.timer_capture.stop()
+                self.ui_main.stopCaptureClicked()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
-                pkt_samples = []
-                self.ui_main.stopCaptureClicked()                
+                pkt_samples = []                
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Log of samples ----------------------------------------------------------------------------------------------------------------------------
