@@ -23,7 +23,6 @@ import WinFuncGenSettings
 import WinStresstest
 import AuxFunctions as AuxFunc
 import Constants    as const
-import Settings
 import TextFile
 
 LEAPCAP_SETTINGS_PATH  = os.path.join( MYOGRAPH_PATH, 'leap_cap', 'src', 'config', '')
@@ -44,9 +43,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.board = Tiva.Tiva(self.leap_cap_settings)
         # setup text file
         self.textfile = TextFile.TextFile()
-        # setup settings
-        self.settings = Settings.Settings()
-        self.settings.load(const.SETTINGS_PATH, const.SETTINGS_FILE_NAME)
         # setup widgets
         self.ui_main.setupWidgets()
         # setup subject window polling timer
@@ -88,7 +84,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.stopCapture()            
             date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')        
             self.file_name = date_time + '.csv'
-            self.settings.save( const.LOG_PATH, self.file_name)
+            self.leap_cap_settings.save( const.LOG_PATH, self.file_name)
             self.textfile.saveFile_Old(self.file_name)
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
@@ -134,7 +130,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         #-----------------------------------------------------------------------------------------------------------------------------
         elif self.source == 'File':
             self.log_pos = 0
-            self.timer_main_loop.start(1000.0/self.settings.getSampleRate())        
+            self.timer_main_loop.start(1000.0/self.leap_cap_settings.getSampleRate())        
         #-----------------------------------------------------------------------------------------------------------------------------
         self.ui_main.startCaptureClicked()
         
@@ -155,7 +151,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         self.source = 'Log'
         self.log_pos = 0
         self.graph.createPlots()
-        self.timer_main_loop.start(1000.0/self.settings.getSampleRate())
+        self.timer_main_loop.start(1000.0/self.leap_cap_settings.getSampleRate())
         self.ui_main.showCaptureClicked()        
         
 ## Settings menu methods #############################################################################################################################
@@ -260,8 +256,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                  print('The key pressed was %s' % key_pressed)
 
     def logIdGenerator(self):        
-        name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
-        format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
+        name_cols = AuxFunc.patternStr('ch', self.leap_cap_settings.getTotChannels(), True)
+        format = AuxFunc.patternStr('%d', self.leap_cap_settings.getTotChannels(), False)
         self.log_id = self.textfile.initFile(format, name_cols)   
         
     # In development    
@@ -273,7 +269,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         if self.source == 'Serial':            
         # receive samples from board          
             # Unpacked Transmission 
-            if ( self.settings.getPktComp() == const.UNPACKED ):     pkt_samples = self.board.receiveStrPkt()
+            if ( self.leap_cap_settings.getPktComp() == const.UNPACKED ):     pkt_samples = self.board.receiveStrPkt()
             # Packed Transmission    
             else:   pkt_samples = self.board.receive()         
         #--------------------------------------------------------------------------------------------------------------------------------------------    
@@ -308,14 +304,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             
             num_instants = 1
             # More than one instant for each request.
-            if( self.settings.getPktComp() == const.PACKED ):    num_instants = self.board.unpacker.num_instants            
+            if( self.leap_cap_settings.getPktComp() == const.PACKED ):    num_instants = self.board.unpacker.num_instants            
             
             # Sliding window of samples
             for instant_index in range(num_instants):
                 # calculate the offset of the instant.
-                instant_offset = self.settings.getTotChannels() * instant_index
+                instant_offset = self.leap_cap_settings.getTotChannels() * instant_index
                 # save to log
-                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
+                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] ) 
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Display of samples ------------------------------------------------------------------------------------------------------------------------
@@ -329,14 +325,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
             num_instants = 1
             # More than one instant for each request.
-            if( self.settings.getPktComp() == const.PACKED and self.source == 'Serial' ):    num_instants = self.board.unpacker.num_instants
+            if( self.leap_cap_settings.getPktComp() == const.PACKED and self.source == 'Serial' ):    num_instants = self.board.unpacker.num_instants
             
             # Sliding window of samples
             for instant_index in range(num_instants):
                     # calculate the offset of the instant.
-                    instant_offset = self.settings.getTotChannels() * instant_index
+                    instant_offset = self.leap_cap_settings.getTotChannels() * instant_index
                     # plot a instant of Samples                    
-                    self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )  )
+                    self.graph.plotSamples( np.array(  pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] )  )
         #--------------------------------------------------------------------------------------------------------------------------------------------        
                
         
