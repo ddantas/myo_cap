@@ -36,7 +36,7 @@ class LeapCapSettings(Settings.Settings):
     #         defined in the settings dictionary variable. The output file name and path are defined as constants in the begining of the file.
     # Input : None
     # Output: None
-    def save(self):        
+    def save(self, path, file_name):        
         # Instatiates a TextFile object to manipulate a text file.
         txt_file = TextFile.TextFile()     
         
@@ -92,10 +92,14 @@ class LeapCapSettings(Settings.Settings):
         # Writes gesture capture settings metadata
         txt_file.writeMetadataLine('device', self.settings['device'] )
         txt_file.writeMetadataLine('routine', self.settings['routine'] )
-        txt_file.writeMetadataLine('hand', self.settings['hand'] ) 
+        txt_file.writeMetadataLine('hand', self.settings['hand'] )
+        txt_file.writeHeaderLine('')
+
+        # Writes Data header
+        txt_file.writeHeaderLine('Data') 
         
         # Saves the text lines stored in the text_file object into the settings file. 
-        txt_file.saveFile( LEAPCAP_SETTINGS_PATH + FILE_NAME )
+        txt_file.saveFile( path + file_name )
         
         # Success flag
         return True

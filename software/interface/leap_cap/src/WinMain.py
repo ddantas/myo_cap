@@ -57,23 +57,14 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 
 
 ## File menu methods #############################################################################################################################
-
-    # Probably it won't be implemented
-    def openCSV(self, file_name):
-        AuxFunc.showMessage('warning!', 'Will be implemented!')
-    
-    # Probably it won't be implemented
-    def openCSVEMG(file_name):
-        AuxFunc.showMessage('warning!', 'Function in development!')             
-
+            
     def showWinSelectFile(self):
         self.source = self.ui_main.combo_data_source.currentText()
         if self.source == 'File':
             options = PyQt5.QtWidgets.QFileDialog.Options()
             options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
-            # Will change
-            self.openCSV(self.file_name)
+            self.textfile.loadFile(self.file_name)
         else:
             AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')  
             
@@ -84,7 +75,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.stopCapture()            
             date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')        
             self.file_name = date_time + '.csv'
-            self.leap_cap_settings.save( const.LOG_PATH, self.file_name)
+            self.leap_cap_settings.save(const.LOG_PATH, self.file_name)
             self.textfile.saveFile_Old(self.file_name)
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
@@ -97,7 +88,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             options = PyQt5.QtWidgets.QFileDialog.Options()
             options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
-            self.openCSV(self.file_name)
+            self.textfile.loadFile(self.file_name)
         else:   AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
 
 ## Capture menu methods #############################################################################################################################
@@ -162,7 +153,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:                                AuxFunc.showMessage('warning!', 'Problem in loading settings!')
     
     def saveSettings(self):
-        if(self.leap_cap_settings.save(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+        if(self.leap_cap_settings.save(const.LOG_PATH, const.SETTINGS_FILE_NAME)):   
                                              AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
         else:                                AuxFunc.showMessage('warning!', 'Problem in saving settings!')
 
@@ -255,7 +246,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             if( (key_pressed != const.NO_KEY_PRESSED) and (key_pressed != const.CLOSE_SUBJECT_WIN) ):
                  print('The key pressed was %s' % key_pressed)
 
-    def logIdGenerator(self):        
+    def logIdGenerator(self):       
         name_cols = AuxFunc.patternStr('ch', self.leap_cap_settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.leap_cap_settings.getTotChannels(), False)
         self.log_id = self.textfile.initFile(format, name_cols)   
@@ -290,7 +281,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 pkt_samples = self.textfile.getLog(self.log_pos)
                 self.log_pos += 1
             else:
-                self.timer_capture.stop()
+                self.timer_main_loop.stop()
                 self.ui_main.stopCaptureClicked()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
                 pkt_samples = []                
@@ -311,7 +302,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 # calculate the offset of the instant.
                 instant_offset = self.leap_cap_settings.getTotChannels() * instant_index
                 # save to log
-                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] ) 
+                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] )
+
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Display of samples ------------------------------------------------------------------------------------------------------------------------
