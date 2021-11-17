@@ -47,7 +47,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             options = PyQt5.QtWidgets.QFileDialog.Options()
             options |= PyQt5.QtWidgets.QFileDialog.DontUseNativeDialog
             self.file_name, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select capture file', '', 'CSV files (*.csv)', options=options)
-            self.openCSV(self.file_name)
+            self.textfile.loadFile(self.file_name)
         else:   AuxFunc.showMessage('Error!', 'Select FILE option first at the combo box.')                
 
     def saveCapture(self):        
@@ -188,7 +188,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 self.timer_capture.stop()
                 self.ui_main.stopCaptureClicked()
                 AuxFunc.showMessage('Finish!', 'All data was plotted.')
-                pkt_samples = []                
+                pkt_samples = [] 
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Log of samples ----------------------------------------------------------------------------------------------------------------------------
@@ -256,27 +256,6 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         name_cols = AuxFunc.patternStr('ch', self.settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.settings.getTotChannels(), False)
         self.log_id = self.textfile.initFile(format, name_cols)                
-
-    def openCSV(self, file_name):
-        self.log = []
-        try:
-            with open(file_name, 'r') as f:
-                for line in f:
-                    if line[0] == '#' and line[1] == ' ':
-                        line = line.replace(':', '').split(' ')
-                        if line[1] == 'sampleRate':
-                            self.settings.setSampleRate(int(line[2]))
-                        elif line[1] == 'channelsPerBoard':
-                            self.settings.setChannelsPerBoard(int(line[2]))
-                        elif line[1] == 'nBoards':
-                            self.settings.setNBoards(int(line[2]))
-                        elif line[1] == 'bitsPerSample':
-                            self.settings.setBitsPerSample(int(line[2]))
-                    elif (line[0] != '#') and (line != ''):
-                        self.log.append(np.fromstring(line, dtype=np.uint16, sep=';'))
-            self.graph.configureGraph()
-        except:
-            AuxFunc.showMessage('Error!', 'Insert an CSV capture file.')
 
 
 if __name__ == '__main__':

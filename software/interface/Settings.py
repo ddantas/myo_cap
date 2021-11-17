@@ -77,7 +77,11 @@ class Settings():
         txt_file.writeHeaderLine('')
         # Writes EMG function generator settings metadata
         txt_file.writeMetadataLine('funcGenFreq', self.settings['funcGenFreq'] )
-        txt_file.writeMetadataLine('stressTime', self.settings['stressTime'] )                
+        txt_file.writeMetadataLine('stressTime', self.settings['stressTime'] )
+        txt_file.writeHeaderLine('')
+
+        # Writes Data header
+        txt_file.writeHeaderLine('Data')                
         
         # Saves the text lines stored in the text_file object into the settings file. 
         txt_file.saveFile( path + file_name )
