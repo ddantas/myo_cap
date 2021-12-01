@@ -10,7 +10,6 @@ Created on Thu May 13 19:45:40 2021
 import os
 import numpy as np
 import AuxFunctions as AuxFunc
-import Constants as const
 
 # Metadata indexes
 METADATA_NAME  = 0
@@ -91,13 +90,14 @@ class TextFile():
     def getDataLines(self):
         return self.data_lines
     
-    def saveFile(self, file_dir_and_name):                
+    def saveFile(self, path, file_name):                
         try:
-            file = open(file_dir_and_name, 'w')
+            if not os.path.exists(path):    os.makedirs(path) 
+            file = open(path + file_name, 'w')
             file.writelines(self.file_lines)
             file.close()
         except Exception as error:
-           print(error)
+            print(error)
 
     # Method: Opens a text file and classify its lines putting them into the corresponding file variables: header_lines; data_header_line; data_lines. 
     #
@@ -148,16 +148,18 @@ class TextFile():
         self.id += 1
         return self.id - 1
 
-    def saveLog(self, id, values):
+    def log(self, id, values):
+        self.line[id][0] = values
+
+    def saveLog(self):
         try:
-            self.line[id][0] = values
-            aux = ''
-            for value in self.line[0:]:
-                if(len(aux)):
-                    aux = '%s;%s' % (aux, value[1] % tuple(value[0]))
+            line = ''
+            for column in self.line[0:]:
+                if(len(line)):
+                    line = '%s;%s' % (line, column[1] % tuple(column[0]))
                 else:
-                    aux = value[1] % tuple(value[0])
-            self.data_lines.append(aux + '\n')
+                    line = column[1] % tuple(column[0])
+            self.data_lines.append(line + '\n')
         except Exception as e:
             print(e)
 
@@ -168,13 +170,12 @@ class TextFile():
         return len(self.data_lines)
     
     # Old saveFile method. For compatibility with myocap software only. Will be removed in the future. 
-    def saveFile_Old(self, file_name):
-        try:
-            if not os.path.exists(const.LOG_PATH):    os.makedirs(const.LOG_PATH)    
-            output = open(const.LOG_PATH + file_name, 'a')
+    def saveFile_Old(self, path, file_name):
+        try:   
+            output = open(path + file_name, 'a')
             output.writelines(self.file_lines)
             output.write(str(self.data_header_line + '\n'))
             output.writelines(self.data_lines)
             output.close()
         except Exception as e:
-           print(e)
+            print(e)

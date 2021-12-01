@@ -56,8 +56,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.stopCapture()            
             date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')        
             self.file_name = date_time + '.csv'
-            self.settings.save( const.LOG_PATH, self.file_name)
-            self.textfile.saveFile_Old(self.file_name)
+            self.settings.save( const.LOG_PATH, self.file_name )
+            self.textfile.saveFile_Old( const.LOG_PATH, self.file_name ) 
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
         else:   AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')
@@ -205,8 +205,11 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             for instant_index in range(num_instants):
                 # calculate the offset of the instant.
                 instant_offset = self.settings.getTotChannels() * instant_index
+                # update to log
+                self.textfile.log( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] )
                 # save to log
-                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.settings.getTotChannels() ) ] ) 
+                self.textfile.saveLog()
+                 
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
         # Display of samples ------------------------------------------------------------------------------------------------------------------------
