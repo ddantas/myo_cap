@@ -99,7 +99,7 @@ class LeapCapSettings(Settings.Settings):
         txt_file.writeHeaderLine('Data') 
         
         # Saves the text lines stored in the text_file object into the settings file. 
-        txt_file.saveFile( path + file_name )
+        txt_file.saveFile( path, file_name )
         
         # Success flag
         return True

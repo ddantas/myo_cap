@@ -26,6 +26,7 @@ import Constants    as const
 import TextFile
 
 LEAPCAP_SETTINGS_PATH  = os.path.join( MYOGRAPH_PATH, 'leap_cap', 'src', 'config', '')
+LEAPCAP_LOG_PATH  = os.path.join( MYOGRAPH_PATH, 'leap_cap', 'src', 'data', '')
 
 class WinMain(PyQt5.QtWidgets.QMainWindow):
 
@@ -75,8 +76,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.stopCapture()            
             date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')        
             self.file_name = date_time + '.csv'
-            self.leap_cap_settings.save(const.LOG_PATH, self.file_name)
-            self.textfile.saveFile_Old(self.file_name)
+            self.leap_cap_settings.save( LEAPCAP_LOG_PATH, self.file_name )
+            self.textfile.saveFile_Old( LEAPCAP_LOG_PATH, self.file_name )
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
         else:   AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')  
@@ -114,6 +115,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.board.openComm(self.ui_main.combo_port.currentText())
             if self.board.test():               
                 if self.board.start() == 'ok':
+                    self.logIdGesture() 
                     self.logIdGenerator()
                     self.timer_main_loop.start(0)
                 else:      AuxFunc.showMessage('Error!', 'Could not start capture!\nTry to start again or check the conection to the board.');      return -1
@@ -153,7 +155,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
         else:                                AuxFunc.showMessage('warning!', 'Problem in loading settings!')
     
     def saveSettings(self):
-        if(self.leap_cap_settings.save(const.LOG_PATH, const.SETTINGS_FILE_NAME)):   
+        if(self.leap_cap_settings.save(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
                                              AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
         else:                                AuxFunc.showMessage('warning!', 'Problem in saving settings!')
 
@@ -249,7 +251,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
     def logIdGenerator(self):       
         name_cols = AuxFunc.patternStr('ch', self.leap_cap_settings.getTotChannels(), True)
         format = AuxFunc.patternStr('%d', self.leap_cap_settings.getTotChannels(), False)
-        self.log_id = self.textfile.initFile(format, name_cols)   
+        self.log_id = self.textfile.initFile(format, name_cols) 
+
+    def logIdGesture(self): 
+        name_cols = 'gesture'
+        format = '%s'
+        self.log_id_gesture = self.textfile.initFile(format, name_cols)
         
     # In development    
     def mainLoop(self):          
@@ -262,7 +269,10 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             # Unpacked Transmission 
             if ( self.leap_cap_settings.getPktComp() == const.UNPACKED ):     pkt_samples = self.board.receiveStrPkt()
             # Packed Transmission    
-            else:   pkt_samples = self.board.receive()         
+            else:   pkt_samples = self.board.receive()
+
+            # update current gesture to log
+            self.textfile.log( self.log_id_gesture, [self.win_subject.getCurrentGesture()] )         
         #--------------------------------------------------------------------------------------------------------------------------------------------    
         elif self.source == 'Log':
             # receive samples from log
@@ -301,8 +311,10 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             for instant_index in range(num_instants):
                 # calculate the offset of the instant.
                 instant_offset = self.leap_cap_settings.getTotChannels() * instant_index
+                # update to log
+                self.textfile.log( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] )
                 # save to log
-                self.textfile.saveLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] )
+                self.textfile.saveLog() 
 
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
