@@ -32,7 +32,6 @@ class TextFile():
 
 ## File Methods ##############################################################################################################################    
 
-
     # Method: Cleans the file parameters.
     # Input : None
     # Output: None
@@ -89,15 +88,6 @@ class TextFile():
     
     def getDataLines(self):
         return self.data_lines
-    
-    def saveFile(self, path, file_name):                
-        try:
-            if not os.path.exists(path):    os.makedirs(path) 
-            file = open(path + file_name, 'w')
-            file.writelines(self.file_lines)
-            file.close()
-        except Exception as error:
-            print(error)
 
     # Method: Opens a text file and classify its lines putting them into the corresponding file variables: header_lines; data_header_line; data_lines. 
     #
@@ -116,7 +106,6 @@ class TextFile():
             with open(file_dir_and_name, 'r') as file:
                 # Data header not readed yet.
                 data_header_readed = False   
-                #print(file.readlines())
                 # Iterates through the lines. 
                 for line in file:                     
                     # Stores the line of the file into the file_lines variable.
@@ -132,8 +121,7 @@ class TextFile():
                 # Closes the file    
                 file.close()
         except:
-            AuxFunc.showMessage('Error!', 'Insert an compatible text file.')
-            
+            AuxFunc.showMessage('Error!', 'Insert an compatible text file.')        
             
 ## Log Methods ###############################################################################################################################
 
@@ -148,10 +136,12 @@ class TextFile():
         self.id += 1
         return self.id - 1
 
-    def log(self, id, values):
+    # updateLog: update log values.
+    def updateLog(self, id, values):
         self.line[id][0] = values
-
-    def saveLog(self):
+  
+    # logLine: creates a new line with all columns.
+    def logLine(self):
         try:
             line = ''
             for column in self.line[0:]:
@@ -169,11 +159,12 @@ class TextFile():
     def getLogLength(self):
         return len(self.data_lines)
     
-    # Old saveFile method. For compatibility with myocap software only. Will be removed in the future. 
-    def saveFile_Old(self, path, file_name):
-        try:   
+    # saveFile: saves settings and log data to a csv file.
+    def saveFile(self, path, file_name):
+        try:
+            if not os.path.exists(path):    os.makedirs(path) 
             output = open(path + file_name, 'a')
-            output.writelines(self.file_lines)
+            output.writelines(self.file_lines)   
             output.write(str(self.data_header_line + '\n'))
             output.writelines(self.data_lines)
             output.close()
