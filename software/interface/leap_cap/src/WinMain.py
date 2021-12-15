@@ -76,8 +76,8 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             self.stopCapture()            
             date_time = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')        
             self.file_name = date_time + '.csv'
-            self.leap_cap_settings.save( LEAPCAP_LOG_PATH, self.file_name )
-            self.textfile.saveFile_Old( LEAPCAP_LOG_PATH, self.file_name )
+            self.leap_cap_settings.save( self.textfile )
+            self.textfile.saveFile( LEAPCAP_LOG_PATH, self.file_name )
             AuxFunc.showMessage('Capture saved!', self.file_name)
         
         else:   AuxFunc.showMessage('Error!', 'Before Save a Capture into a File you should Start one Capture using the Serial Port.')  
@@ -150,12 +150,12 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
 ## Settings menu methods #############################################################################################################################
 
     def loadSettings(self):        
-        if(self.leap_cap_settings.load(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+        if( self.leap_cap_settings.load(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME) ):   
                                              AuxFunc.showMessage('Menssage of confirmation.', 'Settings were loaded!');  self.graph.configureGraph()            
         else:                                AuxFunc.showMessage('warning!', 'Problem in loading settings!')
     
     def saveSettings(self):
-        if(self.leap_cap_settings.save(LEAPCAP_SETTINGS_PATH, const.SETTINGS_FILE_NAME)):   
+        if( self.leap_cap_settings.save(self.textfile) ):   
                                              AuxFunc.showMessage('Menssage of confirmation.', 'Settings were saved!')
         else:                                AuxFunc.showMessage('warning!', 'Problem in saving settings!')
 
@@ -272,7 +272,7 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
             else:   pkt_samples = self.board.receive()
 
             # update current gesture to log
-            self.textfile.log( self.log_id_gesture, [self.win_subject.getCurrentGesture()] )         
+            self.textfile.updateLog( self.log_id_gesture, [self.win_subject.getCurrentGesture()] )         
         #--------------------------------------------------------------------------------------------------------------------------------------------    
         elif self.source == 'Log':
             # receive samples from log
@@ -312,9 +312,9 @@ class WinMain(PyQt5.QtWidgets.QMainWindow):
                 # calculate the offset of the instant.
                 instant_offset = self.leap_cap_settings.getTotChannels() * instant_index
                 # update to log
-                self.textfile.log( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] )
+                self.textfile.updateLog( self.log_id, pkt_samples[ instant_offset : ( instant_offset + self.leap_cap_settings.getTotChannels() ) ] )
                 # save to log
-                self.textfile.saveLog() 
+                self.textfile.logLine() 
 
                 
         #--------------------------------------------------------------------------------------------------------------------------------------------
