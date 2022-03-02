@@ -1,0 +1,20 @@
+jpegtran -rotate 90 1th_curl.jpg       > new/1th_curl.jpg 
+jpegtran -rotate 90 1th_flex_curl.jpg  > new/1th_flex_curl.jpg
+jpegtran -rotate 90 1th_flex.jpg       > new/1th_flex.jpg
+jpegtran -rotate 90 2in_curl.jpg       > new/2in_curl.jpg
+jpegtran -rotate 90 2in_flex_curl.jpg  > new/2in_flex_curl.jpg
+jpegtran -rotate 90 2in_flex.jpg       > new/2in_flex.jpg
+jpegtran -rotate 90 3md_curl.jpg       > new/3md_curl.jpg
+jpegtran -rotate 90 3md_flex_curl.jpg  > new/3md_flex_curl.jpg
+jpegtran -rotate 90 3md_flex.jpg       > new/3md_flex.jpg
+jpegtran -rotate 90 4an_curl.jpg       > new/4an_curl.jpg
+jpegtran -rotate 90 4an_flex_curl.jpg  > new/4an_flex_curl.jpg
+jpegtran -rotate 90 4an_flex.jpg       > new/4an_flex.jpg
+jpegtran -rotate 90 5mn_curl.jpg       > new/5mn_curl.jpg
+jpegtran -rotate 90 5mn_flex_curl.jpg  > new/5mn_flex_curl.jpg
+jpegtran -rotate 90 5mn_flex.jpg       > new/5mn_flex.jpg
+jpegtran -rotate 90 hand_curl.jpg      > new/hand_curl.jpg
+jpegtran -rotate 90 hand_flex_curl.jpg > new/hand_flex_curl.jpg
+jpegtran -rotate 90 hand_flex.jpg      > new/hand_flex.jpg
+jpegtran -rotate 90 hand_open.jpg      > new/hand_open.jpg
+
