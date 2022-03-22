@@ -21,7 +21,7 @@ sys.path.append(MYOGRAPH_PATH)
 import Constants as const
 
 # Image parameters
-IMAGES_FORMAT         = '.png'
+IMAGES_FORMAT         = '.jpg'
 GRAYSCALE_SUFFIX      = 'EC'
 NUM_DISPLAYED_IMAGES  = 4
 
@@ -176,8 +176,8 @@ class WinSubject:
         imgs_surfaces[num_images * 2] = blank_surface
         # Adds the blank surface index into the dictionary
         imgs_dictionary['Blank']   = num_images * 2 
-        imgs_dictionary['BlankEC'] = num_images * 2 
-            
+        imgs_dictionary['BlankEC'] = num_images * 2 + 1
+        print(imgs_dictionary)
         return imgs_surfaces    
 
     # Method: This method creates a list with references to the four surfaces of the gestures that will be displayed in the window.
@@ -217,7 +217,7 @@ class WinSubject:
                 index = imgs_dictionary[ images_names[image_num] ]                
             else: # Grayscale image
                 # Finds out the index of the image in the list of routine surfaces using the dictionary
-                index = imgs_dictionary[ images_names[image_num] + GRAYSCALE_SUFFIX ]        
+                index = imgs_dictionary[ images_names[image_num] + GRAYSCALE_SUFFIX ]
             # Stores the reference of the current image into the list of images to be displayed.    
             imgs_to_disp[image_num] = imgs_surfaces[index]                 
         return imgs_to_disp            
@@ -291,7 +291,8 @@ class WinSubject:
     #                               The names do not contain the file extension ".PNG".
     def getImagesNames(images_path):
         # Gets the file names of the images inside the 'images_path'
-        images_file_lst = next(os.walk(images_path))[2] 
+        images_file_lst = next(os.walk(images_path))[2]
+        images_file_lst = [x for x in images_file_lst if x.endswith(".jpg")]
         # Removes the file extension
         for image_index in range( len(images_file_lst)):
             images_file_lst[image_index] = images_file_lst[image_index].split('.')[0]
@@ -422,4 +423,7 @@ class WinSubject:
     def tests(self):
         self.setJointAnglesValues( [10, 30, 50, 70, 90,  60, 50, 40, 30, 20] )
         #self.ui_subject.SetHand(UiSubject.LEFT_HAND)
-        
+
+if __name__ == '__main__':
+    win = WinSubject("../routine/default.csv", 1000, "R")
+    
